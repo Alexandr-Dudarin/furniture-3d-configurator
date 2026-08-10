@@ -1,0 +1,292 @@
+import * as THREE from 'three'
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
+
+type Vector3Tuple =
+  readonly [
+    number,
+    number,
+    number,
+  ]
+
+export type ThreeRuntimeOptions = {
+  background?:
+    THREE.ColorRepresentation
+
+  cameraPosition?:
+    Vector3Tuple
+
+  controlsTarget?:
+    Vector3Tuple
+
+  minDistance?: number
+
+  maxDistance?: number
+}
+
+export type ThreeRuntime = {
+  scene: THREE.Scene
+
+  camera:
+    THREE.PerspectiveCamera
+
+  renderer:
+    THREE.WebGLRenderer
+
+  controls:
+    OrbitControls
+
+  dispose: () => void
+}
+
+export function createThreeRuntime(
+  container: HTMLDivElement,
+  options: ThreeRuntimeOptions = {},
+): ThreeRuntime {
+  const {
+    background = 0xdedede,
+
+    cameraPosition = [
+      1.8,
+      1.4,
+      2.2,
+    ],
+
+    controlsTarget = [
+      0,
+      0.45,
+      0,
+    ],
+
+    minDistance = 1.2,
+
+    maxDistance = 5,
+  } = options
+
+  /*
+   * --------------------------------
+   * SCENE
+   * --------------------------------
+   */
+
+  const scene =
+    new THREE.Scene()
+
+  scene.background =
+    new THREE.Color(
+      background,
+    )
+
+  /*
+   * --------------------------------
+   * CAMERA
+   * --------------------------------
+   */
+
+  const initialWidth =
+    Math.max(
+      container.clientWidth,
+      1,
+    )
+
+  const initialHeight =
+    Math.max(
+      container.clientHeight,
+      1,
+    )
+
+  const camera =
+    new THREE.PerspectiveCamera(
+      45,
+
+      initialWidth /
+        initialHeight,
+
+      0.1,
+      100,
+    )
+
+  camera.position.set(
+    ...cameraPosition,
+  )
+
+  /*
+   * --------------------------------
+   * RENDERER
+   * --------------------------------
+   */
+
+  const renderer =
+    new THREE.WebGLRenderer({
+      antialias: true,
+    })
+
+  renderer.setPixelRatio(
+    Math.min(
+      window.devicePixelRatio,
+      2,
+    ),
+  )
+
+  renderer.setSize(
+    initialWidth,
+    initialHeight,
+  )
+
+  renderer.shadowMap.enabled =
+    true
+
+  renderer.shadowMap.type =
+    THREE.PCFShadowMap
+
+  container.appendChild(
+    renderer.domElement,
+  )
+
+  /*
+   * --------------------------------
+   * CONTROLS
+   * --------------------------------
+   */
+
+  const controls =
+    new OrbitControls(
+      camera,
+      renderer.domElement,
+    )
+
+  controls.enableDamping =
+    true
+
+  controls.target.set(
+    ...controlsTarget,
+  )
+
+  controls.minDistance =
+    minDistance
+
+  controls.maxDistance =
+    maxDistance
+
+  controls.update()
+
+  /*
+   * --------------------------------
+   * RESIZE
+   * --------------------------------
+   */
+
+  const resize =
+    () => {
+      const width =
+        Math.max(
+          container.clientWidth,
+          1,
+        )
+
+      const height =
+        Math.max(
+          container.clientHeight,
+          1,
+        )
+
+      camera.aspect =
+        width / height
+
+      camera.updateProjectionMatrix()
+
+      renderer.setSize(
+        width,
+        height,
+      )
+
+      renderer.setPixelRatio(
+        Math.min(
+          window.devicePixelRatio,
+          2,
+        ),
+      )
+    }
+
+  const resizeObserver =
+    new ResizeObserver(
+      resize,
+    )
+
+  resizeObserver.observe(
+    container,
+  )
+
+  /*
+   * --------------------------------
+   * RENDER LOOP
+   * --------------------------------
+   */
+
+  let animationFrameId = 0
+
+  let disposed = false
+
+  const animate =
+    () => {
+      if (disposed) {
+        return
+      }
+
+      controls.update()
+
+      renderer.render(
+        scene,
+        camera,
+      )
+
+      animationFrameId =
+        requestAnimationFrame(
+          animate,
+        )
+    }
+
+  animate()
+
+  /*
+   * --------------------------------
+   * CLEANUP
+   * --------------------------------
+   */
+
+  const dispose =
+    () => {
+      if (disposed) {
+        return
+      }
+
+      disposed = true
+
+      cancelAnimationFrame(
+        animationFrameId,
+      )
+
+      resizeObserver.disconnect()
+
+      controls.dispose()
+
+      renderer.dispose()
+
+      if (
+        renderer.domElement
+          .parentElement ===
+        container
+      ) {
+        container.removeChild(
+          renderer.domElement,
+        )
+      }
+    }
+
+  return {
+    scene,
+    camera,
+    renderer,
+    controls,
+    dispose,
+  }
+}

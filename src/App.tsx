@@ -1,10 +1,26 @@
-import { useEffect, useRef, useState } from 'react'
-import * as THREE from 'three'
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
+import {
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 
-import { loadFurnitureModel } from './three/furniture/model'
-import { createFurnitureController } from './three/furniture/furnitureController'
-import { TABLE_CONFIG } from './three/table/tableConfig'
+import * as THREE from 'three'
+
+import {
+  createThreeRuntime,
+} from './three/core/createThreeRuntime'
+
+import {
+  createFurnitureController,
+} from './three/furniture/furnitureController'
+
+import {
+  loadFurnitureModel,
+} from './three/furniture/model'
+
+import {
+  TABLE_CONFIG,
+} from './three/table/tableConfig'
 
 import './App.css'
 
@@ -28,22 +44,31 @@ const MAX_WIDTH =
 
 function App() {
   const containerRef =
-    useRef<HTMLDivElement | null>(null)
+    useRef<HTMLDivElement | null>(
+      null,
+    )
 
-  const [tableLength, setTableLength] =
+  const [
+    tableLength,
+    setTableLength,
+  ] =
     useState<number>(
       BASE_LENGTH,
     )
 
-  const [tableWidth, setTableWidth] =
+  const [
+    tableWidth,
+    setTableWidth,
+  ] =
     useState<number>(
       BASE_WIDTH,
     )
 
   /*
-   * Текущие значения нужны на случай,
-   * если пользователь изменит slider
-   * раньше, чем GLB успеет загрузиться.
+   * Текущие значения нужны,
+   * если пользователь изменит
+   * slider раньше окончания
+   * загрузки GLB.
    */
 
   const currentLengthRef =
@@ -57,21 +82,21 @@ function App() {
     )
 
   /*
-   * React пока знает только:
+   * React знает только:
    *
-   * "нужно установить такие размеры".
+   * "установить такие размеры".
    *
-   * Как именно это делается внутри
-   * Three.js-модели, теперь решает
-   * FurnitureController.
+   * Конкретную механику модели
+   * выполняет FurnitureController.
    */
 
-  const applyDimensionsRef = useRef<
-    (
-      length: number,
-      width: number,
-    ) => void
-  >(() => {})
+  const applyDimensionsRef =
+    useRef<
+      (
+        length: number,
+        width: number,
+      ) => void
+    >(() => {})
 
   /*
    * --------------------------------
@@ -97,7 +122,7 @@ function App() {
 
   /*
    * --------------------------------
-   * THREE.JS SCENE
+   * 3D SCENE
    * --------------------------------
    */
 
@@ -109,102 +134,40 @@ function App() {
       return
     }
 
-    let animationFrameId = 0
     let destroyed = false
 
     /*
-     * SCENE
+     * Базовая Three.js-инфраструктура
+     * теперь создаётся отдельно.
+     *
+     * App больше не создаёт вручную:
+     *
+     * Scene
+     * Camera
+     * Renderer
+     * OrbitControls
+     * ResizeObserver
+     * requestAnimationFrame loop
      */
 
-    const scene =
-      new THREE.Scene()
-
-    scene.background =
-      new THREE.Color(
-        0xdedede,
+    const runtime =
+      createThreeRuntime(
+        container,
       )
 
-    /*
-     * CAMERA
-     */
-
-    const camera =
-      new THREE.PerspectiveCamera(
-        45,
-
-        container.clientWidth /
-          container.clientHeight,
-
-        0.1,
-        100,
-      )
-
-    camera.position.set(
-      1.8,
-      1.4,
-      2.2,
-    )
+    const {
+      scene,
+    } = runtime
 
     /*
-     * RENDERER
-     */
-
-    const renderer =
-      new THREE.WebGLRenderer({
-        antialias: true,
-      })
-
-    renderer.setPixelRatio(
-      Math.min(
-        window.devicePixelRatio,
-        2,
-      ),
-    )
-
-    renderer.setSize(
-      container.clientWidth,
-      container.clientHeight,
-    )
-
-    renderer.shadowMap.enabled =
-      true
-
-    renderer.shadowMap.type =
-      THREE.PCFShadowMap
-
-    container.appendChild(
-      renderer.domElement,
-    )
-
-    /*
-     * CAMERA CONTROLS
-     */
-
-    const controls =
-      new OrbitControls(
-        camera,
-        renderer.domElement,
-      )
-
-    controls.enableDamping =
-      true
-
-    controls.target.set(
-      0,
-      0.45,
-      0,
-    )
-
-    controls.minDistance =
-      1.2
-
-    controls.maxDistance =
-      5
-
-    controls.update()
-
-    /*
+     * --------------------------------
      * LIGHTS
+     * --------------------------------
+     *
+     * Свет пока оставляем здесь.
+     *
+     * Позже вынесем его отдельно
+     * вместе с окружением сцены.
      */
 
     const ambientLight =
@@ -242,7 +205,9 @@ function App() {
     )
 
     /*
+     * --------------------------------
      * FLOOR
+     * --------------------------------
      */
 
     const floorGeometry =
@@ -274,36 +239,19 @@ function App() {
     )
 
     /*
+     * Храним ссылку,
+     * чтобы при cleanup удалить
+     * модель из сцены.
+     */
+
+    let furnitureModel:
+      THREE.Group | null =
+        null
+
+    /*
      * --------------------------------
-     * FURNITURE MODEL
+     * FURNITURE
      * --------------------------------
-     *
-     * Здесь происходит главное
-     * архитектурное изменение.
-     *
-     * App.tsx больше НЕ ищет:
-     *
-     * TableTop
-     * Leg_01
-     * Leg_02
-     * Leg_03
-     * Leg_04
-     *
-     * App.tsx больше НЕ знает:
-     *
-     * что length = X
-     * что width = Z
-     * какие детали надо масштабировать
-     * какие детали надо перемещать
-     * как менять UV
-     *
-     * Всё это находится в:
-     *
-     * TABLE_CONFIG
-     *
-     * и интерпретируется:
-     *
-     * FurnitureController.
      */
 
     const prepareFurniture =
@@ -319,21 +267,15 @@ function App() {
               TABLE_CONFIG.modelUrl,
             )
 
-          /*
-           * React-компонент мог быть
-           * уничтожен, пока GLB
-           * загружался.
-           */
-
           if (destroyed) {
             return
           }
 
           /*
            * 2.
-           * Создаём универсальный
-           * controller на основании
-           * конфигурации этой модели.
+           * Создаём controller,
+           * который интерпретирует
+           * TABLE_CONFIG.
            */
 
           const controller =
@@ -345,15 +287,7 @@ function App() {
           /*
            * 3.
            * Связываем React UI
-           * с controller.
-           *
-           * Здесь App знает только
-           * названия изменяемых
-           * параметров.
-           *
-           * Он не знает,
-           * какие Three.js-объекты
-           * изменятся в результате.
+           * с универсальным controller.
            */
 
           applyDimensionsRef.current =
@@ -369,11 +303,8 @@ function App() {
 
           /*
            * 4.
-           * Если slider успели
-           * изменить до окончания
-           * загрузки GLB,
-           * сразу восстанавливаем
-           * актуальные размеры.
+           * Применяем актуальные
+           * значения интерфейса.
            */
 
           controller.setDimensions({
@@ -387,8 +318,11 @@ function App() {
           /*
            * 5.
            * Добавляем готовую модель
-           * в Three.js-сцену.
+           * в сцену.
            */
+
+          furnitureModel =
+            model
 
           scene.add(
             model,
@@ -409,65 +343,6 @@ function App() {
 
     /*
      * --------------------------------
-     * RESIZE
-     * --------------------------------
-     */
-
-    const resizeObserver =
-      new ResizeObserver(() => {
-        const width =
-          container.clientWidth
-
-        const height =
-          container.clientHeight
-
-        camera.aspect =
-          width / height
-
-        camera.updateProjectionMatrix()
-
-        renderer.setSize(
-          width,
-          height,
-        )
-
-        renderer.setPixelRatio(
-          Math.min(
-            window.devicePixelRatio,
-            2,
-          ),
-        )
-      })
-
-    resizeObserver.observe(
-      container,
-    )
-
-    /*
-     * --------------------------------
-     * RENDER LOOP
-     * --------------------------------
-     */
-
-    const animate =
-      () => {
-        controls.update()
-
-        renderer.render(
-          scene,
-          camera,
-        )
-
-        animationFrameId =
-          requestAnimationFrame(
-            animate,
-          )
-      }
-
-    animate()
-
-    /*
-     * --------------------------------
      * CLEANUP
      * --------------------------------
      */
@@ -475,52 +350,39 @@ function App() {
     return () => {
       destroyed = true
 
-      /*
-       * После уничтожения сцены
-       * React больше не должен
-       * обращаться к controller.
-       */
-
       applyDimensionsRef.current =
         () => {}
 
-      cancelAnimationFrame(
-        animationFrameId,
+      if (furnitureModel) {
+        scene.remove(
+          furnitureModel,
+        )
+      }
+
+      scene.remove(
+        ambientLight,
       )
 
-      resizeObserver.disconnect()
+      scene.remove(
+        keyLight,
+      )
 
-      controls.dispose()
+      scene.remove(
+        floor,
+      )
 
       floorGeometry.dispose()
 
       floorMaterial.dispose()
 
-      renderer.dispose()
-
-      if (
-        renderer.domElement
-          .parentElement ===
-        container
-      ) {
-        container.removeChild(
-          renderer.domElement,
-        )
-      }
+      runtime.dispose()
     }
   }, [])
 
   /*
    * --------------------------------
-   * UI
+   * REACT UI
    * --------------------------------
-   *
-   * Интерфейс пока специально
-   * оставляем простым и конкретным.
-   *
-   * Позже его тоже сделаем
-   * автоматически генерируемым
-   * из TABLE_CONFIG.dimensionOrder.
    */
 
   return (
@@ -533,7 +395,9 @@ function App() {
       }}
     >
       <div
-        ref={containerRef}
+        ref={
+          containerRef
+        }
         style={{
           width: '100%',
           height: '100%',
@@ -549,10 +413,14 @@ function App() {
           padding: 14,
           background: 'white',
           borderRadius: 8,
+
           boxShadow:
             '0 4px 14px rgba(0, 0, 0, 0.15)',
+
           color: '#111',
-          fontFamily: 'sans-serif',
+
+          fontFamily:
+            'sans-serif',
         }}
       >
         <div
@@ -562,8 +430,16 @@ function App() {
             fontWeight: 600,
           }}
         >
-          {LENGTH_CONFIG.label}:{' '}
-          {tableLength.toFixed(2)} м
+          {
+            LENGTH_CONFIG.label
+          }
+          :{' '}
+          {
+            tableLength.toFixed(
+              2,
+            )
+          }{' '}
+          м
         </div>
 
         <input
@@ -580,10 +456,13 @@ function App() {
           value={
             tableLength
           }
-          onChange={(event) => {
+          onChange={(
+            event,
+          ) => {
             setTableLength(
               Number(
-                event.target.value,
+                event.target
+                  .value,
               ),
             )
           }}
@@ -600,8 +479,16 @@ function App() {
             fontWeight: 600,
           }}
         >
-          {WIDTH_CONFIG.label}:{' '}
-          {tableWidth.toFixed(2)} м
+          {
+            WIDTH_CONFIG.label
+          }
+          :{' '}
+          {
+            tableWidth.toFixed(
+              2,
+            )
+          }{' '}
+          м
         </div>
 
         <input
@@ -618,10 +505,13 @@ function App() {
           value={
             tableWidth
           }
-          onChange={(event) => {
+          onChange={(
+            event,
+          ) => {
             setTableWidth(
               Number(
-                event.target.value,
+                event.target
+                  .value,
               ),
             )
           }}
