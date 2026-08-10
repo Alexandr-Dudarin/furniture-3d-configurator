@@ -9,6 +9,12 @@ import type {
 } from 'three'
 
 import {
+  createInitialDimensions,
+  updateDimension,
+  type ConfiguratorDimensions,
+} from './configurator/configuratorState'
+
+import {
   createSceneEnvironment,
 } from './three/core/createSceneEnvironment'
 
@@ -30,100 +36,99 @@ import {
 
 import './App.css'
 
-const LENGTH_CONFIG =
-  TABLE_CONFIG.dimensions.length
-
-const WIDTH_CONFIG =
-  TABLE_CONFIG.dimensions.width
-
-const BASE_LENGTH =
-  LENGTH_CONFIG.base
-
-const MAX_LENGTH =
-  LENGTH_CONFIG.max
-
-const BASE_WIDTH =
-  WIDTH_CONFIG.base
-
-const MAX_WIDTH =
-  WIDTH_CONFIG.max
-
 function App() {
   const containerRef =
     useRef<HTMLDivElement | null>(
       null,
     )
 
-  const [
-    tableLength,
-    setTableLength,
-  ] =
-    useState<number>(
-      BASE_LENGTH,
-    )
-
-  const [
-    tableWidth,
-    setTableWidth,
-  ] =
-    useState<number>(
-      BASE_WIDTH,
-    )
-
   /*
-   * Значения хранятся дополнительно
-   * в ref на случай, если пользователь
-   * изменит slider раньше окончания
-   * загрузки GLB.
+   * --------------------------------
+   * CONFIGURATOR STATE
+   * --------------------------------
+   *
+   * Раньше:
+   *
+   * tableLength
+   * tableWidth
+   *
+   * Теперь состояние универсальное:
+   *
+   * {
+   *   length: 1.2,
+   *   width: 0.6,
+   * }
+   *
+   * Для другой модели оно может быть:
+   *
+   * {
+   *   diameter: 1.1,
+   * }
+   *
+   * или:
+   *
+   * {
+   *   width: 1.8,
+   *   height: 2.2,
+   *   depth: 0.6,
+   * }
    */
 
-  const currentLengthRef =
-    useRef<number>(
-      BASE_LENGTH,
-    )
-
-  const currentWidthRef =
-    useRef<number>(
-      BASE_WIDTH,
+  const [
+    dimensions,
+    setDimensions,
+  ] =
+    useState<ConfiguratorDimensions>(
+      () =>
+        createInitialDimensions(
+          TABLE_CONFIG,
+        ),
     )
 
   /*
-   * React знает только:
+   * Последнее актуальное состояние.
    *
-   * "установить такие размеры".
+   * Нужно на случай,
+   * если пользователь изменит
+   * настройки до загрузки GLB.
+   */
+
+  const currentDimensionsRef =
+    useRef<ConfiguratorDimensions>(
+      dimensions,
+    )
+
+  /*
+   * React не знает,
+   * как конкретно изменяется GLB.
    *
-   * Реальную механику модели
-   * выполняет FurnitureController.
+   * Он просто передаёт движку
+   * набор физических размеров.
    */
 
   const applyDimensionsRef =
     useRef<
       (
-        length: number,
-        width: number,
+        dimensions:
+          ConfiguratorDimensions,
       ) => void
     >(() => {})
 
   /*
    * --------------------------------
-   * REACT STATE -> 3D MODEL
+   * CONFIGURATOR STATE -> 3D MODEL
    * --------------------------------
    */
 
   useEffect(() => {
-    currentLengthRef.current =
-      tableLength
-
-    currentWidthRef.current =
-      tableWidth
+    currentDimensionsRef.current =
+      dimensions
 
     applyDimensionsRef.current(
-      tableLength,
-      tableWidth,
+      dimensions,
     )
   }, [
-    tableLength,
-    tableWidth,
+    dimensions,
   ])
 
   /*
@@ -140,21 +145,11 @@ function App() {
       return
     }
 
-    let destroyed = false
+    let destroyed =
+      false
 
     /*
-     * --------------------------------
      * THREE.JS RUNTIME
-     * --------------------------------
-     *
-     * Здесь находятся:
-     *
-     * Scene
-     * Camera
-     * Renderer
-     * OrbitControls
-     * ResizeObserver
-     * render loop
      */
 
     const runtime =
@@ -167,18 +162,7 @@ function App() {
     } = runtime
 
     /*
-     * --------------------------------
      * SCENE ENVIRONMENT
-     * --------------------------------
-     *
-     * Здесь теперь находятся:
-     *
-     * свет
-     * пол
-     *
-     * Позже этот слой можно будет
-     * заменить более качественной
-     * системой окружения.
      */
 
     const environment =
@@ -187,7 +171,8 @@ function App() {
       )
 
     /*
-     * Модель сохраняем для cleanup.
+     * Модель сохраняем
+     * для cleanup.
      */
 
     let furnitureModel:
@@ -205,18 +190,14 @@ function App() {
         try {
           /*
            * 1.
-           * Загружаем GLB.
+           * Загружаем модель
+           * из её конфигурации.
            */
 
           const model =
             await loadFurnitureModel(
               TABLE_CONFIG.modelUrl,
             )
-
-          /*
-           * Компонент мог быть уничтожен
-           * во время загрузки.
-           */
 
           if (destroyed) {
             return
@@ -225,7 +206,7 @@ function App() {
           /*
            * 2.
            * Создаём универсальный
-           * controller модели.
+           * FurnitureController.
            */
 
           const controller =
@@ -236,39 +217,41 @@ function App() {
 
           /*
            * 3.
-           * Соединяем React UI
-           * с FurnitureController.
+           * React теперь передаёт
+           * controller весь объект
+           * размеров целиком.
+           *
+           * App.tsx больше не содержит:
+           *
+           * length,
+           * width
+           *
+           * как специальные аргументы.
            */
 
           applyDimensionsRef.current =
             (
-              length,
-              width,
+              nextDimensions,
             ) => {
-              controller.setDimensions({
-                length,
-                width,
-              })
+              controller.setDimensions(
+                nextDimensions,
+              )
             }
 
           /*
            * 4.
-           * Восстанавливаем актуальные
-           * значения размеров.
+           * Применяем актуальное
+           * состояние конфигуратора.
            */
 
-          controller.setDimensions({
-            length:
-              currentLengthRef.current,
-
-            width:
-              currentWidthRef.current,
-          })
+          controller.setDimensions(
+            currentDimensionsRef.current,
+          )
 
           /*
            * 5.
-           * Добавляем подготовленную
-           * модель в сцену.
+           * Добавляем модель
+           * в сцену.
            */
 
           furnitureModel =
@@ -298,7 +281,8 @@ function App() {
      */
 
     return () => {
-      destroyed = true
+      destroyed =
+        true
 
       applyDimensionsRef.current =
         () => {}
@@ -309,18 +293,7 @@ function App() {
         )
       }
 
-      /*
-       * Освещение и пол
-       * очищаются своим модулем.
-       */
-
       environment.dispose()
-
-      /*
-       * Renderer, controls,
-       * ResizeObserver и render loop
-       * очищаются runtime-модулем.
-       */
 
       runtime.dispose()
     }
@@ -330,15 +303,31 @@ function App() {
    * --------------------------------
    * UI
    * --------------------------------
+   *
+   * Самое важное изменение:
+   *
+   * slider больше не написаны
+   * вручную для length и width.
+   *
+   * UI строится из:
+   *
+   * TABLE_CONFIG.dimensionOrder
    */
 
   return (
     <div
       style={{
-        position: 'relative',
-        width: '100vw',
-        height: '100vh',
-        overflow: 'hidden',
+        position:
+          'relative',
+
+        width:
+          '100vw',
+
+        height:
+          '100vh',
+
+        overflow:
+          'hidden',
       }}
     >
       <div
@@ -346,126 +335,156 @@ function App() {
           containerRef
         }
         style={{
-          width: '100%',
-          height: '100%',
+          width:
+            '100%',
+
+          height:
+            '100%',
         }}
       />
 
       <div
         style={{
-          position: 'absolute',
-          top: 16,
-          left: 16,
-          width: 190,
-          padding: 14,
-          background: 'white',
-          borderRadius: 8,
+          position:
+            'absolute',
+
+          top:
+            16,
+
+          left:
+            16,
+
+          width:
+            190,
+
+          padding:
+            14,
+
+          background:
+            'white',
+
+          borderRadius:
+            8,
 
           boxShadow:
             '0 4px 14px rgba(0, 0, 0, 0.15)',
 
-          color: '#111',
+          color:
+            '#111',
 
           fontFamily:
             'sans-serif',
         }}
       >
-        <div
-          style={{
-            marginBottom: 6,
-            fontSize: 14,
-            fontWeight: 600,
-          }}
-        >
-          {
-            LENGTH_CONFIG.label
-          }
-          :{' '}
-          {
-            tableLength.toFixed(
-              2,
-            )
-          }{' '}
-          м
-        </div>
+        {
+          TABLE_CONFIG
+            .dimensionOrder
+            .map(
+              (
+                dimension,
+                index,
+              ) => {
+                const config =
+                  TABLE_CONFIG
+                    .dimensions[
+                      dimension
+                    ]
 
-        <input
-          type="range"
-          min={
-            LENGTH_CONFIG.min
-          }
-          max={
-            MAX_LENGTH
-          }
-          step={
-            LENGTH_CONFIG.step
-          }
-          value={
-            tableLength
-          }
-          onChange={(
-            event,
-          ) => {
-            setTableLength(
-              Number(
-                event.target
-                  .value,
-              ),
-            )
-          }}
-          style={{
-            width: '100%',
-          }}
-        />
+                const value =
+                  dimensions[
+                    dimension
+                  ] ??
+                  config.base
 
-        <div
-          style={{
-            marginTop: 16,
-            marginBottom: 6,
-            fontSize: 14,
-            fontWeight: 600,
-          }}
-        >
-          {
-            WIDTH_CONFIG.label
-          }
-          :{' '}
-          {
-            tableWidth.toFixed(
-              2,
-            )
-          }{' '}
-          м
-        </div>
+                return (
+                  <div
+                    key={
+                      dimension
+                    }
+                    style={{
+                      marginTop:
+                        index === 0
+                          ? 0
+                          : 16,
+                    }}
+                  >
+                    <div
+                      style={{
+                        marginBottom:
+                          6,
 
-        <input
-          type="range"
-          min={
-            WIDTH_CONFIG.min
-          }
-          max={
-            MAX_WIDTH
-          }
-          step={
-            WIDTH_CONFIG.step
-          }
-          value={
-            tableWidth
-          }
-          onChange={(
-            event,
-          ) => {
-            setTableWidth(
-              Number(
-                event.target
-                  .value,
-              ),
+                        fontSize:
+                          14,
+
+                        fontWeight:
+                          600,
+                      }}
+                    >
+                      {
+                        config.label
+                      }
+                      :{' '}
+                      {
+                        value.toFixed(
+                          2,
+                        )
+                      }{' '}
+                      м
+                    </div>
+
+                    <input
+                      type="range"
+
+                      min={
+                        config.min
+                      }
+
+                      max={
+                        config.max
+                      }
+
+                      step={
+                        config.step
+                      }
+
+                      value={
+                        value
+                      }
+
+                      onChange={(
+                        event,
+                      ) => {
+                        const nextValue =
+                          Number(
+                            event
+                              .target
+                              .value,
+                          )
+
+                        setDimensions(
+                          (
+                            current,
+                          ) =>
+                            updateDimension(
+                              current,
+
+                              dimension,
+
+                              nextValue,
+                            ),
+                        )
+                      }}
+
+                      style={{
+                        width:
+                          '100%',
+                      }}
+                    />
+                  </div>
+                )
+              },
             )
-          }}
-          style={{
-            width: '100%',
-          }}
-        />
+        }
       </div>
     </div>
   )
