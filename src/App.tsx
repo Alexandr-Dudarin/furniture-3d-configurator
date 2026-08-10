@@ -4,7 +4,13 @@ import {
   useState,
 } from 'react'
 
-import * as THREE from 'three'
+import type {
+  Group,
+} from 'three'
+
+import {
+  createSceneEnvironment,
+} from './three/core/createSceneEnvironment'
 
 import {
   createThreeRuntime,
@@ -65,9 +71,9 @@ function App() {
     )
 
   /*
-   * Текущие значения нужны,
-   * если пользователь изменит
-   * slider раньше окончания
+   * Значения хранятся дополнительно
+   * в ref на случай, если пользователь
+   * изменит slider раньше окончания
    * загрузки GLB.
    */
 
@@ -86,7 +92,7 @@ function App() {
    *
    * "установить такие размеры".
    *
-   * Конкретную механику модели
+   * Реальную механику модели
    * выполняет FurnitureController.
    */
 
@@ -100,7 +106,7 @@ function App() {
 
   /*
    * --------------------------------
-   * REACT STATE -> THREE.JS
+   * REACT STATE -> 3D MODEL
    * --------------------------------
    */
 
@@ -122,7 +128,7 @@ function App() {
 
   /*
    * --------------------------------
-   * 3D SCENE
+   * 3D APPLICATION
    * --------------------------------
    */
 
@@ -137,17 +143,18 @@ function App() {
     let destroyed = false
 
     /*
-     * Базовая Three.js-инфраструктура
-     * теперь создаётся отдельно.
+     * --------------------------------
+     * THREE.JS RUNTIME
+     * --------------------------------
      *
-     * App больше не создаёт вручную:
+     * Здесь находятся:
      *
      * Scene
      * Camera
      * Renderer
      * OrbitControls
      * ResizeObserver
-     * requestAnimationFrame loop
+     * render loop
      */
 
     const runtime =
@@ -161,91 +168,30 @@ function App() {
 
     /*
      * --------------------------------
-     * LIGHTS
+     * SCENE ENVIRONMENT
      * --------------------------------
      *
-     * Свет пока оставляем здесь.
+     * Здесь теперь находятся:
      *
-     * Позже вынесем его отдельно
-     * вместе с окружением сцены.
+     * свет
+     * пол
+     *
+     * Позже этот слой можно будет
+     * заменить более качественной
+     * системой окружения.
      */
 
-    const ambientLight =
-      new THREE.AmbientLight(
-        0xffffff,
-        1.2,
+    const environment =
+      createSceneEnvironment(
+        scene,
       )
-
-    scene.add(
-      ambientLight,
-    )
-
-    const keyLight =
-      new THREE.DirectionalLight(
-        0xffffff,
-        3,
-      )
-
-    keyLight.position.set(
-      2.5,
-      4,
-      2,
-    )
-
-    keyLight.castShadow =
-      true
-
-    keyLight.shadow.mapSize.set(
-      2048,
-      2048,
-    )
-
-    scene.add(
-      keyLight,
-    )
 
     /*
-     * --------------------------------
-     * FLOOR
-     * --------------------------------
-     */
-
-    const floorGeometry =
-      new THREE.PlaneGeometry(
-        8,
-        8,
-      )
-
-    const floorMaterial =
-      new THREE.MeshStandardMaterial({
-        color: 0xb8b8b8,
-        roughness: 0.9,
-      })
-
-    const floor =
-      new THREE.Mesh(
-        floorGeometry,
-        floorMaterial,
-      )
-
-    floor.rotation.x =
-      -Math.PI / 2
-
-    floor.receiveShadow =
-      true
-
-    scene.add(
-      floor,
-    )
-
-    /*
-     * Храним ссылку,
-     * чтобы при cleanup удалить
-     * модель из сцены.
+     * Модель сохраняем для cleanup.
      */
 
     let furnitureModel:
-      THREE.Group | null =
+      Group | null =
         null
 
     /*
@@ -267,15 +213,19 @@ function App() {
               TABLE_CONFIG.modelUrl,
             )
 
+          /*
+           * Компонент мог быть уничтожен
+           * во время загрузки.
+           */
+
           if (destroyed) {
             return
           }
 
           /*
            * 2.
-           * Создаём controller,
-           * который интерпретирует
-           * TABLE_CONFIG.
+           * Создаём универсальный
+           * controller модели.
            */
 
           const controller =
@@ -286,8 +236,8 @@ function App() {
 
           /*
            * 3.
-           * Связываем React UI
-           * с универсальным controller.
+           * Соединяем React UI
+           * с FurnitureController.
            */
 
           applyDimensionsRef.current =
@@ -303,8 +253,8 @@ function App() {
 
           /*
            * 4.
-           * Применяем актуальные
-           * значения интерфейса.
+           * Восстанавливаем актуальные
+           * значения размеров.
            */
 
           controller.setDimensions({
@@ -317,8 +267,8 @@ function App() {
 
           /*
            * 5.
-           * Добавляем готовую модель
-           * в сцену.
+           * Добавляем подготовленную
+           * модель в сцену.
            */
 
           furnitureModel =
@@ -359,21 +309,18 @@ function App() {
         )
       }
 
-      scene.remove(
-        ambientLight,
-      )
+      /*
+       * Освещение и пол
+       * очищаются своим модулем.
+       */
 
-      scene.remove(
-        keyLight,
-      )
+      environment.dispose()
 
-      scene.remove(
-        floor,
-      )
-
-      floorGeometry.dispose()
-
-      floorMaterial.dispose()
+      /*
+       * Renderer, controls,
+       * ResizeObserver и render loop
+       * очищаются runtime-модулем.
+       */
 
       runtime.dispose()
     }
@@ -381,7 +328,7 @@ function App() {
 
   /*
    * --------------------------------
-   * REACT UI
+   * UI
    * --------------------------------
    */
 
