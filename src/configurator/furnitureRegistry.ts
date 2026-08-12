@@ -6,6 +6,10 @@ import {
   FIRST_TABLE_CONFIG,
 } from '../three/models/first-table/config'
 
+import {
+  U_FRAME_TABLE_CONFIG,
+} from '../three/models/u-frame-table/config'
+
 /*
  * --------------------------------
  * FURNITURE REGISTRY
@@ -26,6 +30,10 @@ const furnitureRegistry =
     [
       FIRST_TABLE_CONFIG.id,
       FIRST_TABLE_CONFIG,
+    ],
+    [
+      U_FRAME_TABLE_CONFIG.id,
+      U_FRAME_TABLE_CONFIG,
     ],
   ])
 
