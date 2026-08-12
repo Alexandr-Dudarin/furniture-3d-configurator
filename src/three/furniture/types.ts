@@ -61,9 +61,56 @@ export type EdgeAnchorResizeRule = {
   center?: number
 }
 
+/*
+ * Объект сохраняет собственные размеры,
+ * но перемещается на заданную долю
+ * изменения физической размерности.
+ *
+ * Знак factor задаёт направление.
+ */
+export type DeltaMoveTarget = {
+  target: string
+
+  factor: number
+}
+
+export type DeltaMoveResizeRule = {
+  type: 'delta-move'
+
+  targets:
+    readonly DeltaMoveTarget[]
+
+  dimension: DimensionName
+
+  axis: ModelAxis
+}
+
+/*
+ * Сегмент растягивается только
+ * вдоль заданной локальной оси.
+ *
+ * baseLength — физическая длина
+ * сегмента при base dimension.
+ */
+export type StretchSegmentResizeRule = {
+  type: 'stretch-segment'
+
+  target: string
+
+  dimension: DimensionName
+
+  axis: ModelAxis
+
+  baseLength: number
+
+  factor?: number
+}
+
 export type FurnitureResizeRule =
   | ScaleResizeRule
   | EdgeAnchorResizeRule
+  | DeltaMoveResizeRule
+  | StretchSegmentResizeRule
 
 /*
  * Одна физическая размерность
