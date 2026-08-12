@@ -1,10 +1,20 @@
-# Стандарт 3D-ассетов мебели v2.0
+# Стандарт 3D-ассетов мебели v2.1
 
 **GLB-ассеты для мебельного конфигуратора на React + TypeScript + чистом Three.js**
 
 Статус: стандарт проекта  
+Актуальность: Table-first после интеграции `table-02-u-frame`, 12 августа 2026  
 Область применения: столы, шкафы, комоды, тумбы, стеллажи, стулья и другая конфигурируемая мебель  
 Главный принцип: **модель проектируется не только исходя из того, как она выглядит, но и исходя из того, как runtime-код должен управлять ею.**
+
+При передаче задачи в новый Work-чат этот файл используется вместе с:
+
+- актуальным Git bundle/архивом проекта без `node_modules`;
+- референсами конкретной модели;
+- известными физическими размерами и диапазонами конфигурации;
+- отдельным названием feature-ветки и уникальным `modelId`.
+
+Work-чат обязан сначала прочитать стандарт и реальный код проекта, а затем определить runtime-контракт модели. Этот документ не разрешает переписывать generic engine или добавлять model-specific условия.
 
 ---
 
@@ -419,7 +429,18 @@ dimensionDelta * factor
 - внутренние опоры, расходящиеся с пользовательским коэффициентом;
 - компоненты, которые должны двигаться, но не привязаны непосредственно к краю столешницы.
 
-Такая структура должна быть заложена в ассет даже если текущему runtime ещё требуется добавление соответствующего generic-rule.
+Текущий runtime поддерживает это поведение generic-правилом `delta-move`.
+
+Фактический расчёт текущего движка:
+
+```text
+dimensionDelta = currentDimension - baseDimension
+newPositionOnAxis = capturedBasePositionOnAxis + dimensionDelta * factor
+```
+
+Знак `factor` задаёт направление. Позиция всегда вычисляется от захваченного base state, а не от текущей позиции, поэтому последовательные изменения размеров не накапливают drift.
+
+Ось `axis` относится к локальной системе parent управляемого объекта. Один rule может содержать несколько targets с независимыми коэффициентами.
 
 ### 11.5 Stretch segment
 
@@ -433,6 +454,19 @@ dimensionDelta * factor
 - балки каркаса.
 
 Сегмент должен быть смоделирован так, чтобы его local stretch axis совпадала с предполагаемым направлением runtime-растяжения.
+
+Текущий runtime поддерживает это поведение generic-правилом `stretch-segment`.
+
+Фактический расчёт текущего движка:
+
+```text
+targetLength = baseLength + (currentDimension - baseDimension) * factor
+newScaleOnAxis = capturedBaseScaleOnAxis * (targetLength / baseLength)
+```
+
+`factor` по умолчанию равен `1`. `baseLength` должен быть положительным и соответствовать физической длине сегмента при base dimension.
+
+Изменяется только указанная local axis. Две остальные компоненты scale, rotation и поперечное сечение сохраняются. Поэтому intentionally rotated элемент остаётся допустимым, если его продольная local axis задокументирована правильно.
 
 ### 11.6 Fit between anchors
 
@@ -503,6 +537,72 @@ Stretch segment
 multi-axis dimension mapping
 centered texture repeat/offset compensation
 ```
+
+Фактическая форма поддерживаемых resize rules в `FurnitureDefinition`:
+
+```ts
+type ScaleResizeRule = {
+  type: 'scale'
+  target: string
+  dimension: string
+  axis: 'x' | 'y' | 'z'
+}
+
+type EdgeAnchorResizeRule = {
+  type: 'edge-anchor'
+  targets: readonly string[]
+  dimension: string
+  axis: 'x' | 'y' | 'z'
+  center?: number
+}
+
+type DeltaMoveResizeRule = {
+  type: 'delta-move'
+  targets: readonly {
+    target: string
+    factor: number
+  }[]
+  dimension: string
+  axis: 'x' | 'y' | 'z'
+}
+
+type StretchSegmentResizeRule = {
+  type: 'stretch-segment'
+  target: string
+  dimension: string
+  axis: 'x' | 'y' | 'z'
+  baseLength: number
+  factor?: number
+}
+```
+
+Physical dimension и local/model axis не выводятся друг из друга и всегда задаются отдельно.
+
+Текущие production-модели, проверяющие этот контракт:
+
+```text
+table-01 / First Table
+  base: 1.20 × 0.60 m
+  max:  2.00 × 1.00 m
+  behaviors: Scale + Edge-anchor move
+
+table-02-u-frame / U-Frame Table
+  base: 0.95 × 0.55 × 0.75 m
+  max:  1.65 × 0.80 × 0.75 m
+  behaviors:
+    Scale
+    Delta move / spread
+    Edge-anchor move
+    Stretch segment
+```
+
+`table-02-u-frame` использует две U-образные рамы: рамы расходятся по длине, стойки перемещаются по ширине без изменения профиля, нижние поперечины растягиваются только по local Z.
+
+### Текущий статус material replacement
+
+GLB уже должен иметь стабильные semantic material names и replaceable finish groups. Ассеты обязаны подготавливаться к замене материалов.
+
+При этом общий пользовательский material catalog, selector и runtime-состояние вариантов материалов **ещё не реализованы**. До отдельного этапа нельзя считать наличие material slot готовой UI-системой вариантов и нельзя добавлять model-specific material switching внутрь `App.tsx` или `FurnitureController`.
 
 Архитектура **не предполагает четыре ножки** или какую-либо фиксированную структуру мебели.
 
@@ -1080,6 +1180,222 @@ KTX2
 2. открыть/реимпортировать его в чистой Blender-сцене;
 3. убедиться, что structure, scale, materials и UV сохранились;
 4. по возможности загрузить его в проект или небольшой Three.js validation harness.
+
+---
+
+## 33. Обязательный комплект исходников одной production-модели
+
+Новая модель не передаётся как один случайный GLB. Рекомендуемая структура проекта:
+
+```text
+public/models/<model-id>.glb
+
+src/three/models/<model-folder>/
+├── config.ts
+└── <model-name>.test.ts
+
+assets/source/<model-id>/
+├── README.md
+├── model-passport.md
+├── validation-report.md
+├── create_<model_id>.py
+├── <model-id>.blend
+├── references/
+├── textures/
+└── previews/
+```
+
+Обязательны:
+
+- production GLB;
+- настоящий `FurnitureDefinition`/config;
+- integration test реального production GLB;
+- паспорт модели;
+- validation report;
+- исходные текстуры;
+- переданные референсы;
+- изображения как минимум base и max состояний;
+- editable Blender source либо воспроизводимый Blender generation script.
+
+`.blend` является главным редактируемым source asset, а GLB — браузерным production asset.
+
+Если среда Work-чата не содержит Blender, запрещено создавать фиктивный `.blend` или утверждать, что файл проверен в Blender. В таком случае чат должен:
+
+1. честно зафиксировать ограничение;
+2. предоставить детерминированный Blender Python script;
+3. проверить синтаксис скрипта доступным способом;
+4. дать точную команду запуска через Blender 4.x;
+5. попросить пользователя создать `.blend` локально и затем выполнить финальную Blender-проверку.
+
+Отсутствие Blender не освобождает от проверки production GLB в Three.js и glTF Validator.
+
+---
+
+## 34. Обязательная автоматическая проверка модели
+
+Тестирование не ограничивается тем, что GLB визуально открылся.
+
+Минимальный integration test production GLB должен проверять:
+
+- успешную загрузку через `GLTFLoader`;
+- наличие всех targets из config по точным именам;
+- base dimensions контроллера;
+- base transforms управляемых объектов;
+- максимальные значения всех configurable dimensions;
+- сохранение сечения fixed/moving деталей;
+- изменение только разрешённых local axes;
+- корректное движение положительных и отрицательных targets;
+- texture repeat/offset compensation;
+- возврат точно к base state после серии изменений;
+- наличие ожидаемых semantic material names;
+- наличие replaceable finish metadata, если она предусмотрена.
+
+Для каждого законченного изменения выполняются:
+
+```text
+npm test
+npm run build
+```
+
+Production GLB дополнительно проверяется Khronos glTF Validator. Целевой результат:
+
+```text
+Errors:   0
+Warnings: 0
+```
+
+Информационные сообщения оцениваются отдельно и фиксируются, если они указывают на осознанный компромисс.
+
+После автоматических проверок выполняется визуальный smoke-test:
+
+- base state;
+- max state;
+- промежуточное состояние;
+- возврат к base;
+- переключение на другую зарегистрированную модель и обратно.
+
+---
+
+## 35. Workflow для Work-чата, создающего новую модель
+
+### До изменений
+
+Work-чат обязан:
+
+1. проверить текущую ветку и `git status`;
+2. убедиться, что исходная ветка содержит актуальный `main`;
+3. создать отдельную feature-ветку;
+4. прочитать этот стандарт полностью;
+5. изучить реальные `FurnitureDefinition`, `FurnitureController`, loader/dispose, registry, state и существующие model configs;
+6. выполнить baseline `npm test` и `npm run build`;
+7. изучить все референсы и выписать неизвестные размеры.
+
+### До моделирования
+
+Сначала формируется краткий runtime-контракт:
+
+```text
+modelId
+base/min/max/step
+dimension mapping
+resize anchors
+node hierarchy
+behavior каждого controlled node
+local axes
+material slots и finish groups
+UV behavior
+assumptions
+runtime compatibility
+```
+
+Неизвестные производственные размеры нельзя выдавать за данные референса. Разумные визуальные допущения разрешены только с явной записью в паспорте.
+
+Если модель требует неподдерживаемого поведения, Work-чат не должен незаметно имитировать его неправильным scale. Он останавливает интеграцию, помечает `Requires engine extension` и объясняет, какого generic rule не хватает.
+
+### Реализация
+
+Предпочтительный порядок:
+
+```text
+контракт
+→ semantic hierarchy
+→ geometry/materials/UV
+→ GLB validation
+→ FurnitureDefinition
+→ registry
+→ integration test
+→ visual smoke-test
+→ passport/source package
+```
+
+Generic engine не должен получать:
+
+- `if (modelId === ...)`;
+- знания о столах, ножках или количестве опор;
+- специальные node names конкретной модели;
+- предположение `length = X` или `width = Z`;
+- встроенные в `App.tsx` правила конкретного GLB.
+
+Новая модель должна стремиться к схеме:
+
+```text
+GLB + FurnitureDefinition + tests + source package
+```
+
+без изменений generic controller. Расширение controller допустимо только отдельной согласованной задачей на новое универсальное поведение.
+
+### Завершение
+
+Work-чат обязан:
+
+1. выполнить тесты и build;
+2. проверить GLB валидатором;
+3. показать base/max previews;
+4. перечислить допущения и неподдерживаемые функции;
+5. сделать логические commits;
+6. оставить результат в feature-ветке;
+7. не мержить `main` без явного подтверждения пользователя;
+8. предоставить Git bundle и краткую инструкцию импорта.
+
+---
+
+## 36. Параллельная разработка нескольких моделей
+
+Несколько Work-чатов могут создавать модели параллельно, если соблюдаются границы интеграции.
+
+Для каждой параллельной задачи необходимы:
+
+- отдельная feature-ветка;
+- уникальный `modelId`;
+- уникальный путь GLB;
+- уникальная source-папка;
+- уникальная папка model config/tests;
+- собственный паспорт и validation report.
+
+Рекомендуемое именование:
+
+```text
+feat/model-table-03
+feat/model-table-04
+feat/furniture-models-batch-01
+```
+
+Нельзя двум чатам независимо изменять generic engine под свои модели. Если обе модели выявили одну и ту же отсутствующую возможность, создаётся отдельная engine-задача, после её merge model-ветки обновляются от нового `main`.
+
+Почти все model-ветки будут добавлять запись в `furnitureRegistry.ts`. Поэтому ветки мержатся в `main` **последовательно**, после каждой интеграции запускаются тесты и build. Возможный небольшой конфликт registry разрешается сохранением всех валидных уникальных записей, а не удалением одной из моделей.
+
+Перед началом следующей волны параллельных моделей участникам передаётся свежий Git bundle от уже обновлённого `main`.
+
+Если один Work-чат создаёт сразу несколько моделей, они могут находиться в одной batch-ветке, но каждая модель всё равно должна иметь отдельные:
+
+- GLB;
+- config;
+- integration test;
+- паспорт;
+- source package;
+- validation result.
+
+Материалы подготавливаются semantic slots/finish groups, однако до внедрения общей material system модельная ветка не должна добавлять собственный material selector или специальное переключение в UI.
 
 ---
 
