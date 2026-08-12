@@ -498,6 +498,8 @@ Requires engine extension
 Fixed
 Scale
 Edge-anchor move
+Delta move / spread
+Stretch segment
 multi-axis dimension mapping
 centered texture repeat/offset compensation
 ```
@@ -507,7 +509,6 @@ centered texture repeat/offset compensation
 Следующие типы поведения являются допустимыми целями для ассетов, но перед интеграцией могут потребовать добавления новых generic-rule в движок:
 
 ```text
-Delta move / spread
 Fit between anchors
 conditional visibility / variants
 shape-preserving segmented resize helpers
