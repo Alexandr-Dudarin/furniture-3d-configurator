@@ -3,25 +3,19 @@ import type {
 } from '../three/furniture/types'
 
 import {
-  TABLE_CONFIG,
-} from '../three/table/tableConfig'
+  FIRST_TABLE_CONFIG,
+} from '../three/models/first-table/config'
 
 /*
  * --------------------------------
  * FURNITURE REGISTRY
  * --------------------------------
  *
- * Единый каталог всех моделей,
+ * Единый каталог моделей,
  * доступных конфигуратору.
  *
- * Сейчас модель одна.
- *
- * Позже здесь могут появиться:
- *
- * table-02
- * round-table-01
- * wardrobe-01
- * dresser-01
+ * Новая модель регистрируется
+ * именно здесь.
  */
 
 const furnitureRegistry =
@@ -30,30 +24,21 @@ const furnitureRegistry =
     FurnitureDefinition
   >([
     [
-      TABLE_CONFIG.id,
-      TABLE_CONFIG,
+      FIRST_TABLE_CONFIG.id,
+      FIRST_TABLE_CONFIG,
     ],
   ])
 
 /*
- * ID модели, которую открываем
- * по умолчанию.
- *
- * Позже вместо этого значения
- * мы сможем получить ID:
- *
- * из URL,
- * localStorage,
- * каталога,
- * карточки товара.
+ * Модель по умолчанию.
  */
 
 export const DEFAULT_FURNITURE_ID =
-  TABLE_CONFIG.id
+  FIRST_TABLE_CONFIG.id
 
 /*
- * Получить описание модели
- * по её стабильному ID.
+ * Получить конкретную модель
+ * по стабильному ID.
  */
 
 export function getFurnitureDefinition(
@@ -74,11 +59,11 @@ export function getFurnitureDefinition(
 }
 
 /*
- * Получить все зарегистрированные
- * модели.
+ * Получить список всех
+ * зарегистрированных моделей.
  *
- * Позже эта функция пригодится
- * для выбора товара в интерфейсе.
+ * Используется, например,
+ * для CustomSelect.
  */
 
 export function getFurnitureDefinitions():
