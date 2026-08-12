@@ -10,6 +10,11 @@ import type {
 } from 'three'
 
 import {
+  CustomSelect,
+  type CustomSelectOption,
+} from './components/ui/CustomSelect/CustomSelect'
+
+import {
   createInitialDimensions,
   updateDimension,
   type ConfiguratorDimensions,
@@ -40,14 +45,20 @@ import {
 
 import './App.css'
 
-/*
- * Список всех моделей,
- * зарегистрированных
- * в Furniture Registry.
- */
-
 const furnitureDefinitions =
   getFurnitureDefinitions()
+
+const furnitureOptions:
+  CustomSelectOption[] =
+    furnitureDefinitions.map(
+      (definition) => ({
+        value:
+          definition.id,
+
+        label:
+          definition.label,
+      }),
+    )
 
 function App() {
   const containerRef =
@@ -59,13 +70,6 @@ function App() {
    * --------------------------------
    * SELECTED MODEL
    * --------------------------------
-   *
-   * Теперь выбранная модель —
-   * настоящее состояние приложения.
-   *
-   * Пока доступен только table-01,
-   * но App.tsx уже готов
-   * переключаться между моделями.
    */
 
   const [
@@ -75,11 +79,6 @@ function App() {
     useState<string>(
       DEFAULT_FURNITURE_ID,
     )
-
-  /*
-   * Получаем "паспорт"
-   * выбранной модели через registry.
-   */
 
   const furnitureDefinition =
     getFurnitureDefinition(
@@ -103,23 +102,10 @@ function App() {
         ),
     )
 
-  /*
-   * Последние актуальные размеры.
-   *
-   * Они нужны в том числе
-   * во время асинхронной
-   * загрузки GLB.
-   */
-
   const currentDimensionsRef =
     useRef<ConfiguratorDimensions>(
       dimensions,
     )
-
-  /*
-   * React передаёт размеры
-   * текущему FurnitureController.
-   */
 
   const applyDimensionsRef =
     useRef<
@@ -133,11 +119,6 @@ function App() {
    * --------------------------------
    * THREE.JS SCENE REF
    * --------------------------------
-   *
-   * Сцена создаётся только один раз.
-   *
-   * Выбранная мебель может
-   * меняться независимо от неё.
    */
 
   const sceneRef =
@@ -167,25 +148,18 @@ function App() {
    * THREE.JS APPLICATION LIFECYCLE
    * =================================
    *
-   * Этот effect запускается
-   * только один раз.
-   *
-   * Здесь живёт сама 3D-сцена:
-   *
-   * renderer
-   * camera
-   * controls
-   * environment
-   *
-   * Смена модели мебели
-   * этот слой не пересоздаёт.
+   * Scene, renderer, camera,
+   * controls и environment
+   * создаются один раз.
    */
 
   useEffect(() => {
     const container =
       containerRef.current
 
-    if (!container) {
+    if (
+      !container
+    ) {
       return
     }
 
@@ -207,11 +181,6 @@ function App() {
       )
 
     return () => {
-      /*
-       * Не оставляем ссылку
-       * на уничтоженную сцену.
-       */
-
       if (
         sceneRef.current ===
         scene
@@ -231,23 +200,26 @@ function App() {
    * FURNITURE LIFECYCLE
    * =================================
    *
-   * Этот effect отвечает ТОЛЬКО
-   * за выбранную мебель.
+   * Этот effect отвечает
+   * только за выбранную модель.
    *
-   * Когда selectedModelId изменится:
+   * При смене модели:
    *
-   * 1. старая GLB удаляется;
-   * 2. освобождается её память;
-   * 3. загружается новый GLB;
-   * 4. создаётся новый controller;
-   * 5. сцена/камера/свет остаются.
+   * старая мебель удаляется,
+   * её ресурсы освобождаются,
+   * новый GLB загружается,
+   *
+   * а сцена, камера и свет
+   * остаются прежними.
    */
 
   useEffect(() => {
     const scene =
       sceneRef.current
 
-    if (!scene) {
+    if (
+      !scene
+    ) {
       return
     }
 
@@ -258,37 +230,20 @@ function App() {
       Group | null =
         null
 
-    /*
-     * Пока новая модель загружается,
-     * старый controller уже не должен
-     * получать новые команды.
-     */
-
     applyDimensionsRef.current =
       () => {}
 
     const prepareFurniture =
       async () => {
         try {
-          /*
-           * 1.
-           * Загружаем выбранный GLB.
-           */
-
           const model =
             await loadFurnitureModel(
               furnitureDefinition.modelUrl,
             )
 
-          /*
-           * За время загрузки пользователь
-           * мог выбрать уже другую модель.
-           *
-           * Тогда этот GLB больше
-           * вообще не нужен.
-           */
-
-          if (cancelled) {
+          if (
+            cancelled
+          ) {
             disposeFurnitureModel(
               model,
             )
@@ -296,24 +251,11 @@ function App() {
             return
           }
 
-          /*
-           * 2.
-           * Создаём controller
-           * согласно конфигу
-           * именно этой модели.
-           */
-
           const controller =
             createFurnitureController(
               model,
               furnitureDefinition,
             )
-
-          /*
-           * 3.
-           * Связываем React
-           * с новым controller.
-           */
 
           applyDimensionsRef.current =
             (
@@ -324,20 +266,9 @@ function App() {
               )
             }
 
-          /*
-           * 4.
-           * Применяем текущую
-           * конфигурацию размеров.
-           */
-
           controller.setDimensions(
             currentDimensionsRef.current,
           )
-
-          /*
-           * 5.
-           * Добавляем модель.
-           */
 
           furnitureModel =
             model
@@ -345,8 +276,12 @@ function App() {
           scene.add(
             model,
           )
-        } catch (error) {
-          if (cancelled) {
+        } catch (
+          error
+        ) {
+          if (
+            cancelled
+          ) {
             return
           }
 
@@ -359,12 +294,6 @@ function App() {
 
     void prepareFurniture()
 
-    /*
-     * --------------------------------
-     * FURNITURE CLEANUP
-     * --------------------------------
-     */
-
     return () => {
       cancelled =
         true
@@ -372,7 +301,9 @@ function App() {
       applyDimensionsRef.current =
         () => {}
 
-      if (!furnitureModel) {
+      if (
+        !furnitureModel
+      ) {
         return
       }
 
@@ -406,51 +337,15 @@ function App() {
         return
       }
 
-      /*
-       * Получаем паспорт
-       * новой модели.
-       */
-
       const nextDefinition =
         getFurnitureDefinition(
           nextModelId,
         )
 
-      /*
-       * У новой модели совершенно
-       * другие dimensions.
-       *
-       * Например:
-       *
-       * старый стол:
-       *
-       * {
-       *   length,
-       *   width,
-       * }
-       *
-       * круглый стол:
-       *
-       * {
-       *   diameter,
-       * }
-       *
-       * Поэтому создаём новое
-       * начальное состояние.
-       */
-
       const nextDimensions =
         createInitialDimensions(
           nextDefinition,
         )
-
-      /*
-       * Ref обновляем сразу,
-       * ещё до следующего render.
-       *
-       * Поэтому новый GLB гарантированно
-       * получит уже свои размеры.
-       */
 
       currentDimensionsRef.current =
         nextDimensions
@@ -536,13 +431,6 @@ function App() {
          * -----------------------------
          * MODEL SELECT
          * -----------------------------
-         *
-         * Пока здесь будет
-         * только First Table.
-         *
-         * Но после регистрации
-         * второй модели она появится
-         * здесь автоматически.
          */}
 
         <div
@@ -566,49 +454,21 @@ function App() {
             Модель
           </div>
 
-          <select
+          <CustomSelect
             value={
               selectedModelId
             }
 
-            onChange={(
-              event,
-            ) => {
-              handleModelChange(
-                event.target.value,
-              )
-            }}
-
-            style={{
-              width:
-                '100%',
-
-              boxSizing:
-                'border-box',
-            }}
-          >
-            {
-              furnitureDefinitions.map(
-                (
-                  definition,
-                ) => (
-                  <option
-                    key={
-                      definition.id
-                    }
-
-                    value={
-                      definition.id
-                    }
-                  >
-                    {
-                      definition.label
-                    }
-                  </option>
-                ),
-              )
+            options={
+              furnitureOptions
             }
-          </select>
+
+            onChange={
+              handleModelChange
+            }
+
+            ariaLabel="Выбор модели мебели"
+          />
         </div>
 
         {/*
