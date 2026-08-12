@@ -6,6 +6,7 @@ import {
 
 import type {
   Group,
+  Scene,
 } from 'three'
 
 import {
@@ -17,6 +18,7 @@ import {
 import {
   DEFAULT_FURNITURE_ID,
   getFurnitureDefinition,
+  getFurnitureDefinitions,
 } from './configurator/furnitureRegistry'
 
 import {
@@ -32,30 +34,20 @@ import {
 } from './three/furniture/furnitureController'
 
 import {
+  disposeFurnitureModel,
   loadFurnitureModel,
 } from './three/furniture/model'
 
 import './App.css'
 
 /*
- * --------------------------------
- * SELECTED FURNITURE
- * --------------------------------
- *
- * App.tsx больше не импортирует
- * конфигурацию конкретного стола.
- *
- * Он знает только ID модели,
- * которую нужно открыть.
- *
- * Реестр сам возвращает
- * соответствующий FurnitureDefinition.
+ * Список всех моделей,
+ * зарегистрированных
+ * в Furniture Registry.
  */
 
-const furnitureDefinition =
-  getFurnitureDefinition(
-    DEFAULT_FURNITURE_ID,
-  )
+const furnitureDefinitions =
+  getFurnitureDefinitions()
 
 function App() {
   const containerRef =
@@ -65,22 +57,39 @@ function App() {
 
   /*
    * --------------------------------
-   * CONFIGURATOR STATE
+   * SELECTED MODEL
    * --------------------------------
    *
-   * Состояние размеров создаётся
-   * автоматически из описания
-   * выбранной модели.
+   * Теперь выбранная модель —
+   * настоящее состояние приложения.
    *
-   * Например для нашего стола:
-   *
-   * {
-   *   length: 1.2,
-   *   width: 0.6,
-   * }
-   *
-   * Но App.tsx не знает заранее,
-   * какие именно размеры существуют.
+   * Пока доступен только table-01,
+   * но App.tsx уже готов
+   * переключаться между моделями.
+   */
+
+  const [
+    selectedModelId,
+    setSelectedModelId,
+  ] =
+    useState<string>(
+      DEFAULT_FURNITURE_ID,
+    )
+
+  /*
+   * Получаем "паспорт"
+   * выбранной модели через registry.
+   */
+
+  const furnitureDefinition =
+    getFurnitureDefinition(
+      selectedModelId,
+    )
+
+  /*
+   * --------------------------------
+   * CONFIGURATOR DIMENSIONS
+   * --------------------------------
    */
 
   const [
@@ -95,12 +104,11 @@ function App() {
     )
 
   /*
-   * Последнее актуальное состояние.
+   * Последние актуальные размеры.
    *
-   * Оно нужно на случай,
-   * если пользователь успеет
-   * изменить параметры раньше,
-   * чем загрузится GLB.
+   * Они нужны в том числе
+   * во время асинхронной
+   * загрузки GLB.
    */
 
   const currentDimensionsRef =
@@ -109,11 +117,8 @@ function App() {
     )
 
   /*
-   * React не знает,
-   * как физически изменяется GLB.
-   *
-   * Он только передаёт контроллеру
-   * выбранные пользователем размеры.
+   * React передаёт размеры
+   * текущему FurnitureController.
    */
 
   const applyDimensionsRef =
@@ -126,7 +131,23 @@ function App() {
 
   /*
    * --------------------------------
-   * CONFIGURATOR STATE -> 3D MODEL
+   * THREE.JS SCENE REF
+   * --------------------------------
+   *
+   * Сцена создаётся только один раз.
+   *
+   * Выбранная мебель может
+   * меняться независимо от неё.
+   */
+
+  const sceneRef =
+    useRef<Scene | null>(
+      null,
+    )
+
+  /*
+   * --------------------------------
+   * DIMENSIONS -> 3D MODEL
    * --------------------------------
    */
 
@@ -142,9 +163,22 @@ function App() {
   ])
 
   /*
-   * --------------------------------
-   * 3D APPLICATION
-   * --------------------------------
+   * =================================
+   * THREE.JS APPLICATION LIFECYCLE
+   * =================================
+   *
+   * Этот effect запускается
+   * только один раз.
+   *
+   * Здесь живёт сама 3D-сцена:
+   *
+   * renderer
+   * camera
+   * controls
+   * environment
+   *
+   * Смена модели мебели
+   * этот слой не пересоздаёт.
    */
 
   useEffect(() => {
@@ -155,15 +189,6 @@ function App() {
       return
     }
 
-    let destroyed =
-      false
-
-    /*
-     * --------------------------------
-     * THREE.JS RUNTIME
-     * --------------------------------
-     */
-
     const runtime =
       createThreeRuntime(
         container,
@@ -173,41 +198,81 @@ function App() {
       scene,
     } = runtime
 
-    /*
-     * --------------------------------
-     * SCENE ENVIRONMENT
-     * --------------------------------
-     */
+    sceneRef.current =
+      scene
 
     const environment =
       createSceneEnvironment(
         scene,
       )
 
-    /*
-     * Сохраняем ссылку
-     * на загруженную мебель,
-     * чтобы убрать её при cleanup.
-     */
+    return () => {
+      /*
+       * Не оставляем ссылку
+       * на уничтоженную сцену.
+       */
+
+      if (
+        sceneRef.current ===
+        scene
+      ) {
+        sceneRef.current =
+          null
+      }
+
+      environment.dispose()
+
+      runtime.dispose()
+    }
+  }, [])
+
+  /*
+   * =================================
+   * FURNITURE LIFECYCLE
+   * =================================
+   *
+   * Этот effect отвечает ТОЛЬКО
+   * за выбранную мебель.
+   *
+   * Когда selectedModelId изменится:
+   *
+   * 1. старая GLB удаляется;
+   * 2. освобождается её память;
+   * 3. загружается новый GLB;
+   * 4. создаётся новый controller;
+   * 5. сцена/камера/свет остаются.
+   */
+
+  useEffect(() => {
+    const scene =
+      sceneRef.current
+
+    if (!scene) {
+      return
+    }
+
+    let cancelled =
+      false
 
     let furnitureModel:
       Group | null =
         null
 
     /*
-     * --------------------------------
-     * FURNITURE
-     * --------------------------------
+     * Пока новая модель загружается,
+     * старый controller уже не должен
+     * получать новые команды.
      */
+
+    applyDimensionsRef.current =
+      () => {}
 
     const prepareFurniture =
       async () => {
         try {
           /*
            * 1.
-           * Загружаем GLB,
-           * указанный в определении
-           * выбранной модели.
+           * Загружаем выбранный GLB.
            */
 
           const model =
@@ -216,25 +281,26 @@ function App() {
             )
 
           /*
-           * Компонент мог быть
-           * уничтожен за время
-           * загрузки GLB.
+           * За время загрузки пользователь
+           * мог выбрать уже другую модель.
+           *
+           * Тогда этот GLB больше
+           * вообще не нужен.
            */
 
-          if (destroyed) {
+          if (cancelled) {
+            disposeFurnitureModel(
+              model,
+            )
+
             return
           }
 
           /*
            * 2.
-           * Создаём универсальный
-           * FurnitureController.
-           *
-           * Он получает:
-           *
-           * GLB
-           * +
-           * описание этой модели.
+           * Создаём controller
+           * согласно конфигу
+           * именно этой модели.
            */
 
           const controller =
@@ -245,8 +311,8 @@ function App() {
 
           /*
            * 3.
-           * Соединяем состояние React
-           * с FurnitureController.
+           * Связываем React
+           * с новым controller.
            */
 
           applyDimensionsRef.current =
@@ -260,8 +326,8 @@ function App() {
 
           /*
            * 4.
-           * Применяем актуальные
-           * пользовательские значения.
+           * Применяем текущую
+           * конфигурацию размеров.
            */
 
           controller.setDimensions(
@@ -270,8 +336,7 @@ function App() {
 
           /*
            * 5.
-           * Добавляем подготовленную
-           * модель в сцену.
+           * Добавляем модель.
            */
 
           furnitureModel =
@@ -281,7 +346,7 @@ function App() {
             model,
           )
         } catch (error) {
-          if (destroyed) {
+          if (cancelled) {
             return
           }
 
@@ -296,51 +361,113 @@ function App() {
 
     /*
      * --------------------------------
-     * CLEANUP
+     * FURNITURE CLEANUP
      * --------------------------------
      */
 
     return () => {
-      destroyed =
+      cancelled =
         true
-
-      /*
-       * React больше не должен
-       * обращаться к старому
-       * FurnitureController.
-       */
 
       applyDimensionsRef.current =
         () => {}
 
-      if (furnitureModel) {
-        scene.remove(
-          furnitureModel,
-        )
+      if (!furnitureModel) {
+        return
       }
 
-      environment.dispose()
+      scene.remove(
+        furnitureModel,
+      )
 
-      runtime.dispose()
+      disposeFurnitureModel(
+        furnitureModel,
+      )
     }
-  }, [])
+  }, [
+    furnitureDefinition,
+  ])
 
   /*
-   * --------------------------------
+   * =================================
+   * CHANGE MODEL
+   * =================================
+   */
+
+  const handleModelChange =
+    (
+      nextModelId:
+        string,
+    ) => {
+      if (
+        nextModelId ===
+        selectedModelId
+      ) {
+        return
+      }
+
+      /*
+       * Получаем паспорт
+       * новой модели.
+       */
+
+      const nextDefinition =
+        getFurnitureDefinition(
+          nextModelId,
+        )
+
+      /*
+       * У новой модели совершенно
+       * другие dimensions.
+       *
+       * Например:
+       *
+       * старый стол:
+       *
+       * {
+       *   length,
+       *   width,
+       * }
+       *
+       * круглый стол:
+       *
+       * {
+       *   diameter,
+       * }
+       *
+       * Поэтому создаём новое
+       * начальное состояние.
+       */
+
+      const nextDimensions =
+        createInitialDimensions(
+          nextDefinition,
+        )
+
+      /*
+       * Ref обновляем сразу,
+       * ещё до следующего render.
+       *
+       * Поэтому новый GLB гарантированно
+       * получит уже свои размеры.
+       */
+
+      currentDimensionsRef.current =
+        nextDimensions
+
+      setDimensions(
+        nextDimensions,
+      )
+
+      setSelectedModelId(
+        nextModelId,
+      )
+    }
+
+  /*
+   * =================================
    * UI
-   * --------------------------------
-   *
-   * UI строится автоматически
-   * из определения выбранной модели.
-   *
-   * App.tsx не знает заранее:
-   *
-   * есть length?
-   * есть width?
-   * есть diameter?
-   * есть height?
-   *
-   * Он просто читает dimensionOrder.
+   * =================================
    */
 
   return (
@@ -405,6 +532,91 @@ function App() {
             'sans-serif',
         }}
       >
+        {/*
+         * -----------------------------
+         * MODEL SELECT
+         * -----------------------------
+         *
+         * Пока здесь будет
+         * только First Table.
+         *
+         * Но после регистрации
+         * второй модели она появится
+         * здесь автоматически.
+         */}
+
+        <div
+          style={{
+            marginBottom:
+              16,
+          }}
+        >
+          <div
+            style={{
+              marginBottom:
+                6,
+
+              fontSize:
+                14,
+
+              fontWeight:
+                600,
+            }}
+          >
+            Модель
+          </div>
+
+          <select
+            value={
+              selectedModelId
+            }
+
+            onChange={(
+              event,
+            ) => {
+              handleModelChange(
+                event.target.value,
+              )
+            }}
+
+            style={{
+              width:
+                '100%',
+
+              boxSizing:
+                'border-box',
+            }}
+          >
+            {
+              furnitureDefinitions.map(
+                (
+                  definition,
+                ) => (
+                  <option
+                    key={
+                      definition.id
+                    }
+
+                    value={
+                      definition.id
+                    }
+                  >
+                    {
+                      definition.label
+                    }
+                  </option>
+                ),
+              )
+            }
+          </select>
+        </div>
+
+        {/*
+         * -----------------------------
+         * DIMENSION CONTROLS
+         * -----------------------------
+         */}
+
         {
           furnitureDefinition
             .dimensionOrder
@@ -430,6 +642,7 @@ function App() {
                     key={
                       dimension
                     }
+
                     style={{
                       marginTop:
                         index === 0
@@ -496,9 +709,7 @@ function App() {
                           ) =>
                             updateDimension(
                               current,
-
                               dimension,
-
                               nextValue,
                             ),
                         )
