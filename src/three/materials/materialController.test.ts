@@ -594,4 +594,3 @@ function getMaterialMapByMaterial(
 
   return material.map
 }
-

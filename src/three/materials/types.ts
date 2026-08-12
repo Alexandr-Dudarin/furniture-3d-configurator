@@ -50,4 +50,3 @@ export type MaterialSelections =
     MaterialSlotName,
     MaterialFinishId
   >
-

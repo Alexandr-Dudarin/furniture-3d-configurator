@@ -40,4 +40,3 @@ The following finishes do not use downloaded texture maps:
 
 They are intentionally modeled as powder-coated surfaces with low metalness
 (`0.04`) rather than as exposed metal or plain plastic.
-

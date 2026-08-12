@@ -188,4 +188,3 @@ export function disposeMaterialFinishCache(): void {
 
   textureTemplatePromises.clear()
 }
-
