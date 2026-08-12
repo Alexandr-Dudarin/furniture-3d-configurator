@@ -27,6 +27,23 @@ type EdgeAnchorState = {
   insetFromEdge: number
 }
 
+type DeltaMoveState = {
+  object: THREE.Object3D
+  dimension: DimensionName
+  axis: ModelAxis
+  basePosition: number
+  factor: number
+}
+
+type StretchSegmentState = {
+  object: THREE.Object3D
+  dimension: DimensionName
+  axis: ModelAxis
+  baseScale: number
+  baseLength: number
+  factor: number
+}
+
 type TextureState = {
   texture: THREE.Texture
 
@@ -98,6 +115,12 @@ export function createFurnitureController(
   const edgeAnchorStates:
     EdgeAnchorState[] = []
 
+  const deltaMoveStates:
+    DeltaMoveState[] = []
+
+  const stretchSegmentStates:
+    StretchSegmentState[] = []
+
   definition.resizeRules.forEach(
     (rule) => {
       const dimensionConfig =
@@ -141,71 +164,167 @@ export function createFurnitureController(
        * EDGE ANCHOR RULE
        */
 
-      const center =
-        rule.center ?? 0
+      if (
+        rule.type ===
+        'edge-anchor'
+      ) {
+        const center =
+          rule.center ?? 0
 
-      const baseHalfSize =
-        dimensionConfig.base / 2
+        const baseHalfSize =
+          dimensionConfig.base / 2
 
-      rule.targets.forEach(
-        (targetName) => {
-          const object =
-            getRequiredObject(
-              model,
-              targetName,
+        rule.targets.forEach(
+          (targetName) => {
+            const object =
+              getRequiredObject(
+                model,
+                targetName,
+                definition.id,
+              )
+
+            const basePosition =
+              object.position[
+                rule.axis
+              ]
+
+            const deltaFromCenter =
+              basePosition - center
+
+            /*
+             * Edge-anchor объект должен
+             * находиться по одну из сторон
+             * от центра.
+             *
+             * Центральная опора просто
+             * не должна получать такое
+             * resize-rule.
+             */
+            if (
+              Math.abs(
+                deltaFromCenter,
+              ) < 1e-6
+            ) {
+              throw new Error(
+                `[${definition.id}] Object "${targetName}" cannot use edge-anchor on axis "${rule.axis}" because it is positioned at the anchor center.`,
+              )
+            }
+
+            const side:
+              -1 | 1 =
+                deltaFromCenter < 0
+                  ? -1
+                  : 1
+
+            const insetFromEdge =
+              baseHalfSize -
+              Math.abs(
+                deltaFromCenter,
+              )
+
+            edgeAnchorStates.push({
+              object,
+              dimension:
+                rule.dimension,
+              axis: rule.axis,
+              center,
+              side,
+              insetFromEdge,
+            })
+          },
+        )
+
+        return
+      }
+
+      /*
+       * DELTA MOVE RULE
+       */
+
+      if (
+        rule.type ===
+        'delta-move'
+      ) {
+        rule.targets.forEach(
+          ({
+            target,
+            factor,
+          }) => {
+            assertFiniteRuleNumber(
+              factor,
+              'factor',
+              target,
               definition.id,
+              rule.type,
             )
 
-          const basePosition =
-            object.position[
-              rule.axis
-            ]
+            const object =
+              getRequiredObject(
+                model,
+                target,
+                definition.id,
+              )
 
-          const deltaFromCenter =
-            basePosition - center
+            deltaMoveStates.push({
+              object,
+              dimension:
+                rule.dimension,
+              axis: rule.axis,
+              basePosition:
+                object.position[
+                  rule.axis
+                ],
+              factor,
+            })
+          },
+        )
 
-          /*
-           * Edge-anchor объект должен
-           * находиться по одну из сторон
-           * от центра.
-           *
-           * Центральная опора просто
-           * не должна получать такое
-           * resize-rule.
-           */
-          if (
-            Math.abs(
-              deltaFromCenter,
-            ) < 1e-6
-          ) {
-            throw new Error(
-              `[${definition.id}] Object "${targetName}" cannot use edge-anchor on axis "${rule.axis}" because it is positioned at the anchor center.`,
-            )
-          }
+        return
+      }
 
-          const side:
-            -1 | 1 =
-              deltaFromCenter < 0
-                ? -1
-                : 1
+      /*
+       * STRETCH SEGMENT RULE
+       */
 
-          const insetFromEdge =
-            baseHalfSize -
-            Math.abs(
-              deltaFromCenter,
-            )
+      const factor =
+        rule.factor ?? 1
 
-          edgeAnchorStates.push({
-            object,
-            dimension:
-              rule.dimension,
-            axis: rule.axis,
-            center,
-            side,
-            insetFromEdge,
-          })
-        },
+      assertPositiveRuleNumber(
+        rule.baseLength,
+        'baseLength',
+        rule.target,
+        definition.id,
+        rule.type,
       )
+
+      assertFiniteRuleNumber(
+        factor,
+        'factor',
+        rule.target,
+        definition.id,
+        rule.type,
+      )
+
+      const object =
+        getRequiredObject(
+          model,
+          rule.target,
+          definition.id,
+        )
+
+      stretchSegmentStates.push({
+        object,
+        dimension:
+          rule.dimension,
+        axis: rule.axis,
+        baseScale:
+          object.scale[
+            rule.axis
+          ],
+        baseLength:
+          rule.baseLength,
+        factor,
+      })
     },
   )
 
@@ -291,6 +410,76 @@ export function createFurnitureController(
                 newHalfSize -
                 insetFromEdge
               )
+        },
+      )
+
+      /*
+       * DELTA MOVE
+       */
+
+      deltaMoveStates.forEach(
+        ({
+          object,
+          dimension,
+          axis,
+          basePosition,
+          factor,
+        }) => {
+          const config =
+            definition.dimensions[
+              dimension
+            ]
+
+          const dimensionDelta =
+            dimensions[dimension] -
+            config.base
+
+          object.position[axis] =
+            basePosition +
+            dimensionDelta *
+              factor
+        },
+      )
+
+      /*
+       * STRETCH SEGMENT
+       */
+
+      stretchSegmentStates.forEach(
+        ({
+          object,
+          dimension,
+          axis,
+          baseScale,
+          baseLength,
+          factor,
+        }) => {
+          const config =
+            definition.dimensions[
+              dimension
+            ]
+
+          const dimensionDelta =
+            dimensions[dimension] -
+            config.base
+
+          const newLength =
+            baseLength +
+            dimensionDelta *
+              factor
+
+          if (newLength <= 0) {
+            throw new Error(
+              `[${definition.id}] stretch-segment calculated a non-positive length for object "${object.name}".`,
+            )
+          }
+
+          object.scale[axis] =
+            baseScale *
+            (
+              newLength /
+              baseLength
+            )
         },
       )
 
@@ -429,6 +618,46 @@ function getRequiredObject(
   }
 
   return object
+}
+
+function assertFiniteRuleNumber(
+  value: number,
+  field: string,
+  target: string,
+  furnitureId: string,
+  ruleType: string,
+): void {
+  if (Number.isFinite(value)) {
+    return
+  }
+
+  throw new Error(
+    `[${furnitureId}] ${ruleType} requires a finite ${field} for object "${target}".`,
+  )
+}
+
+function assertPositiveRuleNumber(
+  value: number,
+  field: string,
+  target: string,
+  furnitureId: string,
+  ruleType: string,
+): void {
+  assertFiniteRuleNumber(
+    value,
+    field,
+    target,
+    furnitureId,
+    ruleType,
+  )
+
+  if (value > 0) {
+    return
+  }
+
+  throw new Error(
+    `[${furnitureId}] ${ruleType} requires ${field} to be greater than zero for object "${target}".`,
+  )
 }
 
 /*
