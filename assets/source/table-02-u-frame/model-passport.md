@@ -187,6 +187,19 @@ FrameMetal:
 
 `Metal_Frame` предназначен для замены варианта порошковой окраски. Базовый preview — чёрное порошковое покрытие. Предусмотрен будущий белый/светлый вариант, который также должен оставаться окрашенным металлом, а не белым пластиком или матовой белой поверхностью без металлического specular response.
 
+Текущий generic material runtime подключает эти группы декларативно:
+
+```text
+primaryTop:
+  default: concrete-light
+  allowed: oak-natural, walnut-natural, pine-coated, ash-natural,
+           concrete-light, marble-cream
+
+frameMetal:
+  default: metal-black-matte
+  allowed: metal-black-matte, metal-white-matte, metal-anthracite
+```
+
 ## PBR preview materials
 
 ### Top_Primary
