@@ -161,7 +161,11 @@ function App() {
 
   const materialControllerRef =
     useRef<
-      FurnitureMaterialController | null
+      {
+        furnitureId: string
+        controller:
+          FurnitureMaterialController
+      } | null
     >(null)
 
   const maxAnisotropyRef =
@@ -207,14 +211,19 @@ function App() {
     currentMaterialSelectionsRef.current =
       materialSelections
 
-    const controller =
+    const activeController =
       materialControllerRef.current
 
-    if (!controller) {
+    if (
+      !activeController ||
+      activeController.furnitureId !==
+        furnitureDefinition.id
+    ) {
       return
     }
 
-    void controller
+    void activeController
+      .controller
       .setFinishes(
         materialSelections,
       )
@@ -227,6 +236,7 @@ function App() {
         },
       )
   }, [
+    furnitureDefinition.id,
     materialSelections,
   ])
 
@@ -347,9 +357,14 @@ function App() {
           if (
             cancelled
           ) {
-            disposeFurnitureModel(
-              model,
-            )
+            if (
+              preparingModel ===
+              model
+            ) {
+              disposeFurnitureModel(
+                model,
+              )
+            }
 
             preparingModel =
               null
@@ -383,9 +398,14 @@ function App() {
           if (cancelled) {
             materialController.dispose()
 
-            disposeFurnitureModel(
-              model,
-            )
+            if (
+              preparingModel ===
+              model
+            ) {
+              disposeFurnitureModel(
+                model,
+              )
+            }
 
             preparingModel =
               null
@@ -394,7 +414,12 @@ function App() {
           }
 
           materialControllerRef.current =
-            materialController
+            {
+              furnitureId:
+                furnitureDefinition.id,
+              controller:
+                materialController,
+            }
 
           applyDimensionsRef.current =
             (
@@ -453,8 +478,9 @@ function App() {
         () => {}
 
       if (
-        materialControllerRef.current ===
-        materialController
+        materialControllerRef.current
+          ?.controller ===
+          materialController
       ) {
         materialControllerRef.current =
           null

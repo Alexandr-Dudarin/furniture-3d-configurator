@@ -39,6 +39,7 @@ import {
 } from './materialController'
 
 import {
+  getMaterialFinish,
   getMaterialFinishes,
 } from './materialRegistry'
 
@@ -347,6 +348,48 @@ describe(
             ])
           }
         }
+      },
+    )
+
+    it(
+      'resolves every finish declared by both production model configs',
+      () => {
+        const definitions = [
+          FIRST_TABLE_CONFIG,
+          U_FRAME_TABLE_CONFIG,
+        ]
+
+        definitions.forEach(
+          (definition) => {
+            Object.values(
+              definition.materialSlots,
+            ).forEach(
+              (slot) => {
+                expect(
+                  slot.allowedFinishes,
+                ).toContain(
+                  slot.defaultFinish,
+                )
+
+                slot.allowedFinishes
+                  .forEach(
+                    (
+                      finishId:
+                        string,
+                    ) => {
+                      expect(
+                        getMaterialFinish(
+                          finishId,
+                        ).id,
+                      ).toBe(
+                        finishId,
+                      )
+                    },
+                  )
+              },
+            )
+          },
+        )
       },
     )
   },
