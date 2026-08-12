@@ -173,4 +173,40 @@ export const FIRST_TABLE_CONFIG = {
       width: 'x',
     },
   },
+
+  materialSlots: {
+    primaryTop: {
+      label: 'Материал столешницы',
+      targets: [
+        'Wood_Top',
+        'Wood_Bottom',
+        'Wood_Edge_Long',
+        'Wood_Edge_Short',
+      ],
+      defaultFinish:
+        'oak-natural',
+      allowedFinishes: [
+        'oak-natural',
+        'walnut-natural',
+        'pine-coated',
+        'ash-natural',
+        'concrete-light',
+        'marble-cream',
+      ],
+    },
+
+    frameMetal: {
+      label: 'Цвет каркаса',
+      targets: [
+        'Metal_Graphite',
+      ],
+      defaultFinish:
+        'metal-anthracite',
+      allowedFinishes: [
+        'metal-black-matte',
+        'metal-white-matte',
+        'metal-anthracite',
+      ],
+    },
+  },
 } as const satisfies FurnitureDefinition

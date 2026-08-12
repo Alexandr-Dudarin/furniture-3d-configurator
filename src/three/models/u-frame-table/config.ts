@@ -127,4 +127,37 @@ export const U_FRAME_TABLE_CONFIG = {
       width: 'y',
     },
   },
+
+  materialSlots: {
+    primaryTop: {
+      label: 'Материал столешницы',
+      targets: [
+        'Top_Primary',
+      ],
+      defaultFinish:
+        'concrete-light',
+      allowedFinishes: [
+        'oak-natural',
+        'walnut-natural',
+        'pine-coated',
+        'ash-natural',
+        'concrete-light',
+        'marble-cream',
+      ],
+    },
+
+    frameMetal: {
+      label: 'Цвет каркаса',
+      targets: [
+        'Metal_Frame',
+      ],
+      defaultFinish:
+        'metal-black-matte',
+      allowedFinishes: [
+        'metal-black-matte',
+        'metal-white-matte',
+        'metal-anthracite',
+      ],
+    },
+  },
 } as const satisfies FurnitureDefinition
