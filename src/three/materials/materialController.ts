@@ -185,57 +185,63 @@ export function createFurnitureMaterialController(
               slotName
             ]
 
-          const replacements =
-            await Promise.all(
-              slot.targets.map(
-                async (
-                  target,
-                ) => {
-                  const bindings =
-                    getMaterialBindings(
-                      model,
-                      target,
-                    )
-
-                  if (
-                    bindings.length ===
-                    0
-                  ) {
-                    throw new Error(
-                      `[${definition.id}] Material target "${target}" from slot "${slotName}" was not found in the model.`,
-                    )
-                  }
-
-                  const material =
-                    await createMaterial(
-                      finishId,
-                      maxAnisotropy,
-                    )
-
-                  material.name =
-                    target
-
-                  material.userData = {
-                    ...material.userData,
-                    materialSlot:
-                      slotName,
-                    finishId,
-                  }
-
-                  return {
-                    target,
-                    bindings,
-                    material,
-                  }
-                },
-              ),
-            )
+          const replacements:
+            Array<{
+              target: string
+              bindings:
+                MaterialBinding[]
+              material:
+                THREE.MeshStandardMaterial
+            }> = []
 
           prepared.push({
             slotName,
             finishId,
             replacements,
           })
+
+          for (
+            const target of
+            slot.targets
+          ) {
+            const bindings =
+              getMaterialBindings(
+                model,
+                target,
+              )
+
+            if (
+              bindings.length ===
+              0
+            ) {
+              throw new Error(
+                `[${definition.id}] Material target "${target}" from slot "${slotName}" was not found in the model.`,
+              )
+            }
+
+            const material =
+              await createMaterial(
+                finishId,
+                maxAnisotropy,
+              )
+
+            material.name =
+              target
+
+            material.userData = {
+              ...material.userData,
+              materialSlot:
+                slotName,
+              finishId,
+            }
+
+            replacements.push({
+              target,
+              bindings,
+              material,
+            })
+          }
+
         }
       } catch (error) {
         prepared.forEach(
@@ -575,4 +581,3 @@ function disposeDetachedMaterials(
     },
   )
 }
-

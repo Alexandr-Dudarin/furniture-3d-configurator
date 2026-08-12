@@ -43,6 +43,20 @@ import {
   loadFurnitureModel,
 } from './three/furniture/model'
 
+import {
+  createFurnitureMaterialController,
+  createInitialMaterialSelections,
+  type FurnitureMaterialController,
+} from './three/materials/materialController'
+
+import {
+  getMaterialFinish,
+} from './three/materials/materialRegistry'
+
+import type {
+  MaterialSelections,
+} from './three/materials/types'
+
 import './App.css'
 
 const furnitureDefinitions =
@@ -107,6 +121,52 @@ function App() {
       dimensions,
     )
 
+  /*
+   * --------------------------------
+   * MATERIAL SELECTIONS
+   * --------------------------------
+   *
+   * Selections are kept per model for the
+   * current session. Switching furniture and
+   * returning to it restores its finishes.
+   */
+
+  const [
+    materialSelectionsByModel,
+    setMaterialSelectionsByModel,
+  ] = useState<
+    Record<
+      string,
+      MaterialSelections
+    >
+  >(() => ({
+    [furnitureDefinition.id]:
+      createInitialMaterialSelections(
+        furnitureDefinition,
+      ),
+  }))
+
+  const materialSelections =
+    materialSelectionsByModel[
+      furnitureDefinition.id
+    ] ??
+    createInitialMaterialSelections(
+      furnitureDefinition,
+    )
+
+  const currentMaterialSelectionsRef =
+    useRef<MaterialSelections>(
+      materialSelections,
+    )
+
+  const materialControllerRef =
+    useRef<
+      FurnitureMaterialController | null
+    >(null)
+
+  const maxAnisotropyRef =
+    useRef(1)
+
   const applyDimensionsRef =
     useRef<
       (
@@ -143,6 +203,33 @@ function App() {
     dimensions,
   ])
 
+  useEffect(() => {
+    currentMaterialSelectionsRef.current =
+      materialSelections
+
+    const controller =
+      materialControllerRef.current
+
+    if (!controller) {
+      return
+    }
+
+    void controller
+      .setFinishes(
+        materialSelections,
+      )
+      .catch(
+        (error) => {
+          console.error(
+            'Ошибка смены материала:',
+            error,
+          )
+        },
+      )
+  }, [
+    materialSelections,
+  ])
+
   /*
    * =================================
    * THREE.JS APPLICATION LIFECYCLE
@@ -170,10 +257,15 @@ function App() {
 
     const {
       scene,
+      renderer,
     } = runtime
 
     sceneRef.current =
       scene
+
+    maxAnisotropyRef.current =
+      renderer.capabilities
+        .getMaxAnisotropy()
 
     const environment =
       createSceneEnvironment(
@@ -230,6 +322,14 @@ function App() {
       Group | null =
         null
 
+    let preparingModel:
+      Group | null =
+        null
+
+    let materialController:
+      FurnitureMaterialController | null =
+        null
+
     applyDimensionsRef.current =
       () => {}
 
@@ -241,12 +341,18 @@ function App() {
               furnitureDefinition.modelUrl,
             )
 
+          preparingModel =
+            model
+
           if (
             cancelled
           ) {
             disposeFurnitureModel(
               model,
             )
+
+            preparingModel =
+              null
 
             return
           }
@@ -256,6 +362,39 @@ function App() {
               model,
               furnitureDefinition,
             )
+
+          materialController =
+            createFurnitureMaterialController(
+              model,
+              furnitureDefinition,
+              {
+                maxAnisotropy:
+                  maxAnisotropyRef.current,
+                onMaterialsChanged:
+                  controller.refreshTextures,
+              },
+            )
+
+          await materialController
+            .setFinishes(
+              currentMaterialSelectionsRef.current,
+            )
+
+          if (cancelled) {
+            materialController.dispose()
+
+            disposeFurnitureModel(
+              model,
+            )
+
+            preparingModel =
+              null
+
+            return
+          }
+
+          materialControllerRef.current =
+            materialController
 
           applyDimensionsRef.current =
             (
@@ -273,6 +412,9 @@ function App() {
           furnitureModel =
             model
 
+          preparingModel =
+            null
+
           scene.add(
             model,
           )
@@ -289,6 +431,15 @@ function App() {
             'Ошибка подготовки мебели:',
             error,
           )
+
+          if (preparingModel) {
+            disposeFurnitureModel(
+              preparingModel,
+            )
+
+            preparingModel =
+              null
+          }
         }
       }
 
@@ -300,6 +451,25 @@ function App() {
 
       applyDimensionsRef.current =
         () => {}
+
+      if (
+        materialControllerRef.current ===
+        materialController
+      ) {
+        materialControllerRef.current =
+          null
+      }
+
+      materialController?.dispose()
+
+      if (preparingModel) {
+        disposeFurnitureModel(
+          preparingModel,
+        )
+
+        preparingModel =
+          null
+      }
 
       if (
         !furnitureModel
@@ -354,6 +524,31 @@ function App() {
         nextDimensions,
       )
 
+      const nextMaterialSelections =
+        materialSelectionsByModel[
+          nextModelId
+        ] ??
+        createInitialMaterialSelections(
+          nextDefinition,
+        )
+
+      currentMaterialSelectionsRef.current =
+        nextMaterialSelections
+
+      if (
+        !materialSelectionsByModel[
+          nextModelId
+        ]
+      ) {
+        setMaterialSelectionsByModel(
+          (current) => ({
+            ...current,
+            [nextModelId]:
+              nextMaterialSelections,
+          }),
+        )
+      }
+
       setSelectedModelId(
         nextModelId,
       )
@@ -406,7 +601,7 @@ function App() {
             16,
 
           width:
-            190,
+            220,
 
           padding:
             14,
@@ -585,6 +780,88 @@ function App() {
               },
             )
         }
+
+
+        {Object.entries(
+          furnitureDefinition
+            .materialSlots ?? {},
+        ).map(
+          ([slotName, slot]) => {
+            const value =
+              materialSelections[
+                slotName
+              ] ??
+              slot.defaultFinish
+
+            const options =
+              slot.allowedFinishes.map(
+                (finishId) => {
+                  const finish =
+                    getMaterialFinish(
+                      finishId,
+                    )
+
+                  return {
+                    value:
+                      finish.id,
+                    label:
+                      finish.label,
+                  }
+                },
+              )
+
+            return (
+              <div
+                key={
+                  slotName
+                }
+                style={{
+                  marginTop: 16,
+                }}
+              >
+                <div
+                  style={{
+                    marginBottom:
+                      6,
+                    fontSize: 14,
+                    fontWeight:
+                      600,
+                  }}
+                >
+                  {slot.label}
+                </div>
+
+                <CustomSelect
+                  value={value}
+                  options={options}
+                  onChange={(
+                    finishId,
+                  ) => {
+                    const next = {
+                      ...materialSelections,
+                      [slotName]:
+                        finishId,
+                    }
+
+                    currentMaterialSelectionsRef.current =
+                      next
+
+                    setMaterialSelectionsByModel(
+                      (current) => ({
+                        ...current,
+                        [furnitureDefinition.id]:
+                          next,
+                      }),
+                    )
+                  }}
+                  ariaLabel={
+                    slot.label
+                  }
+                />
+              </div>
+            )
+          },
+        )}
       </div>
     </div>
   )
