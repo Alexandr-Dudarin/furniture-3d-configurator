@@ -15,6 +15,11 @@ import {
 } from './configurator/configuratorState'
 
 import {
+  DEFAULT_FURNITURE_ID,
+  getFurnitureDefinition,
+} from './configurator/furnitureRegistry'
+
+import {
   createSceneEnvironment,
 } from './three/core/createSceneEnvironment'
 
@@ -30,11 +35,27 @@ import {
   loadFurnitureModel,
 } from './three/furniture/model'
 
-import {
-  TABLE_CONFIG,
-} from './three/table/tableConfig'
-
 import './App.css'
+
+/*
+ * --------------------------------
+ * SELECTED FURNITURE
+ * --------------------------------
+ *
+ * App.tsx больше не импортирует
+ * конфигурацию конкретного стола.
+ *
+ * Он знает только ID модели,
+ * которую нужно открыть.
+ *
+ * Реестр сам возвращает
+ * соответствующий FurnitureDefinition.
+ */
+
+const furnitureDefinition =
+  getFurnitureDefinition(
+    DEFAULT_FURNITURE_ID,
+  )
 
 function App() {
   const containerRef =
@@ -47,31 +68,19 @@ function App() {
    * CONFIGURATOR STATE
    * --------------------------------
    *
-   * Раньше:
+   * Состояние размеров создаётся
+   * автоматически из описания
+   * выбранной модели.
    *
-   * tableLength
-   * tableWidth
-   *
-   * Теперь состояние универсальное:
+   * Например для нашего стола:
    *
    * {
    *   length: 1.2,
    *   width: 0.6,
    * }
    *
-   * Для другой модели оно может быть:
-   *
-   * {
-   *   diameter: 1.1,
-   * }
-   *
-   * или:
-   *
-   * {
-   *   width: 1.8,
-   *   height: 2.2,
-   *   depth: 0.6,
-   * }
+   * Но App.tsx не знает заранее,
+   * какие именно размеры существуют.
    */
 
   const [
@@ -81,16 +90,17 @@ function App() {
     useState<ConfiguratorDimensions>(
       () =>
         createInitialDimensions(
-          TABLE_CONFIG,
+          furnitureDefinition,
         ),
     )
 
   /*
    * Последнее актуальное состояние.
    *
-   * Нужно на случай,
-   * если пользователь изменит
-   * настройки до загрузки GLB.
+   * Оно нужно на случай,
+   * если пользователь успеет
+   * изменить параметры раньше,
+   * чем загрузится GLB.
    */
 
   const currentDimensionsRef =
@@ -100,10 +110,10 @@ function App() {
 
   /*
    * React не знает,
-   * как конкретно изменяется GLB.
+   * как физически изменяется GLB.
    *
-   * Он просто передаёт движку
-   * набор физических размеров.
+   * Он только передаёт контроллеру
+   * выбранные пользователем размеры.
    */
 
   const applyDimensionsRef =
@@ -149,7 +159,9 @@ function App() {
       false
 
     /*
+     * --------------------------------
      * THREE.JS RUNTIME
+     * --------------------------------
      */
 
     const runtime =
@@ -162,7 +174,9 @@ function App() {
     } = runtime
 
     /*
+     * --------------------------------
      * SCENE ENVIRONMENT
+     * --------------------------------
      */
 
     const environment =
@@ -171,8 +185,9 @@ function App() {
       )
 
     /*
-     * Модель сохраняем
-     * для cleanup.
+     * Сохраняем ссылку
+     * на загруженную мебель,
+     * чтобы убрать её при cleanup.
      */
 
     let furnitureModel:
@@ -190,14 +205,21 @@ function App() {
         try {
           /*
            * 1.
-           * Загружаем модель
-           * из её конфигурации.
+           * Загружаем GLB,
+           * указанный в определении
+           * выбранной модели.
            */
 
           const model =
             await loadFurnitureModel(
-              TABLE_CONFIG.modelUrl,
+              furnitureDefinition.modelUrl,
             )
+
+          /*
+           * Компонент мог быть
+           * уничтожен за время
+           * загрузки GLB.
+           */
 
           if (destroyed) {
             return
@@ -207,26 +229,24 @@ function App() {
            * 2.
            * Создаём универсальный
            * FurnitureController.
+           *
+           * Он получает:
+           *
+           * GLB
+           * +
+           * описание этой модели.
            */
 
           const controller =
             createFurnitureController(
               model,
-              TABLE_CONFIG,
+              furnitureDefinition,
             )
 
           /*
            * 3.
-           * React теперь передаёт
-           * controller весь объект
-           * размеров целиком.
-           *
-           * App.tsx больше не содержит:
-           *
-           * length,
-           * width
-           *
-           * как специальные аргументы.
+           * Соединяем состояние React
+           * с FurnitureController.
            */
 
           applyDimensionsRef.current =
@@ -240,8 +260,8 @@ function App() {
 
           /*
            * 4.
-           * Применяем актуальное
-           * состояние конфигуратора.
+           * Применяем актуальные
+           * пользовательские значения.
            */
 
           controller.setDimensions(
@@ -250,8 +270,8 @@ function App() {
 
           /*
            * 5.
-           * Добавляем модель
-           * в сцену.
+           * Добавляем подготовленную
+           * модель в сцену.
            */
 
           furnitureModel =
@@ -284,6 +304,12 @@ function App() {
       destroyed =
         true
 
+      /*
+       * React больше не должен
+       * обращаться к старому
+       * FurnitureController.
+       */
+
       applyDimensionsRef.current =
         () => {}
 
@@ -304,14 +330,17 @@ function App() {
    * UI
    * --------------------------------
    *
-   * Самое важное изменение:
+   * UI строится автоматически
+   * из определения выбранной модели.
    *
-   * slider больше не написаны
-   * вручную для length и width.
+   * App.tsx не знает заранее:
    *
-   * UI строится из:
+   * есть length?
+   * есть width?
+   * есть diameter?
+   * есть height?
    *
-   * TABLE_CONFIG.dimensionOrder
+   * Он просто читает dimensionOrder.
    */
 
   return (
@@ -377,7 +406,7 @@ function App() {
         }}
       >
         {
-          TABLE_CONFIG
+          furnitureDefinition
             .dimensionOrder
             .map(
               (
@@ -385,7 +414,7 @@ function App() {
                 index,
               ) => {
                 const config =
-                  TABLE_CONFIG
+                  furnitureDefinition
                     .dimensions[
                       dimension
                     ]
