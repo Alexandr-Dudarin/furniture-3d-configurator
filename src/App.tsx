@@ -1,946 +1,590 @@
-import { useEffect, useRef, useState } from 'react'
-import * as THREE from 'three'
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
+import {
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
+
+import type {
+  Group,
+  Scene,
+} from 'three'
+
+import {
+  CustomSelect,
+  type CustomSelectOption,
+} from './components/ui/CustomSelect/CustomSelect'
+
+import {
+  createInitialDimensions,
+  updateDimension,
+  type ConfiguratorDimensions,
+} from './configurator/configuratorState'
+
+import {
+  DEFAULT_FURNITURE_ID,
+  getFurnitureDefinition,
+  getFurnitureDefinitions,
+} from './configurator/furnitureRegistry'
+
+import {
+  createSceneEnvironment,
+} from './three/core/createSceneEnvironment'
+
+import {
+  createThreeRuntime,
+} from './three/core/createThreeRuntime'
+
+import {
+  createFurnitureController,
+} from './three/furniture/furnitureController'
+
+import {
+  disposeFurnitureModel,
+  loadFurnitureModel,
+} from './three/furniture/model'
+
 import './App.css'
 
-const BASE_LENGTH = 1.2
-const MAX_LENGTH = 2.0
+const furnitureDefinitions =
+  getFurnitureDefinitions()
 
-const BASE_WIDTH = 0.6
-const MAX_WIDTH = 1.0
+const furnitureOptions:
+  CustomSelectOption[] =
+    furnitureDefinitions.map(
+      (definition) => ({
+        value:
+          definition.id,
 
-type TextureAxis = 'x' | 'y'
-
-type TextureState = {
-  texture: THREE.Texture
-  baseRepeatX: number
-  baseRepeatY: number
-  baseOffsetX: number
-  baseOffsetY: number
-  lengthAxis?: TextureAxis
-  widthAxis?: TextureAxis
-}
+        label:
+          definition.label,
+      }),
+    )
 
 function App() {
-  const containerRef = useRef<HTMLDivElement | null>(null)
+  const containerRef =
+    useRef<HTMLDivElement | null>(
+      null,
+    )
 
-  const [tableLength, setTableLength] =
-    useState(BASE_LENGTH)
+  /*
+   * --------------------------------
+   * SELECTED MODEL
+   * --------------------------------
+   */
 
-  const [tableWidth, setTableWidth] =
-    useState(BASE_WIDTH)
+  const [
+    selectedModelId,
+    setSelectedModelId,
+  ] =
+    useState<string>(
+      DEFAULT_FURNITURE_ID,
+    )
 
-  const currentLengthRef = useRef(BASE_LENGTH)
-  const currentWidthRef = useRef(BASE_WIDTH)
+  const furnitureDefinition =
+    getFurnitureDefinition(
+      selectedModelId,
+    )
 
-  const applyDimensionsRef = useRef<
-    (length: number, width: number) => void
-  >(() => {})
+  /*
+   * --------------------------------
+   * CONFIGURATOR DIMENSIONS
+   * --------------------------------
+   */
+
+  const [
+    dimensions,
+    setDimensions,
+  ] =
+    useState<ConfiguratorDimensions>(
+      () =>
+        createInitialDimensions(
+          furnitureDefinition,
+        ),
+    )
+
+  const currentDimensionsRef =
+    useRef<ConfiguratorDimensions>(
+      dimensions,
+    )
+
+  const applyDimensionsRef =
+    useRef<
+      (
+        dimensions:
+          ConfiguratorDimensions,
+      ) => void
+    >(() => {})
+
+  /*
+   * --------------------------------
+   * THREE.JS SCENE REF
+   * --------------------------------
+   */
+
+  const sceneRef =
+    useRef<Scene | null>(
+      null,
+    )
+
+  /*
+   * --------------------------------
+   * DIMENSIONS -> 3D MODEL
+   * --------------------------------
+   */
 
   useEffect(() => {
-    currentLengthRef.current = tableLength
-    currentWidthRef.current = tableWidth
+    currentDimensionsRef.current =
+      dimensions
 
     applyDimensionsRef.current(
-      tableLength,
-      tableWidth,
+      dimensions,
     )
-  }, [tableLength, tableWidth])
+  }, [
+    dimensions,
+  ])
+
+  /*
+   * =================================
+   * THREE.JS APPLICATION LIFECYCLE
+   * =================================
+   *
+   * Scene, renderer, camera,
+   * controls и environment
+   * создаются один раз.
+   */
 
   useEffect(() => {
-    const container = containerRef.current
+    const container =
+      containerRef.current
 
-    if (!container) {
+    if (
+      !container
+    ) {
       return
     }
 
-    let animationFrameId = 0
-    let destroyed = false
-
-    // SCENE
-    const scene = new THREE.Scene()
-
-    scene.background =
-      new THREE.Color(0xdedede)
-
-    // CAMERA
-    const camera =
-      new THREE.PerspectiveCamera(
-        45,
-        container.clientWidth /
-          container.clientHeight,
-        0.1,
-        100,
+    const runtime =
+      createThreeRuntime(
+        container,
       )
 
-    camera.position.set(1.8, 1.4, 2.2)
+    const {
+      scene,
+    } = runtime
 
-    // RENDERER
-    const renderer =
-      new THREE.WebGLRenderer({
-        antialias: true,
-      })
+    sceneRef.current =
+      scene
 
-    renderer.setPixelRatio(
-      Math.min(
-        window.devicePixelRatio,
-        2,
-      ),
-    )
-
-    renderer.setSize(
-      container.clientWidth,
-      container.clientHeight,
-    )
-
-    renderer.shadowMap.enabled = true
-    renderer.shadowMap.type =
-      THREE.PCFShadowMap
-
-    container.appendChild(
-      renderer.domElement,
-    )
-
-    // CAMERA CONTROLS
-    const controls =
-      new OrbitControls(
-        camera,
-        renderer.domElement,
+    const environment =
+      createSceneEnvironment(
+        scene,
       )
 
-    controls.enableDamping = true
+    return () => {
+      if (
+        sceneRef.current ===
+        scene
+      ) {
+        sceneRef.current =
+          null
+      }
 
-    controls.target.set(
-      0,
-      0.45,
-      0,
-    )
+      environment.dispose()
 
-    controls.minDistance = 1.2
-    controls.maxDistance = 5
+      runtime.dispose()
+    }
+  }, [])
 
-    controls.update()
+  /*
+   * =================================
+   * FURNITURE LIFECYCLE
+   * =================================
+   *
+   * Этот effect отвечает
+   * только за выбранную модель.
+   *
+   * При смене модели:
+   *
+   * старая мебель удаляется,
+   * её ресурсы освобождаются,
+   * новый GLB загружается,
+   *
+   * а сцена, камера и свет
+   * остаются прежними.
+   */
 
-    // LIGHT
-    const ambientLight =
-      new THREE.AmbientLight(
-        0xffffff,
-        1.2,
-      )
+  useEffect(() => {
+    const scene =
+      sceneRef.current
 
-    scene.add(ambientLight)
+    if (
+      !scene
+    ) {
+      return
+    }
 
-    const keyLight =
-      new THREE.DirectionalLight(
-        0xffffff,
-        3,
-      )
+    let cancelled =
+      false
 
-    keyLight.position.set(
-      2.5,
-      4,
-      2,
-    )
+    let furnitureModel:
+      Group | null =
+        null
 
-    keyLight.castShadow = true
+    applyDimensionsRef.current =
+      () => {}
 
-    keyLight.shadow.mapSize.set(
-      2048,
-      2048,
-    )
+    const prepareFurniture =
+      async () => {
+        try {
+          const model =
+            await loadFurnitureModel(
+              furnitureDefinition.modelUrl,
+            )
 
-    scene.add(keyLight)
-
-    // FLOOR
-    const floorGeometry =
-      new THREE.PlaneGeometry(
-        8,
-        8,
-      )
-
-    const floorMaterial =
-      new THREE.MeshStandardMaterial({
-        color: 0xb8b8b8,
-        roughness: 0.9,
-      })
-
-    const floor =
-      new THREE.Mesh(
-        floorGeometry,
-        floorMaterial,
-      )
-
-    floor.rotation.x =
-      -Math.PI / 2
-
-    floor.receiveShadow = true
-
-    scene.add(floor)
-
-    // GLB
-    const loader =
-      new GLTFLoader()
-
-    loader.load(
-      '/models/first-table.glb',
-
-      (gltf) => {
-        if (destroyed) {
-          return
-        }
-
-        const table =
-          gltf.scene
-
-        table.traverse((object) => {
           if (
-            object instanceof
-            THREE.Mesh
+            cancelled
           ) {
-            object.castShadow =
-              true
-
-            object.receiveShadow =
-              true
-          }
-        })
-
-        const tableTop =
-          table.getObjectByName(
-            'TableTop',
-          )
-
-        const legNames = [
-          'Leg_01',
-          'Leg_02',
-          'Leg_03',
-          'Leg_04',
-        ]
-
-        const legs =
-          legNames
-            .map((name) =>
-              table.getObjectByName(
-                name,
-              ),
+            disposeFurnitureModel(
+              model,
             )
-            .filter(
-              (
-                leg,
-              ): leg is THREE.Object3D =>
-                Boolean(leg),
-            )
-
-        if (!tableTop) {
-          console.error(
-            'Не найден объект TableTop',
-          )
-
-          scene.add(table)
-
-          return
-        }
-
-        if (legs.length !== 4) {
-          console.error(
-            `Ожидалось 4 ножки, найдено: ${legs.length}`,
-          )
-
-          scene.add(table)
-
-          return
-        }
-
-        /*
-         * Исходные половины размеров.
-         */
-
-        const baseHalfLength =
-          BASE_LENGTH / 2
-
-        const baseHalfWidth =
-          BASE_WIDTH / 2
-
-        /*
-         * Запоминаем положение каждой
-         * ножки относительно краёв.
-         *
-         * X = длина
-         * Z = ширина
-         */
-
-        const legStates =
-          legs.map((leg) => {
-            const sideX =
-              Math.sign(
-                leg.position.x,
-              ) || 1
-
-            const sideZ =
-              Math.sign(
-                leg.position.z,
-              ) || 1
-
-            const insetFromLengthEdge =
-              baseHalfLength -
-              Math.abs(
-                leg.position.x,
-              )
-
-            const insetFromWidthEdge =
-              baseHalfWidth -
-              Math.abs(
-                leg.position.z,
-              )
-
-            return {
-              leg,
-              sideX,
-              sideZ,
-              insetFromLengthEdge,
-              insetFromWidthEdge,
-            }
-          })
-
-        /*
-         * Как физические размеры
-         * соответствуют UV каждого
-         * материала.
-         *
-         * Верх / низ:
-         * U = длина
-         * V = ширина
-         *
-         * Длинный торец:
-         * U = длина
-         *
-         * Короткий торец:
-         * U = ширина
-         */
-
-        const materialTextureAxes =
-          new Map<
-            string,
-            {
-              lengthAxis?: TextureAxis
-              widthAxis?: TextureAxis
-            }
-          >([
-            [
-              'Wood_Top',
-              {
-                lengthAxis: 'x',
-                widthAxis: 'y',
-              },
-            ],
-
-            [
-              'Wood_Bottom',
-              {
-                lengthAxis: 'x',
-                widthAxis: 'y',
-              },
-            ],
-
-            [
-              'Wood_Edge_Long',
-              {
-                lengthAxis: 'x',
-              },
-            ],
-
-            [
-              'Wood_Edge_Short',
-              {
-                widthAxis: 'x',
-              },
-            ],
-          ])
-
-        const textureStates:
-          TextureState[] = []
-
-        /*
-         * Клонируем Texture,
-         * чтобы изменение repeat/offset
-         * не влияло на другие материалы.
-         */
-
-        const cloneTexture = (
-          texture:
-            | THREE.Texture
-            | null,
-        ):
-          | THREE.Texture
-          | null => {
-          if (!texture) {
-            return null
-          }
-
-          const clone =
-            texture.clone()
-
-          clone.needsUpdate = true
-
-          return clone
-        }
-
-        tableTop.traverse(
-          (object) => {
-            if (
-              !(
-                object instanceof
-                THREE.Mesh
-              )
-            ) {
-              return
-            }
-
-            if (
-              Array.isArray(
-                object.material,
-              )
-            ) {
-              return
-            }
-
-            if (
-              !(
-                object.material instanceof
-                THREE.MeshStandardMaterial
-              )
-            ) {
-              return
-            }
-
-            const originalMaterial =
-              object.material
-
-            const material =
-              originalMaterial.clone()
-
-            material.map =
-              cloneTexture(
-                originalMaterial.map,
-              )
-
-            material.normalMap =
-              cloneTexture(
-                originalMaterial.normalMap,
-              )
-
-            material.roughnessMap =
-              cloneTexture(
-                originalMaterial.roughnessMap,
-              )
-
-            material.metalnessMap =
-              cloneTexture(
-                originalMaterial.metalnessMap,
-              )
-
-            material.aoMap =
-              cloneTexture(
-                originalMaterial.aoMap,
-              )
-
-            material.bumpMap =
-              cloneTexture(
-                originalMaterial.bumpMap,
-              )
-
-            object.material =
-              material
-
-            const axes =
-              materialTextureAxes.get(
-                material.name,
-              )
-
-            if (!axes) {
-              return
-            }
-
-            const textures = [
-              material.map,
-              material.normalMap,
-              material.roughnessMap,
-              material.metalnessMap,
-              material.aoMap,
-              material.bumpMap,
-            ]
-
-            const uniqueTextures =
-              new Set(
-                textures.filter(
-                  (
-                    texture,
-                  ): texture is THREE.Texture =>
-                    texture !== null,
-                ),
-              )
-
-            uniqueTextures.forEach(
-              (texture) => {
-                if (
-                  axes.lengthAxis ===
-                    'x' ||
-                  axes.widthAxis ===
-                    'x'
-                ) {
-                  texture.wrapS =
-                    THREE.RepeatWrapping
-                }
-
-                if (
-                  axes.lengthAxis ===
-                    'y' ||
-                  axes.widthAxis ===
-                    'y'
-                ) {
-                  texture.wrapT =
-                    THREE.RepeatWrapping
-                }
-
-                texture.needsUpdate =
-                  true
-
-                textureStates.push({
-                  texture,
-
-                  baseRepeatX:
-                    texture.repeat.x,
-
-                  baseRepeatY:
-                    texture.repeat.y,
-
-                  baseOffsetX:
-                    texture.offset.x,
-
-                  baseOffsetY:
-                    texture.offset.y,
-
-                  lengthAxis:
-                    axes.lengthAxis,
-
-                  widthAxis:
-                    axes.widthAxis,
-                })
-              },
-            )
-          },
-        )
-
-        /*
-         * Центральное масштабирование
-         * одной UV-оси.
-         */
-
-        const applyTextureAxis = (
-          texture:
-            THREE.Texture,
-
-          axis:
-            TextureAxis,
-
-          baseRepeat:
-            number,
-
-          baseOffset:
-            number,
-
-          scale:
-            number,
-        ) => {
-          const newRepeat =
-            baseRepeat *
-            scale
-
-          const newOffset =
-            baseOffset +
-            (baseRepeat *
-              (1 - scale)) /
-              2
-
-          if (axis === 'x') {
-            texture.repeat.x =
-              newRepeat
-
-            texture.offset.x =
-              newOffset
 
             return
           }
 
-          texture.repeat.y =
-            newRepeat
+          const controller =
+            createFurnitureController(
+              model,
+              furnitureDefinition,
+            )
 
-          texture.offset.y =
-            newOffset
-        }
+          applyDimensionsRef.current =
+            (
+              nextDimensions,
+            ) => {
+              controller.setDimensions(
+                nextDimensions,
+              )
+            }
 
-        /*
-         * Главная функция изменения
-         * размеров стола.
-         */
-
-        const applyDimensions = (
-          newLength: number,
-          newWidth: number,
-        ) => {
-          const lengthScale =
-            newLength /
-            BASE_LENGTH
-
-          const widthScale =
-            newWidth /
-            BASE_WIDTH
-
-          /*
-           * 1. Столешница растёт
-           * относительно центра.
-           */
-
-          tableTop.scale.x =
-            lengthScale
-
-          tableTop.scale.z =
-            widthScale
-
-          /*
-           * 2. Ножки остаются
-           * на одинаковом расстоянии
-           * от четырёх краёв.
-           */
-
-          const newHalfLength =
-            newLength / 2
-
-          const newHalfWidth =
-            newWidth / 2
-
-          legStates.forEach(
-            ({
-              leg,
-              sideX,
-              sideZ,
-              insetFromLengthEdge,
-              insetFromWidthEdge,
-            }) => {
-              leg.position.x =
-                sideX *
-                (
-                  newHalfLength -
-                  insetFromLengthEdge
-                )
-
-              leg.position.z =
-                sideZ *
-                (
-                  newHalfWidth -
-                  insetFromWidthEdge
-                )
-            },
+          controller.setDimensions(
+            currentDimensionsRef.current,
           )
 
-          /*
-           * 3. Текстуры.
-           *
-           * Для каждого материала
-           * изменяем только те UV-оси,
-           * которые соответствуют
-           * физически изменившемуся
-           * размеру.
-           */
+          furnitureModel =
+            model
 
-          textureStates.forEach(
-            ({
-              texture,
-              baseRepeatX,
-              baseRepeatY,
-              baseOffsetX,
-              baseOffsetY,
-              lengthAxis,
-              widthAxis,
-            }) => {
-              /*
-               * Сначала возвращаем
-               * исходное состояние.
-               */
-
-              texture.repeat.x =
-                baseRepeatX
-
-              texture.repeat.y =
-                baseRepeatY
-
-              texture.offset.x =
-                baseOffsetX
-
-              texture.offset.y =
-                baseOffsetY
-
-              /*
-               * ДЛИНА
-               */
-
-              if (
-                lengthAxis === 'x'
-              ) {
-                applyTextureAxis(
-                  texture,
-                  'x',
-                  baseRepeatX,
-                  baseOffsetX,
-                  lengthScale,
-                )
-              }
-
-              if (
-                lengthAxis === 'y'
-              ) {
-                applyTextureAxis(
-                  texture,
-                  'y',
-                  baseRepeatY,
-                  baseOffsetY,
-                  lengthScale,
-                )
-              }
-
-              /*
-               * ШИРИНА
-               */
-
-              if (
-                widthAxis === 'x'
-              ) {
-                applyTextureAxis(
-                  texture,
-                  'x',
-                  baseRepeatX,
-                  baseOffsetX,
-                  widthScale,
-                )
-              }
-
-              if (
-                widthAxis === 'y'
-              ) {
-                applyTextureAxis(
-                  texture,
-                  'y',
-                  baseRepeatY,
-                  baseOffsetY,
-                  widthScale,
-                )
-              }
-
-              texture.needsUpdate =
-                true
-            },
+          scene.add(
+            model,
           )
+        } catch (
+          error
+        ) {
+          if (
+            cancelled
+          ) {
+            return
+          }
 
-          tableTop.updateMatrixWorld()
+          console.error(
+            'Ошибка подготовки мебели:',
+            error,
+          )
         }
+      }
 
-        applyDimensionsRef.current =
-          applyDimensions
+    void prepareFurniture()
 
-        /*
-         * Если slider изменили,
-         * пока GLB ещё загружался.
-         */
-
-        applyDimensions(
-          currentLengthRef.current,
-          currentWidthRef.current,
-        )
-
-        scene.add(table)
-      },
-
-      undefined,
-
-      (error) => {
-        console.error(
-          'Ошибка загрузки GLB:',
-          error,
-        )
-      },
-    )
-
-    // RESIZE
-    const resizeObserver =
-      new ResizeObserver(() => {
-        const width =
-          container.clientWidth
-
-        const height =
-          container.clientHeight
-
-        camera.aspect =
-          width / height
-
-        camera.updateProjectionMatrix()
-
-        renderer.setSize(
-          width,
-          height,
-        )
-
-        renderer.setPixelRatio(
-          Math.min(
-            window.devicePixelRatio,
-            2,
-          ),
-        )
-      })
-
-    resizeObserver.observe(
-      container,
-    )
-
-    // RENDER LOOP
-    const animate = () => {
-      controls.update()
-
-      renderer.render(
-        scene,
-        camera,
-      )
-
-      animationFrameId =
-        requestAnimationFrame(
-          animate,
-        )
-    }
-
-    animate()
-
-    // CLEANUP
     return () => {
-      destroyed = true
+      cancelled =
+        true
 
       applyDimensionsRef.current =
         () => {}
 
-      cancelAnimationFrame(
-        animationFrameId,
+      if (
+        !furnitureModel
+      ) {
+        return
+      }
+
+      scene.remove(
+        furnitureModel,
       )
 
-      resizeObserver.disconnect()
-
-      controls.dispose()
-
-      floorGeometry.dispose()
-      floorMaterial.dispose()
-
-      renderer.dispose()
-
-      if (
-        renderer.domElement
-          .parentElement ===
-        container
-      ) {
-        container.removeChild(
-          renderer.domElement,
-        )
-      }
+      disposeFurnitureModel(
+        furnitureModel,
+      )
     }
-  }, [])
+  }, [
+    furnitureDefinition,
+  ])
+
+  /*
+   * =================================
+   * CHANGE MODEL
+   * =================================
+   */
+
+  const handleModelChange =
+    (
+      nextModelId:
+        string,
+    ) => {
+      if (
+        nextModelId ===
+        selectedModelId
+      ) {
+        return
+      }
+
+      const nextDefinition =
+        getFurnitureDefinition(
+          nextModelId,
+        )
+
+      const nextDimensions =
+        createInitialDimensions(
+          nextDefinition,
+        )
+
+      currentDimensionsRef.current =
+        nextDimensions
+
+      setDimensions(
+        nextDimensions,
+      )
+
+      setSelectedModelId(
+        nextModelId,
+      )
+    }
+
+  /*
+   * =================================
+   * UI
+   * =================================
+   */
 
   return (
     <div
       style={{
-        position: 'relative',
-        width: '100vw',
-        height: '100vh',
-        overflow: 'hidden',
+        position:
+          'relative',
+
+        width:
+          '100vw',
+
+        height:
+          '100vh',
+
+        overflow:
+          'hidden',
       }}
     >
       <div
-        ref={containerRef}
+        ref={
+          containerRef
+        }
         style={{
-          width: '100%',
-          height: '100%',
+          width:
+            '100%',
+
+          height:
+            '100%',
         }}
       />
 
       <div
         style={{
-          position: 'absolute',
-          top: 16,
-          left: 16,
-          width: 190,
-          padding: 14,
-          background: 'white',
-          borderRadius: 8,
+          position:
+            'absolute',
+
+          top:
+            16,
+
+          left:
+            16,
+
+          width:
+            190,
+
+          padding:
+            14,
+
+          background:
+            'white',
+
+          borderRadius:
+            8,
+
           boxShadow:
             '0 4px 14px rgba(0, 0, 0, 0.15)',
-          color: '#111',
-          fontFamily: 'sans-serif',
+
+          color:
+            '#111',
+
+          fontFamily:
+            'sans-serif',
         }}
       >
-        <div
-          style={{
-            marginBottom: 6,
-            fontSize: 14,
-            fontWeight: 600,
-          }}
-        >
-          Длина стола:{' '}
-          {tableLength.toFixed(2)} м
-        </div>
-
-        <input
-          type="range"
-          min={BASE_LENGTH}
-          max={MAX_LENGTH}
-          step={0.01}
-          value={tableLength}
-          onChange={(event) => {
-            setTableLength(
-              Number(
-                event.target.value,
-              ),
-            )
-          }}
-          style={{
-            width: '100%',
-          }}
-        />
+        {/*
+         * -----------------------------
+         * MODEL SELECT
+         * -----------------------------
+         */}
 
         <div
           style={{
-            marginTop: 16,
-            marginBottom: 6,
-            fontSize: 14,
-            fontWeight: 600,
+            marginBottom:
+              16,
           }}
         >
-          Ширина стола:{' '}
-          {tableWidth.toFixed(2)} м
+          <div
+            style={{
+              marginBottom:
+                6,
+
+              fontSize:
+                14,
+
+              fontWeight:
+                600,
+            }}
+          >
+            Модель
+          </div>
+
+          <CustomSelect
+            value={
+              selectedModelId
+            }
+
+            options={
+              furnitureOptions
+            }
+
+            onChange={
+              handleModelChange
+            }
+
+            ariaLabel="Выбор модели мебели"
+          />
         </div>
 
-        <input
-          type="range"
-          min={BASE_WIDTH}
-          max={MAX_WIDTH}
-          step={0.01}
-          value={tableWidth}
-          onChange={(event) => {
-            setTableWidth(
-              Number(
-                event.target.value,
-              ),
+        {/*
+         * -----------------------------
+         * DIMENSION CONTROLS
+         * -----------------------------
+         */}
+
+        {
+          furnitureDefinition
+            .dimensionOrder
+            .map(
+              (
+                dimension,
+                index,
+              ) => {
+                const config =
+                  furnitureDefinition
+                    .dimensions[
+                      dimension
+                    ]
+
+                const value =
+                  dimensions[
+                    dimension
+                  ] ??
+                  config.base
+
+                return (
+                  <div
+                    key={
+                      dimension
+                    }
+
+                    style={{
+                      marginTop:
+                        index === 0
+                          ? 0
+                          : 16,
+                    }}
+                  >
+                    <div
+                      style={{
+                        marginBottom:
+                          6,
+
+                        fontSize:
+                          14,
+
+                        fontWeight:
+                          600,
+                      }}
+                    >
+                      {
+                        config.label
+                      }
+                      :{' '}
+                      {
+                        value.toFixed(
+                          2,
+                        )
+                      }{' '}
+                      м
+                    </div>
+
+                    <input
+                      type="range"
+
+                      min={
+                        config.min
+                      }
+
+                      max={
+                        config.max
+                      }
+
+                      step={
+                        config.step
+                      }
+
+                      value={
+                        value
+                      }
+
+                      onChange={(
+                        event,
+                      ) => {
+                        const nextValue =
+                          Number(
+                            event
+                              .target
+                              .value,
+                          )
+
+                        setDimensions(
+                          (
+                            current,
+                          ) =>
+                            updateDimension(
+                              current,
+                              dimension,
+                              nextValue,
+                            ),
+                        )
+                      }}
+
+                      style={{
+                        width:
+                          '100%',
+                      }}
+                    />
+                  </div>
+                )
+              },
             )
-          }}
-          style={{
-            width: '100%',
-          }}
-        />
+        }
       </div>
     </div>
   )
