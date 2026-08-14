@@ -79,6 +79,14 @@ export type FurnitureController = {
   setDimensions: (
     values: Partial<DimensionValues>,
   ) => void
+
+  /*
+   * Rebuilds texture bindings after a generic
+   * material controller replaces materials.
+   * Current physical dimensions are reapplied
+   * immediately, so UV compensation is kept.
+   */
+  refreshTextures: () => void
 }
 
 export function createFurnitureController(
@@ -341,6 +349,7 @@ export function createFurnitureController(
     model,
     definition,
     textureStates,
+    true,
   )
 
   /*
@@ -528,9 +537,6 @@ export function createFurnitureController(
               )
             },
           )
-
-          state.texture.needsUpdate =
-            true
         },
       )
 
@@ -588,6 +594,19 @@ export function createFurnitureController(
             value,
           )
         },
+      )
+
+      applyDimensions()
+    },
+
+    refreshTextures() {
+      textureStates.length = 0
+
+      prepareMaterialsAndTextures(
+        model,
+        definition,
+        textureStates,
+        false,
       )
 
       applyDimensions()
@@ -713,6 +732,9 @@ function prepareMaterialsAndTextures(
 
   textureStates:
     TextureState[],
+
+  cloneResources:
+    boolean,
 ): void {
   model.traverse(
     (object) => {
@@ -743,6 +765,7 @@ function prepareMaterialsAndTextures(
                 material,
                 definition,
                 textureStates,
+                cloneResources,
               ),
           )
 
@@ -754,6 +777,7 @@ function prepareMaterialsAndTextures(
           object.material,
           definition,
           textureStates,
+          cloneResources,
         )
     },
   )
@@ -768,6 +792,9 @@ function prepareMaterial(
 
   textureStates:
     TextureState[],
+
+  cloneResources:
+    boolean,
 ): THREE.Material {
   const textureConfig =
     definition.textureAxes[
@@ -801,39 +828,43 @@ function prepareMaterial(
    */
 
   const material =
-    originalMaterial.clone()
+    cloneResources
+      ? originalMaterial.clone()
+      : originalMaterial
 
-  material.map =
-    cloneTexture(
-      originalMaterial.map,
-    )
+  if (cloneResources) {
+    material.map =
+      cloneTexture(
+        originalMaterial.map,
+      )
 
-  material.normalMap =
-    cloneTexture(
-      originalMaterial.normalMap,
-    )
+    material.normalMap =
+      cloneTexture(
+        originalMaterial.normalMap,
+      )
 
-  material.roughnessMap =
-    cloneTexture(
-      originalMaterial
-        .roughnessMap,
-    )
+    material.roughnessMap =
+      cloneTexture(
+        originalMaterial
+          .roughnessMap,
+      )
 
-  material.metalnessMap =
-    cloneTexture(
-      originalMaterial
-        .metalnessMap,
-    )
+    material.metalnessMap =
+      cloneTexture(
+        originalMaterial
+          .metalnessMap,
+      )
 
-  material.aoMap =
-    cloneTexture(
-      originalMaterial.aoMap,
-    )
+    material.aoMap =
+      cloneTexture(
+        originalMaterial.aoMap,
+      )
 
-  material.bumpMap =
-    cloneTexture(
-      originalMaterial.bumpMap,
-    )
+    material.bumpMap =
+      cloneTexture(
+        originalMaterial.bumpMap,
+      )
+  }
 
   const textures = [
     material.map,

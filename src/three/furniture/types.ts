@@ -146,6 +146,39 @@ export type FurnitureMaterialTextureConfig =
     >
   >
 
+export type MaterialSlotName =
+  string
+
+export type MaterialFinishId =
+  string
+
+/*
+ * Semantic material names exported by the GLB
+ * are grouped into a user-facing finish slot.
+ *
+ * A finish can only be selected when it is
+ * explicitly allowed by the model definition.
+ */
+export type FurnitureMaterialSlotConfig = {
+  label: string
+
+  targets: readonly string[]
+
+  defaultFinish:
+    MaterialFinishId
+
+  allowedFinishes:
+    readonly MaterialFinishId[]
+}
+
+export type FurnitureMaterialSlots =
+  Readonly<
+    Record<
+      MaterialSlotName,
+      FurnitureMaterialSlotConfig
+    >
+  >
+
 export type FurnitureDefinition = {
   id: string
 
@@ -169,4 +202,7 @@ export type FurnitureDefinition = {
 
   textureAxes:
     FurnitureMaterialTextureConfig
+
+  materialSlots?:
+    FurnitureMaterialSlots
 }

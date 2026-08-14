@@ -1,9 +1,9 @@
-# Стандарт 3D-ассетов мебели v2.2
+# Стандарт 3D-ассетов мебели v2.3
 
 **GLB-ассеты для мебельного конфигуратора на React + TypeScript + чистом Three.js**
 
 Статус: стандарт проекта  
-Актуальность: Table-first после интеграции `table-02-u-frame`, 12 августа 2026  
+Актуальность: Table-first после внедрения generic material system, 12 августа 2026
 Режим параллельной работы: model-only Work-чаты возвращают ZIP-пакеты; центральный integration-чат возвращает Git bundle  
 Область применения: столы, шкафы, комоды, тумбы, стеллажи, стулья и другая конфигурируемая мебель  
 Главный принцип: **модель проектируется не только исходя из того, как она выглядит, но и исходя из того, как runtime-код должен управлять ею.**
@@ -539,6 +539,9 @@ Delta move / spread
 Stretch segment
 multi-axis dimension mapping
 centered texture repeat/offset compensation
+declarative material slots
+runtime finish replacement
+session-scoped material selection per model
 ```
 
 Фактическая форма поддерживаемых resize rules в `FurnitureDefinition`:
@@ -603,9 +606,57 @@ table-02-u-frame / U-Frame Table
 
 ### Текущий статус material replacement
 
-GLB уже должен иметь стабильные semantic material names и replaceable finish groups. Ассеты обязаны подготавливаться к замене материалов.
+Общий material catalog, generic material controller, пользовательские selectors и session-scoped состояние выбора уже реализованы.
 
-При этом общий пользовательский material catalog, selector и runtime-состояние вариантов материалов **ещё не реализованы**. До отдельного этапа нельзя считать наличие material slot готовой UI-системой вариантов и нельзя добавлять model-specific material switching внутрь `App.tsx` или `FurnitureController`.
+Каждая модель декларативно описывает заменяемые группы через `materialSlots`:
+
+```ts
+type FurnitureMaterialSlotConfig = {
+  label: string
+  targets: readonly string[]
+  defaultFinish: string
+  allowedFinishes: readonly string[]
+}
+
+type FurnitureDefinition = {
+  // dimensions, resizeRules, textureAxes и другие поля
+  materialSlots?: Readonly<
+    Record<
+      string,
+      FurnitureMaterialSlotConfig
+    >
+  >
+}
+```
+
+`targets` содержит точные semantic `material.name` из GLB. Один slot может одновременно заменять несколько совместимых материалов, например top/bottom/edge surfaces столешницы. Один semantic material target не должен принадлежать двум slots одной модели.
+
+`defaultFinish` обязан входить в `allowedFinishes`. Все finish IDs должны существовать в общем material registry; generic controller не содержит названий моделей, столов, ножек или специальных GLB nodes.
+
+Текущий общий каталог содержит texture-based finishes:
+
+```text
+oak-natural
+walnut-natural
+pine-coated
+ash-natural
+concrete-light
+marble-cream
+```
+
+и procedural powder-coated metal finishes:
+
+```text
+metal-black-matte
+metal-white-matte
+metal-anthracite
+```
+
+Texture finishes используют Base Color, Roughness и Normal GL. Base Color загружается как sRGB, data maps — без color space; включены repeat wrapping, mipmaps и ограниченная renderer anisotropy. Для окрашенного металла используется низкий `metalness`, потому что видимая поверхность является полимерным покрытием, а не открытым металлом.
+
+После runtime-замены material controller сообщает furniture controller о новых текстурах. Текущие dimensions применяются повторно от base state, поэтому texture repeat/offset compensation сохраняется и материал не начинает растягиваться после последовательности resize → finish switch → resize.
+
+Выбор finish хранится отдельно для каждой модели только в текущей React-сессии. `localStorage`, URL configuration, пользовательская загрузка материалов и swatch previews пока не поддерживаются.
 
 Архитектура **не предполагает четыре ножки** или какую-либо фиксированную структуру мебели.
 
@@ -1435,7 +1486,7 @@ Model-only чаты не передают свои branches/bundles пользо
 - source package;
 - validation result.
 
-Материалы подготавливаются semantic slots/finish groups, однако до внедрения общей material system модельная ветка не должна добавлять собственный material selector или специальное переключение в UI.
+Материалы подготавливаются как semantic slots/finish groups. Model-only ветка декларативно предлагает `materialSlots`, используя существующие finish IDs общего каталога, но не добавляет собственный selector и не изменяет общую material system.
 
 ### Центральный integration flow
 
