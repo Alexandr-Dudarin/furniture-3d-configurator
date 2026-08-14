@@ -1,9 +1,9 @@
-# Стандарт 3D-ассетов мебели v2.3
+# Стандарт 3D-ассетов мебели v2.4
 
 **GLB-ассеты для мебельного конфигуратора на React + TypeScript + чистом Three.js**
 
 Статус: стандарт проекта  
-Актуальность: Table-first после внедрения generic material system, 12 августа 2026
+Актуальность: Table-first после внедрения generic material system и smooth resize, 14 августа 2026
 Режим параллельной работы: model-only Work-чаты возвращают ZIP-пакеты; центральный integration-чат возвращает Git bundle  
 Область применения: столы, шкафы, комоды, тумбы, стеллажи, стулья и другая конфигурируемая мебель  
 Главный принцип: **модель проектируется не только исходя из того, как она выглядит, но и исходя из того, как runtime-код должен управлять ею.**
@@ -74,6 +74,9 @@ TypeScript-конфигурация описывает, как конфигур�
 - должен ли контур/профиль сохранять радиус или форму;
 - какие материалы заменяемы;
 - UV-поведение каждой изменяемой поверхности;
+- разделены ли поверхности столешницы по несовместимому UV-поведению;
+- должна ли модель поддерживать текущую или будущую настройку высоты;
+- должна ли модель поддерживать текущую или будущую настройку толщины столешницы;
 - поддерживает ли уже текущий движок требуемое поведение.
 
 **Правила одной модели нельзя переносить на другую только потому, что они относятся к одной категории мебели.**
@@ -359,6 +362,66 @@ Edge-anchored resize означает, что одна логическая ст
 
 Текущий проект лучше всего поддерживает centered resize.  
 Одностороннее поведение должно быть явно отмечено, если для него требуется расширение движка.
+
+### 10.1 Готовность модели к изменению высоты
+
+Для каждой production-модели стола в паспорте явно указывается один из статусов:
+
+```text
+height-configurable — высота доступна пользователю сейчас
+height-ready        — структура подготовлена, но UI-параметр пока не включён
+height-fixed        — текущая структура не предполагает изменение высоты
+```
+
+Статус `height-ready` или `height-configurable` требует:
+
+- отдельных semantic nodes для вертикальных опор или их растягиваемых сегментов;
+- задокументированной local longitudinal axis каждой опоры;
+- известной физической `baseLength` вертикального сегмента;
+- pivot и hierarchy, позволяющих сохранить контакт с полом;
+- отдельного управляемого node столешницы и других деталей, которые должны подниматься;
+- сохранения поперечного сечения опор при изменении высоты;
+- явного описания floor anchor и верхней точки крепления.
+
+Для простой вертикальной опоры текущий generic runtime может реализовать изменение высоты комбинацией существующих правил:
+
+```text
+vertical support:
+  height -> Stretch segment по local longitudinal axis
+  height -> Delta move с factor 0.5 для сохранения нижнего края на полу
+
+tabletop / upper assembly:
+  height -> Delta move с factor 1
+```
+
+Точные коэффициенты зависят от pivot и конструкции конкретной модели. Они не должны копироваться между моделями без проверки.
+
+Если высота меняет угол наклонной опоры, соединяет две движущиеся точки или требует телескопической/вариантной конструкции, модель может потребовать `Fit between anchors`, visibility/variant или другое расширение движка.
+
+Physical dimension `height` не обязана автоматически соответствовать local `Y`: semantic dimension и local axis по-прежнему задаются декларативно.
+
+### 10.2 Готовность столешницы к изменению толщины
+
+Если текущая или будущая конфигурация предполагает изменение толщины столешницы, паспорт обязан определить:
+
+- semantic dimension, например `topThickness`;
+- base/min/max/step;
+- local scale axis столешницы;
+- базовую физическую толщину;
+- неподвижную опорную плоскость толщины;
+- какие связанные детали должны перемещаться вслед за изменившейся поверхностью;
+- UV-поведение верхней, нижней и торцевых поверхностей.
+
+Допустимые описательные anchors толщины:
+
+```text
+bottom-surface — нижняя плоскость остаётся неподвижной, толщина растёт вверх
+top-surface    — верхняя плоскость остаётся неподвижной, толщина растёт вниз
+center         — толщина изменяется симметрично относительно центра
+custom         — поведение полностью описывается в паспорте
+```
+
+Anchor толщины не выбирается generic controller автоматически. Он является частью контракта конкретной модели и реализуется подходящими декларативными resize rules.
 
 ---
 
@@ -919,6 +982,59 @@ width -> texture U
 
 Этот пример не является универсальным.
 
+### 18.1 Обязательное semantic-разделение столешницы
+
+Для каждой production-модели стола поверхности столешницы разделяются по своему UV-поведению и роли в runtime material replacement.
+
+Прямоугольная столешница должна иметь как минимум отдельные semantic material surfaces:
+
+```text
+Top
+Bottom
+Edge_Long
+Edge_Short
+```
+
+Фактические стабильные `material.name` могут уточнять назначение, например:
+
+```text
+Top_Surface
+Bottom_Surface
+Top_Edge_Long
+Top_Edge_Short
+```
+
+Для скруглённых, фигурных или сегментированных столешниц дополнительно выделяются несовместимые поверхности, например:
+
+```text
+Top_Edge_Corner
+Top_Center
+Top_LeftCap
+Top_RightCap
+```
+
+Для круглой столешницы вместо long/short edge используется отдельная semantic perimeter edge surface. Названия зависят от геометрии, но верх, низ и торцевая поверхность не объединяются в один неразличимый material target.
+
+Разделение material surfaces не требует автоматически создавать несколько Mesh. Один Mesh может использовать несколько material indices, если его геометрия должна изменяться как единый объект. Отдельные Nodes/Groups требуются только тогда, когда части имеют разное resize-поведение.
+
+Все поверхности одной столешницы могут входить в один пользовательский material slot:
+
+```text
+primaryTop:
+  targets:
+    - Top_Surface
+    - Bottom_Surface
+    - Top_Edge_Long
+    - Top_Edge_Short
+    - Top_Edge_Corner
+```
+
+Пользователь при этом выбирает один finish для всей столешницы, а runtime получает возможность независимо компенсировать texture repeat/offset для каждой поверхности.
+
+Запрещено использовать один общий material target для верхней, нижней, длинных и коротких торцевых поверхностей, если их physical dimension -> texture axis mapping различается. Это правило действует даже тогда, когда preview material визуально скрывает проблему при base dimensions.
+
+Паспорт и integration test должны перечислять все semantic material surfaces столешницы и проверять сохранение физического масштаба текстуры после base → intermediate → max → base resize.
+
 ---
 
 ## 19. Физический масштаб текстуры должен сохраняться
@@ -1026,6 +1142,8 @@ Preview material не должен зависеть от отсутствующ�
 Нельзя подключать DirectX normal map в OpenGL workflow без преобразования.
 
 Все карты одного finish должны использовать совместимые UV и одинаковый физический масштаб.
+
+Визуально золотой рисунок, пигмент, печать или декоративная прожилка покрытия сами по себе не являются металлом. Для такого finish золотой цвет хранится в Base Color, а `metalness` остаётся около `0`. Металлический response используется только для реально открытого металла, металлической фольги или физически подтверждённого металлического слоя.
 
 ---
 
@@ -1222,8 +1340,11 @@ KTX2
 - normals и shading;
 - bevel;
 - UV;
+- обязательное semantic-разделение верхней, нижней и торцевых поверхностей столешницы;
 - направление материалов;
 - совместимость с заменяемыми finishes;
+- явно задокументированный height-readiness status;
+- явно задокументированный thickness-readiness status и thickness anchor;
 - отсутствие лишних объектов сцены;
 - отсутствие неподдерживаемой compression;
 - отсутствие случайных transforms.
@@ -1332,7 +1453,10 @@ Git bundle
 - изменение только разрешённых local axes;
 - корректное движение положительных и отрицательных targets;
 - texture repeat/offset compensation;
+- независимое UV-поведение всех semantic surfaces столешницы;
 - возврат точно к base state после серии изменений;
+- сохранение floor contact и поперечного сечения опор при configurable height;
+- сохранение выбранной опорной плоскости при configurable tabletop thickness;
 - наличие ожидаемых semantic material names;
 - наличие replaceable finish metadata, если она предусмотрена.
 
@@ -1390,6 +1514,9 @@ behavior каждого controlled node
 local axes
 material slots и finish groups
 UV behavior
+tabletop semantic surfaces
+height-readiness status
+thickness-readiness status и anchor
 assumptions
 runtime compatibility
 ```
@@ -1406,6 +1533,8 @@ runtime compatibility
 контракт
 → semantic hierarchy
 → geometry/materials/UV
+→ проверка semantic surfaces столешницы
+→ проверка height/thickness readiness
 → GLB validation
 → FurnitureDefinition
 → integration test
@@ -1534,6 +1663,10 @@ ZIP не пропадает сам по себе после импорта др�
 Не включай в ZIP .git, node_modules, dist, полную копию проекта, furnitureRegistry.ts или изменённые shared/generic files.
 
 Обязательно проверь npm test, npm run build, production GLB через glTF Validator и визуально base/max состояния. Зафиксируй результаты и все допущения в manifest/паспорте.
+
+Для каждой модели стола обязательно раздели верхнюю, нижнюю, длинные и короткие торцевые поверхности столешницы на отдельные semantic material targets; для круглой/фигурной формы используй эквивалентное разделение по UV-поведению. Они могут оставаться частями одного Mesh и входить в один пользовательский finish slot.
+
+В паспорте обязательно укажи `height-configurable`, `height-ready` или `height-fixed`, а также аналогичный статус готовности столешницы к изменению толщины и выбранный thickness anchor, если такая настройка предусмотрена.
 
 Не присылай Git bundle и не предлагай мне распаковывать ZIP поверх рабочего проекта. ZIP будет передан в отдельный центральный integration-чат, который подключит модели к актуальному main и вернёт интеграционный bundle.
 ```
@@ -1711,6 +1844,49 @@ Segmented resize required
 Custom geometry behavior required
 ```
 
+## Height readiness
+
+Для каждой модели стола указать одно из:
+
+```text
+height-configurable
+height-ready
+height-fixed
+```
+
+Для `height-configurable` и `height-ready` дополнительно указать:
+
+```text
+semantic height dimension
+base/min/max/step, если уже известны
+vertical support targets
+local longitudinal axis
+baseLength каждого растягиваемого сегмента
+floor anchor
+верхние детали, перемещающиеся вместе со столешницей
+```
+
+## Tabletop thickness readiness
+
+Указать одно из:
+
+```text
+thickness-configurable
+thickness-ready
+thickness-fixed
+```
+
+Если изменение толщины предусмотрено, указать:
+
+```text
+semantic dimension
+base/min/max/step
+local scale axis
+anchor: bottom-surface / top-surface / center / custom
+связанные moving targets
+UV behavior торцевых поверхностей
+```
+
 ## Material names
 
 Точные экспортированные `material.name`.
@@ -1718,10 +1894,10 @@ Custom geometry behavior required
 Пример:
 
 ```text
-Wood_Top
-Wood_Bottom
-Wood_Edge_Long
-Wood_Edge_Short
+Top_Surface
+Bottom_Surface
+Top_Edge_Long
+Top_Edge_Short
 Metal_Frame
 ```
 
@@ -1732,11 +1908,11 @@ Metal_Frame
 Пример:
 
 ```text
-PrimaryWood:
-  Wood_Top
-  Wood_Bottom
-  Wood_Edge_Long
-  Wood_Edge_Short
+PrimaryTop:
+  Top_Surface
+  Bottom_Surface
+  Top_Edge_Long
+  Top_Edge_Short
 ```
 
 ## UV behavior
@@ -1750,12 +1926,19 @@ physical dimension -> texture axis
 Пример:
 
 ```text
-Wood_Top:
+Top_Surface:
   length -> U
   width  -> V
 
-Wood_Edge_Long:
+Bottom_Surface:
   length -> U
+  width  -> V
+
+Top_Edge_Long:
+  length -> U
+
+Top_Edge_Short:
+  width -> U
 ```
 
 Также указать UV anchor, если он не centered.
