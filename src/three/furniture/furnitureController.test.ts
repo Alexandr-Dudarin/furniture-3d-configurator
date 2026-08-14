@@ -353,6 +353,57 @@ describe(
     )
 
     it(
+      'updates texture transforms during resize without re-uploading texture images',
+      () => {
+        const {
+          model,
+          top,
+        } = createFirstTableFixture()
+
+        const controller =
+          createFurnitureController(
+            model,
+            FIRST_TABLE_CONFIG,
+          )
+
+        const texture =
+          getRequiredMap(top)
+
+        const preparedVersion =
+          texture.version
+
+        controller.setDimensions({
+          length: 2,
+          width: 1,
+        })
+
+        controller.setDimensions({
+          length: 1.4,
+          width: 0.8,
+        })
+
+        controller.setDimensions({
+          length: 1.2,
+          width: 0.6,
+        })
+
+        expect(
+          texture.version,
+        ).toBe(
+          preparedVersion,
+        )
+
+        expectTextureTransform(
+          texture,
+          2,
+          3,
+          0.1,
+          0.2,
+        )
+      },
+    )
+
+    it(
       'moves delta targets from their base positions with independent signed factors',
       () => {
         const model =

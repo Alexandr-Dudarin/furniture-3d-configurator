@@ -537,9 +537,6 @@ export function createFurnitureController(
               )
             },
           )
-
-          state.texture.needsUpdate =
-            true
         },
       )
 
