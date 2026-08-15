@@ -10,6 +10,14 @@ import {
   U_FRAME_TABLE_CONFIG,
 } from '../three/models/u-frame-table/config'
 
+import {
+  SLAT_PEDESTAL_TABLE_CONFIG,
+} from '../three/models/slat-pedestal-table/config'
+
+import {
+  V_PEDESTAL_TABLE_CONFIG,
+} from '../three/models/v-pedestal-table/config'
+
 /*
  * --------------------------------
  * FURNITURE REGISTRY
@@ -34,6 +42,14 @@ const furnitureRegistry =
     [
       U_FRAME_TABLE_CONFIG.id,
       U_FRAME_TABLE_CONFIG,
+    ],
+    [
+      SLAT_PEDESTAL_TABLE_CONFIG.id,
+      SLAT_PEDESTAL_TABLE_CONFIG,
+    ],
+    [
+      V_PEDESTAL_TABLE_CONFIG.id,
+      V_PEDESTAL_TABLE_CONFIG,
     ],
   ])
 
