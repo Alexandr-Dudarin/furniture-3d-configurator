@@ -72,6 +72,20 @@ Three.js scene/runtime создаётся один раз. При переклю
 - behaviors: `Scale + Delta move / spread + Edge-anchor move + Stretch segment`;
 - две U-рамы расходятся по длине, а их поперечные сегменты корректно изменяются по ширине.
 
+### `table-03-slat-pedestal` — Slat Pedestal Table
+
+- base: `1.20 × 0.75 × 0.75 m`;
+- max: `1.60 × 1.15 × 0.75 m`;
+- behaviors: `Scale + Fixed`;
+- центральная реечная опора остаётся неподвижной, а столешница изменяется относительно центра.
+
+### `table-04-v-pedestal` — V-Pedestal Table
+
+- base: `1.20 × 0.80 × 0.76 m`;
+- max: `1.60 × 1.20 × 0.76 m`;
+- behaviors: `Stretch segment + Delta move / spread + Fixed`;
+- 9-slice столешница сохраняет радиус углов `25 mm`, а V-образная опора остаётся неподвижной.
+
 ## Локальный запуск
 
 Требуется Node.js и npm.
@@ -141,7 +155,7 @@ Physical dimension и local/model axis задаются отдельно для 
 - добавить generic configurable height;
 - подготовить configurable tabletop thickness с явным anchor;
 - расширить библиотеку мебельных finishes;
-- интегрировать следующие constructor-ready модели;
+- интегрировать следующие constructor-ready модели и типы мебели;
 - улучшить общую сцену, пол, отражения и освещение;
 - добавить сохранение конфигурации и shareable URL.
 
