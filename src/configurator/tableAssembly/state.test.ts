@@ -107,7 +107,7 @@ it.each(['ellipse', 'capsule'] as const)('%s stays elongated when reducing lengt
   const shared = readSharedConfiguration(createConfigurationUrl('https://example.test', { ...createDefaultSession(), mode: 'builder', assembly: old }))
   expect(shared.status).toBe('adjusted')
   expect(shared.assembly).toEqual(changed.configuration)
-  for (const baseId of ['slat-pedestal', 'round-fluted']) {
+  for (const baseId of ['slat-pedestal', 'round-fluted', 'v-pedestal']) {
     const base = getTableBase(baseId)
     for (let i = 0; i <= Math.round((base.length.max - base.length.min) / base.length.step); i++) {
       const length = base.length.min + i * base.length.step
@@ -141,7 +141,7 @@ it('shares four-leg height limits and excludes the three curved shapes', () => {
   }
 })
 
-it.each(['four-legs', 'round-fluted'])('%s uses 64–84 cm in whole centimetres for UI, defaults, storage and links', (baseId) => {
+it.each(['four-legs', 'round-fluted', 'u-frame'])('%s uses 64–84 cm in whole centimetres for UI, defaults, storage and links', (baseId) => {
   const base = getTableBase(baseId)
   expect([base.height.min, base.height.max, base.height.step]).toEqual([0.64, 0.84, 0.01])
   const initial = normalizeTableAssembly({ baseId })
@@ -162,4 +162,31 @@ it.each(['four-legs', 'round-fluted'])('%s uses 64–84 cm in whole centimetres 
     expect(patch.notice).toContain('Высота')
   }
   expect(normalizeTableAssembly({ baseId, baseHeight: NaN }).baseHeight).toBe(initial.baseHeight)
+})
+
+it.each(['u-frame', 'v-pedestal'])('%s round-trips every supported shape through storage and shared URLs', (baseId) => {
+  const base = getTableBase(baseId)
+  for (const shape of base.compatibleShapes) {
+    const assembly = normalizeTableAssembly({ baseId, shape, length: base.length.max, width: base.width.max, baseHeight: base.height.max, topFinish: 'marble-black-gold', baseFinish: 'metal-white-matte' })
+    expect(assembly.baseId).toBe(baseId)
+    const session = { ...createDefaultSession(), mode: 'builder' as const, assembly }
+    expect(readSavedSession(JSON.stringify(session)).session.assembly).toEqual(assembly)
+    const parsed = readSharedConfiguration(createConfigurationUrl('https://example.test', session))
+    expect(parsed.status).toBe('valid')
+    expect(parsed.assembly).toEqual(assembly)
+  }
+})
+
+it('widens a V-pedestal ellipse for the mount and replaces U-frames for curved tops', () => {
+  const start = normalizeTableAssembly({ baseId: 'v-pedestal', shape: 'rectangle', length: 1.2, width: 0.8 })
+  const ellipse = updateTableAssembly(start, { shape: 'ellipse' })
+  expect(ellipse.configuration.baseId).toBe('v-pedestal')
+  expect(ellipse.configuration.width).toBe(0.9)
+  expect(getTabletopWidthConfig(getTableBase('v-pedestal'), 'ellipse', 1.2)).toMatchObject({ min: 0.9, max: 1, base: 0.9 })
+  expect(ellipse.notice).toBeTruthy()
+  for (const shape of ['circle', 'ellipse', 'capsule'] as const) {
+    const result = updateTableAssembly(normalizeTableAssembly({ baseId: 'u-frame' }), { shape })
+    expect(result.configuration.baseId).toBe(shape === 'circle' ? 'round-fluted' : 'slat-pedestal')
+    expect(result.notice).toContain('Для этой формы')
+  }
 })

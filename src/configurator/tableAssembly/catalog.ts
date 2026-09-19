@@ -27,12 +27,19 @@ export type TableBaseDefinition = {
   sourceHeight: number
   length: FurnitureDimensionConfig
   width: FurnitureDimensionConfig
+  widthMinByShape?: Partial<Record<TopShape, number>>
   diameter?: FurnitureDimensionConfig
   height: FurnitureDimensionConfig
-  heightMode: 'fixed' | 'stretch-column' | 'stretch-legs'
+  heightMode: 'fixed' | 'stretch-column' | 'stretch-legs' | 'stretch-frame'
   cornerLegs?: {
     targets: readonly string[]
     insetByShape: Partial<Record<TopShape, number>>
+    endBand: number
+  }
+  uFrames?: {
+    targets: readonly { frame: string; posts: readonly string[]; rail: string }[]
+    insetByShape: Partial<Record<TopShape, number>>
+    postSection: number
     endBand: number
   }
   resizeRules: readonly FurnitureResizeRule[]
@@ -86,6 +93,41 @@ export const TABLE_BASES: readonly TableBaseDefinition[] = [
     ],
     materialTargets: ['Metal_Frame'], allowedFinishes: METAL_FINISHES, defaultFinish: 'metal-black-matte',
   },
+  {
+    id: 'u-frame', label: 'Две U-образные рамы', modelUrl: '/modules/bases/u-frame.glb',
+    compatibleShapes: ['rectangle', 'rounded-rectangle', 'chamfered', 'wide-chamfered'],
+    attachment: 'Attachment_Tabletop', sourceHeight: 0.735,
+    length: { label: 'Длина', base: 0.95, min: 0.95, max: 1.65, step: 0.01 },
+    width: { label: 'Ширина', base: 0.55, min: 0.55, max: 0.8, step: 0.01 },
+    height: { label: 'Высота основания', base: 0.74, ...ADJUSTABLE_BASE_HEIGHT },
+    heightMode: 'stretch-frame',
+    uFrames: {
+      targets: ['Left', 'Right'].map((side) => ({
+        frame: `Frame_${side}`,
+        posts: [`Frame_${side}_Post_Front`, `Frame_${side}_Post_Back`],
+        rail: `Frame_${side}_BottomRail`,
+      })),
+      insetByShape: { rectangle: 0.07, 'rounded-rectangle': 0.07, chamfered: 0.1, 'wide-chamfered': 0.16 },
+      postSection: 0.025, endBand: 0.01,
+    },
+    resizeRules: [
+      { type: 'delta-move', targets: [{ target: 'Attachment_Tabletop', factor: 1 }], dimension: 'baseHeight', axis: 'y' },
+    ],
+    materialTargets: ['Metal_Frame'], allowedFinishes: METAL_FINISHES, defaultFinish: 'metal-black-matte',
+  },
+  {
+    id: 'v-pedestal', label: 'V-образное основание', modelUrl: '/modules/bases/v-pedestal.glb',
+    compatibleShapes: TOP_SHAPES.map((shape) => shape.id),
+    attachment: 'Attachment_Tabletop', sourceHeight: 0.743,
+    length: { label: 'Длина', base: 1.2, min: 1.2, max: 1.6, step: 0.01 },
+    width: { label: 'Ширина', base: 0.8, min: 0.8, max: 1.2, step: 0.01 },
+    // Эллипс сильнее сужается у углов монтажной площадки 820 × 560 мм.
+    widthMinByShape: { ellipse: 0.9 },
+    diameter: { label: 'Диаметр', base: 1.1, min: 1.1, max: 1.4, step: 0.01 },
+    height: { label: 'Высота основания', base: 0.743, min: 0.743, max: 0.743, step: 0.001 },
+    heightMode: 'fixed', resizeRules: [],
+    materialTargets: ['Metal_Support', 'Metal_Base'], allowedFinishes: METAL_FINISHES, defaultFinish: 'metal-black-matte',
+  },
 ]
 
 export const TOP_THICKNESS: FurnitureDimensionConfig = { label: 'Толщина столешницы', base: 0.022, min: 0.02, max: 0.05, step: 0.001 }
@@ -94,11 +136,12 @@ export const TOP_THICKNESS: FurnitureDimensionConfig = { label: 'Толщина 
 export const OVAL_MIN_LENGTH_DIFFERENCE = 0.2
 
 export function getTabletopWidthConfig(base: TableBaseDefinition, shape: TopShape, length: number): FurnitureDimensionConfig {
+  const min = base.widthMinByShape?.[shape] ?? base.width.min
   const difference = shape === 'ellipse' || shape === 'capsule' ? OVAL_MIN_LENGTH_DIFFERENCE : 0
   const limit = Math.min(base.width.max, length - difference)
-  const steps = Math.floor((limit - base.width.min + 1e-8) / base.width.step)
-  const max = Number((base.width.min + steps * base.width.step).toFixed(8))
-  return { ...base.width, max, base: Math.min(base.width.base, max) }
+  const steps = Math.floor((limit - min + 1e-8) / base.width.step)
+  const max = Number((min + steps * base.width.step).toFixed(8))
+  return { ...base.width, min, max, base: Math.max(min, Math.min(base.width.base, max)) }
 }
 
 export function getTableBase(id: string) {

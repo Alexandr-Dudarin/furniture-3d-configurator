@@ -5,6 +5,7 @@ import { createFurnitureController } from '../furniture/furnitureController'
 import { disposeFurnitureModel } from '../furniture/model'
 import { createTabletopGeometry } from './tabletopGeometry'
 import { createCornerLegController } from './cornerLegs'
+import { createUFrameController } from './uFrames'
 
 // Принимает отдельный GLB основания. Готовые столы и их контроллер не изменяются.
 export function createTableAssembly(baseModel: Group, initial: TableAssemblyConfiguration) {
@@ -13,6 +14,7 @@ export function createTableAssembly(baseModel: Group, initial: TableAssemblyConf
   if (!attachment) throw new Error(`Missing attachment: ${base.attachment}`)
   const controller = createFurnitureController(baseModel, getBaseRuntimeDefinition(base))
   const updateLegs = createCornerLegController(baseModel, base)
+  const updateFrames = createUFrameController(baseModel, base)
   const group = new Group()
   group.name = 'CustomTable_Root'
   const top = new Mesh(createTabletopGeometry(initial), ['Top_Surface', 'Top_Bottom', 'Top_Edge'].map((name) => {
@@ -35,6 +37,7 @@ export function createTableAssembly(baseModel: Group, initial: TableAssemblyConf
     }
     controller.setDimensions({ baseHeight: next.baseHeight })
     updateLegs?.(next)
+    updateFrames?.(next)
     group.updateMatrixWorld(true)
     top.position.copy(group.worldToLocal(attachment.getWorldPosition(new Vector3())))
     previous = next

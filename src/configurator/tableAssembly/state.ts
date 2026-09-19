@@ -46,7 +46,7 @@ export function updateTableAssembly(current: TableAssemblyConfiguration, patch: 
   if (next.baseFinish !== (patch.baseFinish ?? current.baseFinish)) notices.push('Покрытие основания заменено на совместимое.')
   if (next.length !== (patch.length ?? current.length) || (next.shape !== 'circle' && next.width !== (patch.width ?? current.width))) {
     notices.push(next.shape === 'ellipse' || next.shape === 'capsule'
-      ? 'Размеры скорректированы: у овальной столешницы длина больше ширины минимум на 20 см.'
+      ? 'Размеры приведены к диапазону основания; у овальной столешницы длина больше ширины минимум на 20 см.'
       : 'Размеры приведены к диапазону выбранного основания.')
   }
   return { configuration: next, notice: notices.length ? notices.join(' ') : null }

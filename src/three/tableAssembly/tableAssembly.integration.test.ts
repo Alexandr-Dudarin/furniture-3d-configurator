@@ -23,7 +23,7 @@ async function loadBase(url: string) {
   return (await new GLTFLoader().parseAsync(Uint8Array.from(bytes).buffer, '')).scene
 }
 
-it.each(TABLE_BASES.filter((base) => !base.cornerLegs))('$id keeps its footprint and mounting plane while its top changes', async (base) => {
+it.each(TABLE_BASES.filter((base) => !base.cornerLegs && !base.uFrames))('$id keeps its footprint and mounting plane while its top changes', async (base) => {
   const loaded = await loadBase(base.modelUrl)
   expect(loaded.getObjectByName('TableTop')).toBeUndefined()
   const initial = normalizeTableAssembly({ baseId: base.id, baseHeight: base.height.base })

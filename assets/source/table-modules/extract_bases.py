@@ -1,4 +1,4 @@
-"""Извлекает самостоятельные основания из GLB 01/03/05 без изменения геометрии.
+"""Извлекает самостоятельные основания из GLB 01–05 без изменения геометрии.
 Запуск из корня проекта: python assets/source/table-modules/extract_bases.py
 Только стандартная библиотека Python; исходные GLB остаются неизменными.
 """
@@ -10,10 +10,11 @@ import struct
 ROOT = Path(__file__).resolve().parents[3]
 
 
-def extract(source, target, attachment_height):
+def extract(source, target, attachment_height, excluded_nodes=('TableTop',)):
     raw = (ROOT / source).read_bytes()
     json_size = struct.unpack_from('<I', raw, 12)[0]
     doc = json.loads(raw[20:20 + json_size])
+    assert set(excluded_nodes) <= {node.get('name') for node in doc['nodes']}, 'Не найдены все части столешницы'
     binary = raw[28 + json_size:]
     assert not doc.get('extensionsUsed'), 'Расширения требуют отдельного экспортера'
     result = {'asset': {'version': '2.0', 'generator': 'Furniture Configurator module extractor v2'},
@@ -30,7 +31,7 @@ def extract(source, target, attachment_height):
         result[kind].append(value)
         if kind == 'nodes':
             if 'mesh' in value: value['mesh'] = take('meshes', value['mesh'])
-            children = [i for i in value.get('children', []) if doc['nodes'][i].get('name') != 'TableTop']
+            children = [i for i in value.get('children', []) if doc['nodes'][i].get('name') not in excluded_nodes]
             if children: value['children'] = [take('nodes', i) for i in children]
             else: value.pop('children', None)
         elif kind == 'meshes':
@@ -89,3 +90,8 @@ if __name__ == '__main__':
     extract('public/models/first-table.glb', 'public/modules/bases/four-legs.glb', 0.71)
     extract('public/models/table-03-slat-pedestal.glb', 'public/modules/bases/slat-pedestal.glb', 0.728)
     extract('public/models/table-05-round-fluted-pedestal.glb', 'public/modules/bases/round-fluted.glb', 0.738)
+    extract('public/models/table-02-u-frame.glb', 'public/modules/bases/u-frame.glb', 0.735)
+    extract('public/models/table-04-v-pedestal.glb', 'public/modules/bases/v-pedestal.glb', 0.743, (
+        'Top_Center', 'Top_Edge_Front', 'Top_Edge_Back', 'Top_Edge_Left', 'Top_Edge_Right',
+        'Top_Corner_FrontLeft', 'Top_Corner_FrontRight', 'Top_Corner_BackLeft', 'Top_Corner_BackRight',
+    ))

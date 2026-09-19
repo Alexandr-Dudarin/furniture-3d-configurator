@@ -1,11 +1,13 @@
-# Исходники модулей столов — modular-tables-v3
+# Исходники модулей столов — modular-tables-v4
 
 Основания извлечены из принятых production GLB без изменения геометрии,
 UV, локальных transforms или preview-материалов:
 
 - `public/models/first-table.glb` → `public/modules/bases/four-legs.glb`;
 - `public/models/table-03-slat-pedestal.glb` → `public/modules/bases/slat-pedestal.glb`;
-- `public/models/table-05-round-fluted-pedestal.glb` → `public/modules/bases/round-fluted.glb`.
+- `public/models/table-05-round-fluted-pedestal.glb` → `public/modules/bases/round-fluted.glb`;
+- `public/models/table-02-u-frame.glb` → `public/modules/bases/u-frame.glb`;
+- `public/models/table-04-v-pedestal.glb` → `public/modules/bases/v-pedestal.glb`.
 
 Экстрактор не меняет исходные GLB. Перед извлечением table-03 исправлен своим
 Node-генератором: нижняя часть ядра продлена в площадку, закрывая зазор 6 мм.
@@ -28,7 +30,7 @@ bufferViews, textures и images. Прежняя столешница удаля�
 исходник — `src/three/tableAssembly/tabletopGeometry.ts`. Готового GLB каждой
 комбинации и функции экспорта сборки в этой версии нет.
 
-Runtime-паспорт трёх оснований, метрика UV, размеры, высота, крепление,
+Runtime-паспорт пяти оснований, метрика UV, размеры, высота, крепление,
 материалы и контракт поставки следующих модулей:
 `docs/table-module-standard-v1.md`.
 
@@ -48,3 +50,15 @@ Validator сообщает о них как INFO, поскольку матер�
 основания имеют диапазон 640–840 мм, шаг 10 мм. Каталог разделяет исходный
 `sourceHeight` GLB и начальное значение `height.base` для пользователя.
 На круглой опоре это соответственно 738 и 740 мм; трансформации считаются от 738 мм.
+
+
+В modular-tables-v4 добавлены U-рамы и V-основание. Шесть готовых моделей
+и три прежних GLB-модуля остаются побайтово прежними. Экстрактор для V-основания
+удаляет девять явных узлов столешницы, сохраняя `UnderTop_Mount`.
+Новые модули — без текстур столешниц, камер, света или пола.
+
+U-рамы в сборке: высота 640–840 мм / шаг 10 мм, расстановка по габаритам и
+форме, сохранение сечения и фасок. V-основание в сборке: высота фиксирована
+743 мм; монтажная площадка проверена для всех семи форм. Его наклонные опоры
+не растягиваются. Отдельные паспорта: `u-frame-passport.md`, `v-pedestal-passport.md`.
+Снимки `*-v4.png` показывают новые модули в реальном браузере.

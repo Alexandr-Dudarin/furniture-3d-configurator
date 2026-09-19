@@ -1,0 +1,45 @@
+{
+  "uri": "u-frame.glb",
+  "mimeType": "model/gltf-binary",
+  "validatorVersion": "2.0.0-dev.3.10",
+  "validatedAt": "2026-09-19T12:38:38.310Z",
+  "issues": {
+    "numErrors": 0,
+    "numWarnings": 0,
+    "numInfos": 1,
+    "numHints": 0,
+    "messages": [
+      {
+        "code": "NODE_EMPTY",
+        "message": "Empty node encountered.",
+        "severity": 2,
+        "pointer": "/nodes/9"
+      }
+    ],
+    "truncated": false
+  },
+  "info": {
+    "version": "2.0",
+    "generator": "Furniture Configurator module extractor v2",
+    "resources": [
+      {
+        "pointer": "/buffers/0",
+        "mimeType": "application/gltf-buffer",
+        "storage": "glb",
+        "byteLength": 43200
+      }
+    ],
+    "animationCount": 0,
+    "materialCount": 1,
+    "hasMorphTargets": false,
+    "hasSkins": false,
+    "hasTextures": false,
+    "hasDefaultScene": true,
+    "drawCallCount": 2,
+    "totalVertexCount": 1800,
+    "totalTriangleCount": 600,
+    "maxUVs": 0,
+    "maxInfluences": 0,
+    "maxAttributes": 2
+  }
+}

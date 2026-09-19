@@ -1,0 +1,45 @@
+{
+  "uri": "v-pedestal.glb",
+  "mimeType": "model/gltf-binary",
+  "validatorVersion": "2.0.0-dev.3.10",
+  "validatedAt": "2026-09-19T12:38:38.334Z",
+  "issues": {
+    "numErrors": 0,
+    "numWarnings": 0,
+    "numInfos": 1,
+    "numHints": 0,
+    "messages": [
+      {
+        "code": "NODE_EMPTY",
+        "message": "Empty node encountered.",
+        "severity": 2,
+        "pointer": "/nodes/8"
+      }
+    ],
+    "truncated": false
+  },
+  "info": {
+    "version": "2.0",
+    "generator": "Furniture Configurator module extractor v2",
+    "resources": [
+      {
+        "pointer": "/buffers/0",
+        "mimeType": "application/gltf-buffer",
+        "storage": "glb",
+        "byteLength": 316224
+      }
+    ],
+    "animationCount": 0,
+    "materialCount": 2,
+    "hasMorphTargets": false,
+    "hasSkins": false,
+    "hasTextures": false,
+    "hasDefaultScene": true,
+    "drawCallCount": 6,
+    "totalVertexCount": 13176,
+    "totalTriangleCount": 4392,
+    "maxUVs": 0,
+    "maxInfluences": 0,
+    "maxAttributes": 2
+  }
+}

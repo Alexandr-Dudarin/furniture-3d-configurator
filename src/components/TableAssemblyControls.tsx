@@ -51,7 +51,7 @@ export function TableAssemblyControls({ configuration, onChange }: Props) {
       <SizeControl name="Толщина столешницы" value={configuration.thickness} config={TOP_THICKNESS} millimeters onChange={(thickness) => onChange({ thickness })} />
       {base.heightMode !== 'fixed' ? (
         <SizeControl name="Высота основания" value={configuration.baseHeight} config={base.height} onChange={(baseHeight) => onChange({ baseHeight })} />
-      ) : <p className="assembly-summary">Высота основания: {base.height.base * 100} см, фиксирована</p>}
+      ) : <p className="assembly-summary">Высота основания: {Number((base.height.base * 100).toFixed(1))} см, фиксирована</p>}
       <p className="assembly-summary">Высота стола: {Number(((configuration.baseHeight + configuration.thickness) * 100).toFixed(1))} см</p>
       <div className="assembly-field">
         <span>Материал столешницы</span>
