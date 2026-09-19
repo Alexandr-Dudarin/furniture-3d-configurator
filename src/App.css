@@ -108,3 +108,63 @@
   overflow-wrap: anywhere;
   resize: vertical;
 }
+
+
+.configuration-mode {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  padding: 3px;
+  border-radius: 8px;
+  background: #f0f3f7;
+}
+
+.configuration-mode button {
+  flex: 1;
+  padding: 9px 4px;
+  border: 0;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 12px;
+  color: #344253;
+  background: transparent;
+  cursor: pointer;
+}
+
+.configuration-mode button[aria-pressed="true"] {
+  background: white;
+  color: #155fb9;
+  box-shadow: 0 1px 4px #0002;
+}
+
+.configuration-mode button:focus-visible {
+  outline: 2px solid #1767ca;
+}
+
+.assembly-field {
+  display: block;
+  margin-top: 14px;
+}
+
+.assembly-field > span {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.assembly-field input[type="range"] {
+  width: 100%;
+}
+
+.assembly-summary {
+  margin: 12px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #526070;
+}
+
+.assembly-error {
+  font-size: 13px;
+  color: #a12626;
+}

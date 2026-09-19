@@ -83,7 +83,7 @@ describe('configuration portability', () => {
 })
 
 describe('untrusted and outdated data', () => {
-  it.each(['{', 'null', '[]', '{"version":2,"models":{}}'])('recovers from unreadable storage: %s', (raw) => {
+  it.each(['{', 'null', '[]', '{"version":99,"models":{}}'])('recovers from unreadable storage: %s', (raw) => {
     const result = readSavedSession(raw)
     expect(result.session).toEqual(createDefaultSession())
     expect(result.notice).toBeTruthy()
@@ -106,7 +106,7 @@ describe('untrusted and outdated data', () => {
   })
 
   it.each([
-    { version: 2, modelId: roundId },
+    { version: 99, modelId: roundId },
     { version: 1, modelId: 'removed-model' },
     { version: 1, modelId: '__proto__' },
     null,

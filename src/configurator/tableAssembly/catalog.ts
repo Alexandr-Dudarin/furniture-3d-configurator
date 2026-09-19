@@ -1,0 +1,88 @@
+import type { FurnitureDefinition, FurnitureDimensionConfig, FurnitureResizeRule } from '../../three/furniture/types'
+
+export const TOP_SHAPES = [
+  { id: 'rectangle', label: 'Прямоугольник' },
+  { id: 'rounded-rectangle', label: 'Скруглённые углы' },
+  { id: 'chamfered', label: 'Небольшие срезы углов' },
+  { id: 'wide-chamfered', label: 'Широкие срезы углов' },
+  { id: 'circle', label: 'Круг' },
+  { id: 'ellipse', label: 'Эллипс' },
+  { id: 'capsule', label: 'Овал с прямыми сторонами' },
+] as const
+export type TopShape = typeof TOP_SHAPES[number]['id']
+
+export const TOP_FINISHES = ['oak-natural', 'walnut-natural', 'pine-coated', 'ash-natural', 'oak-grey', 'oak-silver', 'oak-black', 'concrete-light', 'marble-cream', 'marble-white-gold', 'marble-black-gold', 'marble-duo-gold', 'terrazzo-neutral']
+const WOOD_FINISHES = TOP_FINISHES.slice(0, 7)
+const METAL_FINISHES = ['metal-black-matte', 'metal-white-matte', 'metal-anthracite']
+
+export type TableBaseDefinition = {
+  id: string
+  label: string
+  modelUrl: string
+  compatibleShapes: readonly TopShape[]
+  attachment: string
+  length: FurnitureDimensionConfig
+  width: FurnitureDimensionConfig
+  diameter?: FurnitureDimensionConfig
+  height: FurnitureDimensionConfig
+  heightMode: 'fixed' | 'stretch-column'
+  resizeRules: readonly FurnitureResizeRule[]
+  materialTargets: readonly string[]
+  allowedFinishes: readonly string[]
+  defaultFinish: string
+}
+
+export const TABLE_BASES: readonly TableBaseDefinition[] = [
+  {
+    id: 'slat-pedestal', label: 'Реечное основание', modelUrl: '/modules/bases/slat-pedestal.glb',
+    compatibleShapes: ['rectangle', 'rounded-rectangle', 'chamfered', 'wide-chamfered', 'ellipse', 'capsule'],
+    attachment: 'Attachment_Tabletop',
+    length: { label: 'Длина', base: 1.2, min: 1.2, max: 1.6, step: 0.01 },
+    width: { label: 'Ширина', base: 0.8, min: 0.75, max: 1.15, step: 0.01 },
+    height: { label: 'Высота основания', base: 0.728, min: 0.728, max: 0.728, step: 0.001 },
+    heightMode: 'fixed', resizeRules: [],
+    materialTargets: ['Wood_Slats', 'Wood_Plinth'], allowedFinishes: WOOD_FINISHES, defaultFinish: 'oak-natural',
+  },
+  {
+    id: 'round-fluted', label: 'Круглая рифлёная опора', modelUrl: '/modules/bases/round-fluted.glb',
+    compatibleShapes: TOP_SHAPES.map((shape) => shape.id), attachment: 'Attachment_Tabletop',
+    length: { label: 'Длина', base: 1.2, min: 1.1, max: 1.4, step: 0.01 },
+    width: { label: 'Ширина', base: 0.9, min: 0.8, max: 1.1, step: 0.01 },
+    diameter: { label: 'Диаметр', base: 1.1, min: 1.1, max: 1.4, step: 0.01 },
+    height: { label: 'Высота основания', base: 0.738, min: 0.678, max: 0.798, step: 0.005 },
+    heightMode: 'stretch-column',
+    resizeRules: [
+      { type: 'stretch-segment', target: 'Fluted_Column', dimension: 'baseHeight', axis: 'y', baseLength: 0.71 },
+      // Колонна начинается на Y=0.022: компенсируем scale, оставляя её нижнюю кромку на месте.
+      { type: 'delta-move', targets: [{ target: 'Fluted_Column', factor: -0.022 / 0.71 }], dimension: 'baseHeight', axis: 'y' },
+      { type: 'delta-move', targets: [{ target: 'Top_Mount', factor: 1 }, { target: 'Attachment_Tabletop', factor: 1 }], dimension: 'baseHeight', axis: 'y' },
+    ],
+    materialTargets: ['Metal_Frame'], allowedFinishes: METAL_FINISHES, defaultFinish: 'metal-black-matte',
+  },
+]
+
+export const TOP_THICKNESS: FurnitureDimensionConfig = { label: 'Толщина столешницы', base: 0.022, min: 0.02, max: 0.05, step: 0.001 }
+
+export function getTableBase(id: string) {
+  const base = TABLE_BASES.find((entry) => entry.id === id)
+  if (!base) throw new Error(`Unknown table base: ${id}`)
+  return base
+}
+
+export function getBaseRuntimeDefinition(base: TableBaseDefinition): FurnitureDefinition {
+  return {
+    id: base.id, label: base.label, modelUrl: base.modelUrl,
+    dimensions: { baseHeight: base.height }, dimensionOrder: ['baseHeight'],
+    resizeRules: base.resizeRules, textureAxes: {},
+  }
+}
+
+export function getAssemblyMaterialDefinition(base: TableBaseDefinition): FurnitureDefinition {
+  return {
+    ...getBaseRuntimeDefinition(base), resizeRules: [],
+    materialSlots: {
+      primaryTop: { label: 'Материал столешницы', targets: ['Top_Surface', 'Top_Bottom', 'Top_Edge'], defaultFinish: 'oak-natural', allowedFinishes: TOP_FINISHES },
+      baseFinish: { label: 'Материал основания', targets: base.materialTargets, defaultFinish: base.defaultFinish, allowedFinishes: base.allowedFinishes },
+    },
+  }
+}

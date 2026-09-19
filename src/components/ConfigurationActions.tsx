@@ -6,9 +6,10 @@ type ConfigurationActionsProps = {
   notice: string | null
   getShareUrl: () => string
   onReset: () => void
+  resetLabel?: string
 }
 
-export function ConfigurationActions({ persistence, notice, getShareUrl, onReset }: ConfigurationActionsProps) {
+export function ConfigurationActions({ persistence, notice, getShareUrl, onReset, resetLabel = 'Сбросить эту модель' }: ConfigurationActionsProps) {
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copying' | 'copied' | 'manual'>('idle')
   const [manualUrl, setManualUrl] = useState('')
 
@@ -44,7 +45,7 @@ export function ConfigurationActions({ persistence, notice, getShareUrl, onReset
             onFocus={(event) => event.currentTarget.select()} />
         </label>
       )}
-      <button type="button" className="configuration-reset" onClick={onReset}>Сбросить эту модель</button>
+      <button type="button" className="configuration-reset" onClick={onReset}>{resetLabel}</button>
     </div>
   )
 }

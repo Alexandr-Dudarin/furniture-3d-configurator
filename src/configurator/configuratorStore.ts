@@ -1,6 +1,7 @@
 import {
   CONFIGURATION_QUERY_KEY,
   CONFIGURATION_STORAGE_KEY,
+  LEGACY_CONFIGURATION_STORAGE_KEY,
   applySharedConfiguration,
   createConfigurationUrl,
   readSavedSession,
@@ -9,6 +10,7 @@ import {
   type ConfigurationAction,
   type ConfiguratorSession,
 } from './savedConfiguration'
+import { updateTableAssembly } from './tableAssembly/state'
 
 type ConfigurationStorage = Pick<Storage, 'getItem' | 'setItem'>
 
@@ -28,12 +30,13 @@ export type ConfiguratorSnapshot = {
 export function createConfiguratorStore(environment: ConfiguratorEnvironment) {
   let stored: string | null = null
   try {
-    stored = environment.getStorage().getItem(CONFIGURATION_STORAGE_KEY)
+    stored = environment.getStorage().getItem(CONFIGURATION_STORAGE_KEY) ?? environment.getStorage().getItem(LEGACY_CONFIGURATION_STORAGE_KEY)
   } catch { /* Browsers may disable local storage. The editor still works. */ }
   const restored = readSavedSession(stored)
   const shared = readSharedConfiguration(environment.getHref())
   let snapshot: ConfiguratorSnapshot = {
-    session: shared.configuration ? applySharedConfiguration(restored.session, shared.configuration) : restored.session,
+    session: shared.assembly ? { ...restored.session, mode: 'builder', assembly: shared.assembly }
+      : shared.configuration ? applySharedConfiguration(restored.session, shared.configuration) : restored.session,
     persistence: 'pending',
     notice: shared.status === 'invalid'
       ? 'Конфигурация в ссылке недоступна. Открыты ваши последние или начальные настройки.'
@@ -94,7 +97,8 @@ export function createConfiguratorStore(environment: ConfiguratorEnvironment) {
     dispatch: (action: ConfigurationAction) => {
       const session = updateSession(snapshot.session, action)
       if (session === snapshot.session) return
-      publish({ session, persistence: 'pending', notice: null })
+      const notice = action.type === 'update-assembly' ? updateTableAssembly(snapshot.session.assembly, action.patch).notice : null
+      publish({ session, persistence: 'pending', notice })
       if (connected) {
         clearTimeout(timer)
         timer = setTimeout(flush, 250)

@@ -44,6 +44,9 @@ import {
   getMaterialFinish,
 } from './three/materials/materialRegistry'
 
+import { TableAssemblyControls } from './components/TableAssemblyControls'
+import { useTableAssemblyScene } from './three/tableAssembly/useTableAssemblyScene'
+
 import './App.css'
 
 const furnitureDefinitions =
@@ -226,7 +229,7 @@ function App() {
       sceneRef.current
 
     if (
-      !scene
+      !scene || session.mode !== 'catalog'
     ) {
       return
     }
@@ -423,7 +426,9 @@ function App() {
         furnitureModel,
       )
     }
-  }, [furnitureDefinition, store])
+  }, [furnitureDefinition, store, session.mode])
+
+  const assemblyPreview = useTableAssemblyScene(sceneRef, maxAnisotropyRef, store, session.mode === 'builder', session.assembly)
 
   /*
    * =================================
@@ -504,6 +509,18 @@ function App() {
             'sans-serif',
         }}
       >
+        <div className="configuration-mode" role="group" aria-label="Способ выбора стола">
+          <button type="button" aria-pressed={session.mode === 'catalog'} onClick={() => store.dispatch({ type: 'set-mode', mode: 'catalog' })}>Готовые модели</button>
+          <button type="button" aria-pressed={session.mode === 'builder'} onClick={() => store.dispatch({ type: 'set-mode', mode: 'builder' })}>Собрать стол</button>
+        </div>
+        {session.mode === 'builder' ? (
+          <>
+            <TableAssemblyControls configuration={session.assembly} onChange={(patch) => store.dispatch({ type: 'update-assembly', patch })} />
+            {assemblyPreview.error && <div className="assembly-error" role="alert">
+              <p>{assemblyPreview.error}</p><button type="button" onClick={assemblyPreview.retry}>Повторить загрузку</button>
+            </div>}
+          </>
+        ) : <>
         {/*
          * -----------------------------
          * MODEL SELECT
@@ -722,7 +739,9 @@ function App() {
             )
           },
         )}
+        </>}
         <ConfigurationActions
+          resetLabel={session.mode === 'builder' ? 'Сбросить сборку' : 'Сбросить эту модель'}
           key={JSON.stringify(session)}
           persistence={persistence}
           notice={notice}

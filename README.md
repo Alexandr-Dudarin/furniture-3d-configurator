@@ -20,6 +20,8 @@
 - запоминание размеров и материалов каждой модели при переключении;
 - автосохранение конфигурации в браузере и восстановление после перезагрузки;
 - открытие выбранного варианта по ссылке и сброс отдельной модели;
+- модульную сборку стола из отдельной столешницы и GLB-основания;
+- семь форм столешницы, толщину 20–50 мм и изменение высоты подготовленной опоры;
 - unit- и integration-тесты на программных Three.js fixtures и production GLB.
 
 ## Технологии
@@ -42,17 +44,20 @@ src/
 │   ├── furnitureRegistry.ts
 │   ├── savedConfiguration.ts  # versioned state, validation, URL
 │   ├── configuratorStore.ts   # persistence and state transitions
-│   └── useConfigurator.ts    # React subscription
+│   ├── useConfigurator.ts    # React subscription
+│   └── tableAssembly/        # module catalog, compatibility and state
 ├── components/ui/
 ├── three/
 │   ├── core/          # renderer, camera, controls, shared scene
 │   ├── furniture/     # generic model controller and behaviors
 │   ├── materials/     # finish registry and material controller
-│   └── models/        # declarative configs of individual models
+│   ├── models/        # declarative configs of individual models
+│   └── tableAssembly/ # tabletop geometry and modular assembly
 └── App.tsx            # React UI and Three.js lifecycle integration
 
 public/
 ├── models/            # production GLB
+├── modules/bases/     # independent base GLB modules
 └── materials/         # shared runtime PBR textures
 
 assets/source/         # editable sources, passports, references and previews
@@ -106,6 +111,26 @@ Three.js scene/runtime создаётся один раз. При переклю
 Обе круглые столешницы сохраняют круг при resize. Столешница и основание
 имеют независимый выбор покрытия; общий refresh текстур сохраняет масштаб
 рисунка при смене другого material slot.
+
+## Собрать стол
+
+Переключатель «Готовые модели / Собрать стол» разделяет каталог готовой мебели
+и модульную сборку. Готовые шесть столов сохраняют свои настройки.
+
+В сборке доступны семь форм: прямоугольник, скруглённый прямоугольник, два
+варианта срезов, круг, эллипс и овал с прямыми сторонами. Основания — отдельные
+GLB, извлечённые из принятых реечного и круглого рифлёного столов. Круг совместим
+с рифлёной опорой; остальные формы — с обоими основаниями в их разрешённых диапазонах.
+
+Размеры и материалы столешницы и основания независимы. Толщина — 20–50 мм,
+с неподвижной нижней плоскостью. У круглой опоры регулируется высота 678–798 мм
+с шагом 5 мм, нижний диск и верхнее крепление сохраняют размеры. У реечного
+основания высота фиксирована: 728 мм. Общая высота равна высоте основания плюс
+толщина столешницы.
+
+Модульная сборка сохраняется и открывается по ссылке. Прежние localStorage v1
+и ссылки готовых моделей поддерживаются. Контракт будущих столешниц и оснований:
+[модули стола v1](docs/table-module-standard-v1.md).
 
 ## Локальный запуск
 
@@ -189,9 +214,9 @@ Physical dimension и local/model axis задаются отдельно для 
 
 ## Ближайшие этапы
 
-- добавить generic configurable height;
-- подготовить configurable tabletop thickness с явным anchor;
-- подготовить сборку стола из отдельных столешниц и совместимых оснований;
+- расширять настройку высоты на новые основания с подходящим контрактом;
+- добавить следующие формы кромок и профили столешниц;
+- расширить каталог самостоятельных оснований и их проверенные сочетания;
 - расширить библиотеку мебельных finishes;
 - интегрировать следующие constructor-ready модели и типы мебели;
 - улучшить общую сцену, пол, отражения и освещение.
