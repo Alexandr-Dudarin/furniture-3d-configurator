@@ -1,5 +1,5 @@
 import { CustomSelect } from './ui/CustomSelect/CustomSelect'
-import { getTableBase, getTabletopWidthConfig, TABLE_BASES, TOP_FINISHES, TOP_SHAPES, TOP_THICKNESS } from '../configurator/tableAssembly/catalog'
+import { getTableBase, getTabletopEdgeProfile, getTabletopWidthConfig, TABLE_BASES, TABLETOP_EDGE_PROFILES, TOP_FINISHES, TOP_SHAPES, TOP_THICKNESS } from '../configurator/tableAssembly/catalog'
 import type { TableAssemblyConfiguration } from '../configurator/tableAssembly/state'
 import type { FurnitureDimensionConfig } from '../three/furniture/types'
 import { getMaterialFinish } from '../three/materials/materialRegistry'
@@ -49,6 +49,12 @@ export function TableAssemblyControls({ configuration, onChange }: Props) {
         <p className="assembly-summary">Длина больше ширины минимум на 20 см — столешница сохраняет овальную форму.</p>
       )}
       <SizeControl name="Толщина столешницы" value={configuration.thickness} config={TOP_THICKNESS} millimeters onChange={(thickness) => onChange({ thickness })} />
+      <div className="assembly-field">
+        <span>Кромка столешницы</span>
+        <CustomSelect value={configuration.edgeProfile} options={TABLETOP_EDGE_PROFILES.map((profile) => ({ value: profile.id, label: profile.label }))}
+          onChange={(edgeProfile) => onChange({ edgeProfile: edgeProfile as TableAssemblyConfiguration['edgeProfile'] })} ariaLabel="Кромка столешницы" />
+      </div>
+      <p className="assembly-summary">{getTabletopEdgeProfile(configuration.edgeProfile).description}</p>
       {base.heightMode !== 'fixed' ? (
         <SizeControl name="Высота основания" value={configuration.baseHeight} config={base.height} onChange={(baseHeight) => onChange({ baseHeight })} />
       ) : <p className="assembly-summary">Высота основания: {Number((base.height.base * 100).toFixed(1))} см, фиксирована</p>}

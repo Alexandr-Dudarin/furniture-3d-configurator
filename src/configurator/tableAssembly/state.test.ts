@@ -1,7 +1,7 @@
 import { expect, it } from 'vitest'
 import { createConfiguratorStore } from '../configuratorStore'
 import { CONFIGURATION_STORAGE_KEY, LEGACY_CONFIGURATION_STORAGE_KEY, createConfigurationUrl, createDefaultSession, readSharedConfiguration, readSavedSession, updateSession } from '../savedConfiguration'
-import { getTableBase, getTabletopWidthConfig, TABLE_BASES, TOP_SHAPES } from './catalog'
+import { getTableBase, getTabletopWidthConfig, TABLE_BASES, TABLETOP_EDGE_PROFILES, TOP_SHAPES } from './catalog'
 import { createDefaultAssembly, normalizeTableAssembly, updateTableAssembly } from './state'
 
 it.each(TOP_SHAPES)('$id always resolves a compatible base, dimensions and material', ({ id }) => {
@@ -189,4 +189,41 @@ it('widens a V-pedestal ellipse for the mount and replaces U-frames for curved t
     expect(result.configuration.baseId).toBe(shape === 'circle' ? 'round-fluted' : 'slat-pedestal')
     expect(result.notice).toContain('Для этой формы')
   }
+})
+
+it.each(TABLETOP_EDGE_PROFILES)('$id survives shape/base/material changes, storage and links, then resets to the previous bevel', ({ id }) => {
+  let session = updateSession(createDefaultSession(), { type: 'set-mode', mode: 'builder' })
+  session = updateSession(session, { type: 'update-assembly', patch: { edgeProfile: id, baseId: 'u-frame', thickness: 0.05 } })
+  session = updateSession(session, { type: 'update-assembly', patch: { shape: 'ellipse', baseId: 'v-pedestal', topFinish: 'marble-white-gold' } })
+  expect(session.assembly.edgeProfile).toBe(id)
+  expect(readSavedSession(JSON.stringify(session)).session).toEqual(session)
+  const shared = readSharedConfiguration(createConfigurationUrl('https://example.test', session))
+  expect(shared.status).toBe('valid')
+  expect(shared.assembly).toEqual(session.assembly)
+  const catalog = session.models
+  const reset = updateSession(session, { type: 'reset-model' })
+  expect(reset.assembly.edgeProfile).toBe('bevel-1')
+  expect(reset.models).toBe(catalog)
+})
+
+it('reads complete pre-v5 assembly links and storage without changing their appearance or raising an adjustment notice', () => {
+  const old = { shape: 'circle', baseId: 'v-pedestal', length: 1.1, width: 1.1, thickness: 0.035, baseHeight: 0.743, topFinish: 'marble-white-gold', baseFinish: 'metal-black-matte' }
+  const stored = readSavedSession(JSON.stringify({ version: 2, mode: 'builder', models: {}, selectedModelId: 'table-01', assembly: old }))
+  expect(stored.notice).toBeNull()
+  expect(stored.session.assembly).toEqual({ ...old, edgeProfile: 'bevel-1' })
+  const url = new URL('https://example.test')
+  url.searchParams.set('config', JSON.stringify({ version: 2, kind: 'table-assembly', assembly: old }))
+  expect(readSharedConfiguration(url.href)).toEqual({ status: 'valid', assembly: { ...old, edgeProfile: 'bevel-1' } })
+  // Добавление нового поля не делает частичную старую ссылку полной.
+  url.searchParams.set('config', JSON.stringify({ version: 2, kind: 'table-assembly', assembly: { shape: 'circle' } }))
+  expect(readSharedConfiguration(url.href).status).toBe('adjusted')
+})
+
+it.each(['unknown', '__proto__', null, 5, { id: 'bullnose' }])('replaces an invalid edge profile %j without losing other settings', (edgeProfile) => {
+  const initial = normalizeTableAssembly({ baseId: 'u-frame', length: 1.4, baseHeight: 0.81 })
+  const raw = { ...initial, edgeProfile }
+  expect(normalizeTableAssembly(raw)).toEqual({ ...initial, edgeProfile: 'bevel-1' })
+  const url = new URL('https://example.test')
+  url.searchParams.set('config', JSON.stringify({ version: 2, kind: 'table-assembly', assembly: raw }))
+  expect(readSharedConfiguration(url.href).status).toBe('adjusted')
 })

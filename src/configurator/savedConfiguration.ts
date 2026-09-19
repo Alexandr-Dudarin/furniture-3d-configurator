@@ -2,6 +2,7 @@ import type { FurnitureDefinition } from '../three/furniture/types'
 import type { MaterialSelections } from '../three/materials/types'
 import { createInitialDimensions, type ConfiguratorDimensions } from './configuratorState'
 import { DEFAULT_FURNITURE_ID, getFurnitureDefinitions } from './furnitureRegistry'
+import { DEFAULT_EDGE_PROFILE } from './tableAssembly/catalog'
 
 import { createDefaultAssembly, normalizeTableAssembly, updateTableAssembly, type TableAssemblyConfiguration } from './tableAssembly/state'
 
@@ -124,7 +125,9 @@ export function readSharedConfiguration(href: string): SharedConfigurationResult
     if (input.kind === 'table-assembly' && input.version === CONFIGURATION_VERSION) {
       if (!isRecord(input.assembly)) return { status: 'invalid' }
       const assembly = normalizeTableAssembly(input.assembly)
-      const rawAssembly = input.assembly
+      // Ссылки до выбора кромки уже описывали фаску 1 мм. Добавление этого
+      // значения сохраняет внешний вид и не требует сообщения о коррекции.
+      const rawAssembly: Record<string, unknown> = { edgeProfile: DEFAULT_EDGE_PROFILE, ...input.assembly }
       const complete = Object.keys(rawAssembly).length === Object.keys(assembly).length &&
         Object.entries(assembly).every(([key, value]) => Object.hasOwn(rawAssembly, key) && rawAssembly[key] === value)
       return { status: complete ? 'valid' : 'adjusted', assembly }

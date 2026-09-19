@@ -30,7 +30,7 @@ export function createTableAssembly(baseModel: Group, initial: TableAssemblyConf
   const update = (next: TableAssemblyConfiguration) => {
     if (disposed) return
     if (next.baseId !== base.id) throw new Error('A different base requires a new assembly')
-    if (next.shape !== previous.shape || next.length !== previous.length || next.width !== previous.width || next.thickness !== previous.thickness) {
+    if (next.shape !== previous.shape || next.length !== previous.length || next.width !== previous.width || next.thickness !== previous.thickness || next.edgeProfile !== previous.edgeProfile) {
       const geometry = createTabletopGeometry(next)
       top.geometry.dispose()
       top.geometry = geometry

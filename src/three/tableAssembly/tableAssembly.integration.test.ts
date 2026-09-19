@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises'
 import { afterEach, expect, it, vi } from 'vitest'
 import { Box3, Mesh, MeshStandardMaterial, Raycaster, Vector2, Vector3 } from 'three'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
-import { TABLE_BASES, TOP_SHAPES } from '../../configurator/tableAssembly/catalog'
+import { TABLE_BASES, TABLETOP_EDGE_PROFILES, TOP_SHAPES } from '../../configurator/tableAssembly/catalog'
 import { normalizeTableAssembly } from '../../configurator/tableAssembly/state'
 import { disposeMaterialFinishCache } from '../materials/createMaterial'
 import { createFurnitureMaterialController } from '../materials/materialController'
@@ -183,5 +183,43 @@ it.each(TABLE_BASES)('$id maintains top UVs when resizing and changing the indep
   expect(repeats.every((values) => JSON.stringify(values) === '[1,1,0,0]')).toBe(true)
   expect(assembly.top).toBeInstanceOf(Mesh)
   materials.dispose()
+  assembly.dispose()
+})
+
+it.each(TABLE_BASES)('$id retains contact and materials when only the edge profile changes', async (base) => {
+  const loaded = await loadBase(base.modelUrl)
+  const initial = normalizeTableAssembly({ baseId: base.id, thickness: 0.05 })
+  const assembly = createTableAssembly(loaded, initial)
+  const baseBounds = new Box3().setFromObject(loaded)
+  const material = assembly.top.material
+  for (const shape of base.compatibleShapes) {
+    const config = normalizeTableAssembly({ ...initial, shape, length: shape === 'circle' ? base.diameter!.min : base.length.min, width: base.width.min })
+    assembly.update(config)
+    for (const { id } of TABLETOP_EDGE_PROFILES) {
+      const oldGeometry = assembly.top.geometry
+      const disposed = vi.spyOn(oldGeometry, 'dispose')
+      assembly.update({ ...config, edgeProfile: id })
+      if (oldGeometry !== assembly.top.geometry) expect(disposed).toHaveBeenCalledTimes(1)
+      else expect(id).toBe('bevel-1')
+      expect(assembly.top.material).toBe(material)
+      const topBounds = new Box3().setFromObject(assembly.top)
+      expect(topBounds.min.y).toBeCloseTo(config.baseHeight, 6)
+      expect(topBounds.max.y).toBeCloseTo(config.baseHeight + 0.05, 6)
+      // Под плоскостью крепления нет полости: луч из центра каждой опоры
+      // упирается в плоский низ, включая максимальное скругление R25.
+      const names = base.cornerLegs?.targets ?? base.uFrames?.targets.flatMap((frame) => frame.posts)
+        ?? [base.id === 'v-pedestal' ? 'UnderTop_Mount' : base.id === 'round-fluted' ? 'Top_Mount' : 'Pedestal_Core']
+      for (const name of names) {
+        const box = new Box3().setFromObject(loaded.getObjectByName(name)!)
+        const center = box.getCenter(new Vector3())
+        const ray = new Raycaster(new Vector3(center.x, config.baseHeight - 0.01, center.z), new Vector3(0, 1, 0))
+        expect(ray.intersectObject(assembly.top)[0].point.y).toBeCloseTo(config.baseHeight, 6)
+      }
+      assembly.refreshTextures()
+      expect(assembly.top.material).toBe(material)
+    }
+  }
+  assembly.update(initial)
+  expect(new Box3().setFromObject(loaded)).toEqual(baseBounds)
   assembly.dispose()
 })

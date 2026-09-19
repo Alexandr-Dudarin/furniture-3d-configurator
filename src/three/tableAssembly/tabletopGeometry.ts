@@ -1,7 +1,7 @@
 import { BufferGeometry, Float32BufferAttribute, Vector2, Vector3 } from 'three'
 import type { TableAssemblyConfiguration } from '../../configurator/tableAssembly/state'
+import { createTabletopEdgeProfile } from './tabletopEdgeProfile'
 
-export const TABLETOP_BEVEL = 0.001
 export const CORNER_RADIUS = 0.1
 
 // Контур задаёт внешние размеры. Скос кромки строится внутрь, а не увеличивает габарит.
@@ -44,10 +44,11 @@ export function createTabletopGeometry(config: TableAssemblyConfiguration) {
   })
   const smooth = ['circle', 'ellipse', 'capsule', 'rounded-rectangle'].includes(config.shape)
   const cornerNormals = normals.map((normal, i) => normal.clone().add(normals[(i + count - 1) % count]).normalize())
-  const inset = outline.map((p, i) => {
+  const profile = createTabletopEdgeProfile(config.edgeProfile, config.thickness)
+  const ringContours = profile.map((ring) => outline.map((p, i) => {
     const direction = cornerNormals[i]
-    return p.clone().addScaledVector(direction, -TABLETOP_BEVEL / direction.dot(normals[i]))
-  })
+    return p.clone().addScaledVector(direction, -ring.inset / direction.dot(normals[i]))
+  }))
   const positions: number[] = []
   const uv: number[] = []
   const vertexNormals: number[] = []
@@ -62,33 +63,33 @@ export function createTabletopGeometry(config: TableAssemblyConfiguration) {
   for (const [y, ny, material] of [[config.thickness, 1, 0], [0, -1, 1]]) {
     const start = positions.length / 3
     const normal = new Vector3(0, ny, 0)
+    const contour = ny > 0 ? ringContours.at(-1)! : ringContours[0]
     for (let i = 0; i < count; i++) {
-      const a = inset[i]
-      const b = inset[(i + 1) % count]
+      const a = contour[i]
+      const b = contour[(i + 1) % count]
       for (const p of ny > 0 ? [center, b, a] : [center, a, b]) vertex(p, y, normal, p.x + 0.5, p.y + 0.5)
     }
     geometry.addGroup(start, positions.length / 3 - start, material)
   }
 
   const edgeStart = positions.length / 3
-  const b = TABLETOP_BEVEL
-  const ringContours = [inset, outline, outline, inset]
-  const levels = [0, b, config.thickness - b, config.thickness]
-  const edgeV = [0, Math.SQRT2 * b, Math.SQRT2 * b + config.thickness - 2 * b, 2 * Math.SQRT2 * b + config.thickness - 2 * b]
   const perimeter = outline.reduce((sum, p, i) => sum + p.distanceTo(outline[(i + 1) % count]), 0)
   let distance = -perimeter / 2
   for (let i = 0; i < count; i++) {
     const j = (i + 1) % count
     const end = distance + outline[i].distanceTo(outline[j])
-    for (let band = 0; band < 3; band++) {
-      const vertical = band === 0 ? -1 : band === 2 ? 1 : 0
-      const normal = (index: number) => {
+    for (let band = 0; band < profile.length - 1; band++) {
+      const lower = profile[band]
+      const upper = profile[band + 1]
+      const bandNormal = new Vector2(upper.y - lower.y, upper.inset - lower.inset).normalize()
+      const normal = (index: number, ring: number) => {
         const outward = smooth ? cornerNormals[index] : normals[i]
-        return new Vector3(outward.x, vertical, outward.y).normalize()
+        const section = profile[ring].normal ?? bandNormal
+        return new Vector3(outward.x * section.x, section.y, outward.y * section.x).normalize()
       }
       // Независимая развёртка торца: U — метры периметра, V — метры профиля кромки.
       for (const [index, ring, u] of [[i, band, distance], [j, band + 1, end], [j, band, end], [i, band, distance], [i, band + 1, distance], [j, band + 1, end]]) {
-        vertex(ringContours[ring][index], levels[ring], normal(index), u + 0.5, edgeV[ring] + 0.5)
+        vertex(ringContours[ring][index], profile[ring].y, normal(index, ring), u + 0.5, profile[ring].distance + 0.5)
       }
     }
     distance = end

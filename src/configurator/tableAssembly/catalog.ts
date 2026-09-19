@@ -11,6 +11,21 @@ export const TOP_SHAPES = [
 ] as const
 export type TopShape = typeof TOP_SHAPES[number]['id']
 
+export const TABLETOP_EDGE_PROFILES = [
+  { id: 'bevel-1', label: 'Фаска 1 мм', kind: 'bevel', size: 0.001, description: 'Небольшой скос по верхнему и нижнему краю.' },
+  { id: 'bevel-5', label: 'Фаска 5 мм', kind: 'bevel', size: 0.005, description: 'Скос 45° по верхнему и нижнему краю.' },
+  { id: 'round-5', label: 'Скругление R5', kind: 'round', size: 0.005, description: 'Скругление верхнего и нижнего края радиусом 5 мм.' },
+  { id: 'bullnose', label: 'Полукруглая кромка', kind: 'bullnose', description: 'Полукруглый торец. Радиус равен половине толщины столешницы.' },
+] as const
+export type TabletopEdgeProfile = typeof TABLETOP_EDGE_PROFILES[number]['id']
+export const DEFAULT_EDGE_PROFILE: TabletopEdgeProfile = 'bevel-1'
+
+export function getTabletopEdgeProfile(id: TabletopEdgeProfile) {
+  const profile = TABLETOP_EDGE_PROFILES.find((entry) => entry.id === id)
+  if (!profile) throw new Error(`Unknown tabletop edge profile: ${id}`)
+  return profile
+}
+
 export const TOP_FINISHES = ['oak-natural', 'walnut-natural', 'pine-coated', 'ash-natural', 'oak-grey', 'oak-silver', 'oak-black', 'concrete-light', 'marble-cream', 'marble-white-gold', 'marble-black-gold', 'marble-duo-gold', 'terrazzo-neutral']
 const WOOD_FINISHES = TOP_FINISHES.slice(0, 7)
 const METAL_FINISHES = ['metal-black-matte', 'metal-white-matte', 'metal-anthracite']

@@ -1,5 +1,5 @@
 import type { FurnitureDimensionConfig } from '../../three/furniture/types'
-import { getTableBase, getTabletopWidthConfig, TABLE_BASES, TOP_FINISHES, TOP_SHAPES, TOP_THICKNESS, type TopShape } from './catalog'
+import { DEFAULT_EDGE_PROFILE, getTableBase, getTabletopWidthConfig, TABLE_BASES, TABLETOP_EDGE_PROFILES, TOP_FINISHES, TOP_SHAPES, TOP_THICKNESS, type TabletopEdgeProfile, type TopShape } from './catalog'
 
 export type TableAssemblyConfiguration = {
   shape: TopShape
@@ -7,6 +7,7 @@ export type TableAssemblyConfiguration = {
   length: number
   width: number
   thickness: number
+  edgeProfile: TabletopEdgeProfile
   baseHeight: number
   topFinish: string
   baseFinish: string
@@ -31,6 +32,7 @@ export function normalizeTableAssembly(input: unknown): TableAssemblyConfigurati
   return {
     shape, baseId: base.id, length, width,
     thickness: size(raw.thickness, TOP_THICKNESS), baseHeight: size(raw.baseHeight, base.height),
+    edgeProfile: TABLETOP_EDGE_PROFILES.find((entry) => entry.id === raw.edgeProfile)?.id ?? DEFAULT_EDGE_PROFILE,
     topFinish: typeof raw.topFinish === 'string' && TOP_FINISHES.includes(raw.topFinish) ? raw.topFinish : 'oak-natural',
     baseFinish: typeof raw.baseFinish === 'string' && base.allowedFinishes.includes(raw.baseFinish) ? raw.baseFinish : base.defaultFinish,
   }
