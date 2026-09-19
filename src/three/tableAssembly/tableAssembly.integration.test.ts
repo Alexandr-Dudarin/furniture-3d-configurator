@@ -75,7 +75,7 @@ it.each(['rectangle', 'rounded-rectangle', 'chamfered', 'wide-chamfered'] as con
   const assembly = createTableAssembly(model, initial)
   const legs = base.cornerLegs!.targets.map((name) => model.getObjectByName(name) as Mesh)
   const originals = legs.map((leg) => leg.geometry.getAttribute('position').clone())
-  for (const length of [1.2, 2, 1.2]) for (const width of [0.6, 1]) for (const baseHeight of [0.61, 0.81, 0.71]) for (const thickness of [0.02, 0.05]) {
+  for (const length of [1.2, 2, 1.2]) for (const width of [0.6, 1]) for (const baseHeight of [0.64, 0.84, 0.71]) for (const thickness of [0.02, 0.05]) {
     const config = normalizeTableAssembly({ ...initial, length, width, baseHeight, thickness })
     assembly.update(config)
     const outline = createTabletopOutline(config)
@@ -142,13 +142,27 @@ it('changes only the column length and upper mount, retaining floor contact and 
     assembly.update({ ...initial, baseHeight })
     const box = new Box3().setFromObject(column)
     expect(box.min.y).toBeCloseTo(initialColumn.min.y, 6)
-    expect(box.max.y - box.min.y).toBeCloseTo(0.71 + baseHeight - base.height.base, 6)
+    expect(box.max.y - box.min.y).toBeCloseTo(0.71 + baseHeight - base.sourceHeight, 6)
     expect(box.min.x).toBe(initialColumn.min.x)
     expect(box.max.z).toBe(initialColumn.max.z)
     expect(new Box3().setFromObject(disc)).toEqual(initialDisc)
     expect(new Box3().setFromObject(mount).getSize(new Vector3()).toArray()).toEqual(initialMountSize.toArray())
+    const mountBounds = new Box3().setFromObject(mount)
+    expect(box.max.y).toBeGreaterThan(mountBounds.min.y)
+    expect(mountBounds.max.y).toBeCloseTo(baseHeight + 0.001, 6)
     expect(new Box3().setFromObject(assembly.top).min.y).toBeCloseTo(baseHeight, 6)
   }
+  assembly.dispose()
+})
+
+it.each(TABLE_BASES)('$id keeps GLB reference height separate from its user default', async (base) => {
+  const loaded = await loadBase(base.modelUrl)
+  const attachment = loaded.getObjectByName(base.attachment)!
+  expect(attachment.getWorldPosition(new Vector3()).y).toBeCloseTo(base.sourceHeight, 6)
+  const config = normalizeTableAssembly({ baseId: base.id })
+  const assembly = createTableAssembly(loaded, config)
+  expect(attachment.getWorldPosition(new Vector3()).y).toBeCloseTo(config.baseHeight, 6)
+  expect(new Box3().setFromObject(assembly.top).min.y).toBeCloseTo(config.baseHeight, 6)
   assembly.dispose()
 })
 

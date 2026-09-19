@@ -123,9 +123,9 @@ it.each(['ellipse', 'capsule'] as const)('%s stays elongated when reducing lengt
 
 it('shares four-leg height limits and excludes the three curved shapes', () => {
   const base = getTableBase('four-legs')
-  expect(base.height.min).toBeCloseTo(base.height.base - 0.1)
-  expect(base.height.max).toBeCloseTo(base.height.base + 0.1)
-  for (const shape of base.compatibleShapes) for (const baseHeight of [0.61, 0.71, 0.81]) {
+  expect(base.height.min).toBe(0.64)
+  expect(base.height.max).toBe(0.84)
+  for (const shape of base.compatibleShapes) for (const baseHeight of [0.64, 0.71, 0.84]) {
     const assembly = normalizeTableAssembly({ baseId: base.id, shape, length: 2, width: 1, baseHeight, baseFinish: 'metal-white-matte' })
     const session = { ...createDefaultSession(), mode: 'builder' as const, assembly }
     expect(readSavedSession(JSON.stringify(session)).session.assembly).toEqual(assembly)
@@ -139,4 +139,27 @@ it('shares four-leg height limits and excludes the three curved shapes', () => {
     expect(changed.configuration.baseId).not.toBe(base.id)
     expect(changed.notice).toContain('Для этой формы')
   }
+})
+
+it.each(['four-legs', 'round-fluted'])('%s uses 64–84 cm in whole centimetres for UI, defaults, storage and links', (baseId) => {
+  const base = getTableBase(baseId)
+  expect([base.height.min, base.height.max, base.height.step]).toEqual([0.64, 0.84, 0.01])
+  const initial = normalizeTableAssembly({ baseId })
+  expect(initial.baseHeight).toBe(baseId === 'four-legs' ? 0.71 : 0.74)
+  for (let cm = 64; cm <= 84; cm++) {
+    const config = normalizeTableAssembly({ ...initial, baseHeight: cm / 100 })
+    expect(config.baseHeight).toBe(cm / 100)
+    expect(normalizeTableAssembly(config)).toEqual(config)
+  }
+  for (const [previous, expected] of [[0.61, 0.64], [0.645, 0.65], [0.678, 0.68], [0.728, 0.73], [0.735, 0.74], [0.738, 0.74], [0.778, 0.78], [0.798, 0.8], [0.85, 0.84]]) {
+    const old = { ...createDefaultSession(), mode: 'builder' as const, assembly: { ...initial, baseHeight: previous } }
+    expect(readSavedSession(JSON.stringify(old)).session.assembly.baseHeight).toBe(expected)
+    const shared = readSharedConfiguration(createConfigurationUrl('https://example.test', old))
+    expect(shared.status).toBe('adjusted')
+    expect(shared.assembly!.baseHeight).toBe(expected)
+    const patch = updateTableAssembly(initial, { baseHeight: previous })
+    expect(patch.configuration.baseHeight).toBe(expected)
+    expect(patch.notice).toContain('Высота')
+  }
+  expect(normalizeTableAssembly({ baseId, baseHeight: NaN }).baseHeight).toBe(initial.baseHeight)
 })

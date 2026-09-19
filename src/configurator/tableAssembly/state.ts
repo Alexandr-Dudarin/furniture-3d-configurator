@@ -15,7 +15,8 @@ export type TableAssemblyConfiguration = {
 function size(value: unknown, config: FurnitureDimensionConfig) {
   if (typeof value !== 'number' || !Number.isFinite(value)) return config.base
   const bounded = Math.min(config.max, Math.max(config.min, value))
-  return Number(Math.min(config.max, config.min + Math.round((bounded - config.min) / config.step) * config.step).toFixed(8))
+  // Компенсируем погрешность double на половине шага: 73.5 см округляется до 74.
+  return Number(Math.min(config.max, config.min + Math.round((bounded - config.min) / config.step + 1e-8) * config.step).toFixed(8))
 }
 
 export function normalizeTableAssembly(input: unknown): TableAssemblyConfiguration {

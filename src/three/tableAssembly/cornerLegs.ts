@@ -27,7 +27,7 @@ export function createCornerLegController(model: Group, base: TableBaseDefinitio
       mesh.position.z = sideZ * (config.width / 2 - inset)
       if (config.baseHeight === previousHeight) continue
       const position = mesh.geometry.getAttribute('position')
-      const delta = config.baseHeight - base.height.base
+      const delta = config.baseHeight - base.sourceHeight
       for (let i = 0; i < original.count; i++) {
         const y = original.getY(i)
         const weight = Math.min(1, Math.max(0, (y - bottom - layout.endBand) / (height - 2 * layout.endBand)))

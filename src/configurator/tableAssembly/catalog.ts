@@ -15,12 +15,16 @@ export const TOP_FINISHES = ['oak-natural', 'walnut-natural', 'pine-coated', 'as
 const WOOD_FINISHES = TOP_FINISHES.slice(0, 7)
 const METAL_FINISHES = ['metal-black-matte', 'metal-white-matte', 'metal-anthracite']
 
+export const ADJUSTABLE_BASE_HEIGHT = { min: 0.64, max: 0.84, step: 0.01 } as const
+
 export type TableBaseDefinition = {
   id: string
   label: string
   modelUrl: string
   compatibleShapes: readonly TopShape[]
   attachment: string
+  // Фактическая высота attachment в исходном GLB; не округлять вместе с UI.
+  sourceHeight: number
   length: FurnitureDimensionConfig
   width: FurnitureDimensionConfig
   diameter?: FurnitureDimensionConfig
@@ -41,10 +45,10 @@ export const TABLE_BASES: readonly TableBaseDefinition[] = [
   {
     id: 'four-legs', label: 'Четыре прямые ножки', modelUrl: '/modules/bases/four-legs.glb',
     compatibleShapes: ['rectangle', 'rounded-rectangle', 'chamfered', 'wide-chamfered'],
-    attachment: 'Attachment_Tabletop',
+    attachment: 'Attachment_Tabletop', sourceHeight: 0.71,
     length: { label: 'Длина', base: 1.2, min: 1.2, max: 2, step: 0.01 },
     width: { label: 'Ширина', base: 0.6, min: 0.6, max: 1, step: 0.01 },
-    height: { label: 'Высота основания', base: 0.71, min: 0.61, max: 0.81, step: 0.005 },
+    height: { label: 'Высота основания', base: 0.71, ...ADJUSTABLE_BASE_HEIGHT },
     heightMode: 'stretch-legs',
     cornerLegs: {
       targets: ['Leg_01', 'Leg_02', 'Leg_03', 'Leg_04'],
@@ -59,7 +63,7 @@ export const TABLE_BASES: readonly TableBaseDefinition[] = [
   {
     id: 'slat-pedestal', label: 'Реечное основание', modelUrl: '/modules/bases/slat-pedestal.glb',
     compatibleShapes: ['rectangle', 'rounded-rectangle', 'chamfered', 'wide-chamfered', 'ellipse', 'capsule'],
-    attachment: 'Attachment_Tabletop',
+    attachment: 'Attachment_Tabletop', sourceHeight: 0.728,
     length: { label: 'Длина', base: 1.2, min: 1.2, max: 1.6, step: 0.01 },
     width: { label: 'Ширина', base: 0.8, min: 0.75, max: 1.15, step: 0.01 },
     height: { label: 'Высота основания', base: 0.728, min: 0.728, max: 0.728, step: 0.001 },
@@ -68,11 +72,11 @@ export const TABLE_BASES: readonly TableBaseDefinition[] = [
   },
   {
     id: 'round-fluted', label: 'Круглая рифлёная опора', modelUrl: '/modules/bases/round-fluted.glb',
-    compatibleShapes: TOP_SHAPES.map((shape) => shape.id), attachment: 'Attachment_Tabletop',
+    compatibleShapes: TOP_SHAPES.map((shape) => shape.id), attachment: 'Attachment_Tabletop', sourceHeight: 0.738,
     length: { label: 'Длина', base: 1.2, min: 1.1, max: 1.4, step: 0.01 },
     width: { label: 'Ширина', base: 0.9, min: 0.8, max: 1.1, step: 0.01 },
     diameter: { label: 'Диаметр', base: 1.1, min: 1.1, max: 1.4, step: 0.01 },
-    height: { label: 'Высота основания', base: 0.738, min: 0.678, max: 0.798, step: 0.005 },
+    height: { label: 'Высота основания', base: 0.74, ...ADJUSTABLE_BASE_HEIGHT },
     heightMode: 'stretch-column',
     resizeRules: [
       { type: 'stretch-segment', target: 'Fluted_Column', dimension: 'baseHeight', axis: 'y', baseLength: 0.71 },
@@ -106,7 +110,7 @@ export function getTableBase(id: string) {
 export function getBaseRuntimeDefinition(base: TableBaseDefinition): FurnitureDefinition {
   return {
     id: base.id, label: base.label, modelUrl: base.modelUrl,
-    dimensions: { baseHeight: base.height }, dimensionOrder: ['baseHeight'],
+    dimensions: { baseHeight: { ...base.height, base: base.sourceHeight } }, dimensionOrder: ['baseHeight'],
     resizeRules: base.resizeRules, textureAxes: {},
   }
 }
