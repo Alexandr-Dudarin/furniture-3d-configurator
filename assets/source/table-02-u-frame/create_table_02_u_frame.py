@@ -14,6 +14,8 @@ import bpy
 
 
 MODEL_ID = "table-02-u-frame"
+TABLETOP_TEXTURE_METERS = 1.0
+TOP_SURFACE_NAMES = ("Top_Primary", "Top_Bottom", "Top_Edge_Long", "Top_Edge_Short")
 
 BASE_LENGTH = 0.95
 BASE_WIDTH = 0.55
@@ -41,6 +43,11 @@ BLEND_PATH = SOURCE_DIR / f"{MODEL_ID}.blend"
 GLB_PATH = PROJECT_ROOT / "public" / "models" / f"{MODEL_ID}.glb"
 
 
+def gltf_location(x, y, z):
+    """Координаты проекта Y-up переводятся в Blender Z-up."""
+    return (x, -z, y)
+
+
 def reset_scene():
     bpy.ops.object.select_all(action="SELECT")
     bpy.ops.object.delete(use_global=False)
@@ -63,7 +70,7 @@ def create_empty(name, parent=None, location=(0.0, 0.0, 0.0)):
     empty.empty_display_size = 0.08
     bpy.context.scene.collection.objects.link(empty)
     empty.parent = parent
-    empty.location = location
+    empty.location = gltf_location(*location)
     return empty
 
 
@@ -79,7 +86,7 @@ def create_box(
     obj = bpy.context.object
     obj.name = name
     obj.data.name = f"{name}_Mesh"
-    obj.dimensions = dimensions
+    obj.dimensions = (dimensions[0], dimensions[2], dimensions[1])
 
     bpy.ops.object.transform_apply(
         location=False,
@@ -98,12 +105,46 @@ def create_box(
 
     obj.data.materials.append(material)
     obj.parent = parent
-    obj.location = location
+    obj.location = gltf_location(*location)
 
     for polygon in obj.data.polygons:
         polygon.use_smooth = False
 
     return obj
+
+
+def assign_tabletop_surfaces_and_uv(obj, template):
+    """Разделяем верх/низ/торцы для независимой компенсации размеров."""
+    obj.data.materials.clear()
+    for index, name in enumerate(TOP_SURFACE_NAMES):
+        material = template if index == 0 else template.copy()
+        material.name = name
+        material["replaceableFinishGroup"] = "PrimaryTop"
+        obj.data.materials.append(material)
+    obj["semanticSurfaces"] = TOP_SURFACE_NAMES
+    obj["tabletopUvMeters"] = TABLETOP_TEXTURE_METERS
+    layer = obj.data.uv_layers.active or obj.data.uv_layers.new(name="UVMap")
+    for polygon in obj.data.polygons:
+        normal = polygon.normal
+        if normal.z > 0.9995:
+            surface = 0
+        elif normal.z < -0.9995:
+            surface = 1
+        else:
+            surface = 2 if abs(normal.y) >= abs(normal.x) else 3
+        polygon.material_index = surface
+        for loop_index in polygon.loop_indices:
+            vertex = obj.data.vertices[obj.data.loops[loop_index].vertex_index].co
+            x, y, z = vertex.x, vertex.z, -vertex.y
+            if surface == 0:
+                uv = (x + 0.5, z + 0.5)
+            elif surface == 1:
+                uv = (x + 0.5, 0.5 - z)
+            elif surface == 2:
+                uv = (x + 0.5, y + 0.5)
+            else:
+                uv = (z + 0.5, y + 0.5)
+            layer.data[loop_index].uv = uv
 
 
 def create_top_material():
@@ -225,6 +266,8 @@ def build_model():
         lengthLocalAxis="x",
         widthLocalAxis="z",
     )
+
+    assign_tabletop_surfaces_and_uv(top, top_material)
 
     create_frame(root, "Left", -FRAME_X, -0.5, metal_material)
     create_frame(root, "Right", FRAME_X, 0.5, metal_material)

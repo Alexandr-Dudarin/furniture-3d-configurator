@@ -75,6 +75,57 @@ const materialFinishes = [
     normalScale: 0.6,
   },
   {
+    id: 'oak-grey',
+    label: 'Серый дуб',
+    category: 'wood',
+    kind: 'texture',
+    maps: {
+      color:
+        `${MATERIAL_ROOT}/wood/oak-grey/base-color.jpg`,
+      roughness:
+        `${MATERIAL_ROOT}/wood/oak-grey/roughness.jpg`,
+      normal:
+        `${MATERIAL_ROOT}/wood/oak-grey/normal-gl.jpg`,
+    },
+    metalness: 0,
+    roughness: 1,
+    normalScale: 0.48,
+  },
+  {
+    id: 'oak-silver',
+    label: 'Светлый серебристый дуб',
+    category: 'wood',
+    kind: 'texture',
+    maps: {
+      color:
+        `${MATERIAL_ROOT}/wood/oak-silver/base-color.jpg`,
+      roughness:
+        `${MATERIAL_ROOT}/wood/oak-silver/roughness.jpg`,
+      normal:
+        `${MATERIAL_ROOT}/wood/oak-silver/normal-gl.jpg`,
+    },
+    metalness: 0,
+    roughness: 1,
+    normalScale: 0.45,
+  },
+  {
+    id: 'oak-black',
+    label: 'Чёрный дуб',
+    category: 'wood',
+    kind: 'texture',
+    maps: {
+      color:
+        `${MATERIAL_ROOT}/wood/oak-black/base-color.jpg`,
+      roughness:
+        `${MATERIAL_ROOT}/wood/oak-black/roughness.jpg`,
+      normal:
+        `${MATERIAL_ROOT}/wood/oak-black/normal-gl.jpg`,
+    },
+    metalness: 0,
+    roughness: 1,
+    normalScale: 0.5,
+  },
+  {
     id: 'concrete-light',
     label: 'Светлый бетон',
     category: 'stone',
@@ -108,6 +159,74 @@ const materialFinishes = [
     metalness: 0,
     roughness: 1,
     normalScale: 0.35,
+  },
+  {
+    id: 'marble-white-gold',
+    label: 'Белый мрамор с золотым рисунком',
+    category: 'stone',
+    kind: 'texture',
+    maps: {
+      color:
+        `${MATERIAL_ROOT}/stone/marble-white-gold/base-color.jpg`,
+      roughness:
+        `${MATERIAL_ROOT}/stone/marble-white-gold/roughness.jpg`,
+      normal:
+        `${MATERIAL_ROOT}/stone/marble-white-gold/normal-gl.jpg`,
+    },
+    metalness: 0,
+    roughness: 1,
+    normalScale: 0.3,
+  },
+  {
+    id: 'marble-black-gold',
+    label: 'Чёрный мрамор с золотым рисунком',
+    category: 'stone',
+    kind: 'texture',
+    maps: {
+      color:
+        `${MATERIAL_ROOT}/stone/marble-black-gold/base-color.jpg`,
+      roughness:
+        `${MATERIAL_ROOT}/stone/marble-black-gold/roughness.jpg`,
+      normal:
+        `${MATERIAL_ROOT}/stone/marble-black-gold/normal-gl.jpg`,
+    },
+    metalness: 0,
+    roughness: 1,
+    normalScale: 0.28,
+  },
+  {
+    id: 'marble-duo-gold',
+    label: 'Контрастный мрамор с золотым рисунком',
+    category: 'stone',
+    kind: 'texture',
+    maps: {
+      color:
+        `${MATERIAL_ROOT}/stone/marble-duo-gold/base-color.jpg`,
+      roughness:
+        `${MATERIAL_ROOT}/stone/marble-duo-gold/roughness.jpg`,
+      normal:
+        `${MATERIAL_ROOT}/stone/marble-duo-gold/normal-gl.jpg`,
+    },
+    metalness: 0,
+    roughness: 1,
+    normalScale: 0.3,
+  },
+  {
+    id: 'terrazzo-neutral',
+    label: 'Нейтральное терраццо',
+    category: 'stone',
+    kind: 'texture',
+    maps: {
+      color:
+        `${MATERIAL_ROOT}/stone/terrazzo-neutral/base-color.jpg`,
+      roughness:
+        `${MATERIAL_ROOT}/stone/terrazzo-neutral/roughness.jpg`,
+      normal:
+        `${MATERIAL_ROOT}/stone/terrazzo-neutral/normal-gl.jpg`,
+    },
+    metalness: 0,
+    roughness: 1,
+    normalScale: 0.32,
   },
   {
     id: 'metal-black-matte',

@@ -126,6 +126,16 @@ export const U_FRAME_TABLE_CONFIG = {
       length: 'x',
       width: 'y',
     },
+    Top_Bottom: {
+      length: 'x',
+      width: 'y',
+    },
+    Top_Edge_Long: {
+      length: 'x',
+    },
+    Top_Edge_Short: {
+      width: 'x',
+    },
   },
 
   materialSlots: {
@@ -133,6 +143,9 @@ export const U_FRAME_TABLE_CONFIG = {
       label: 'Материал столешницы',
       targets: [
         'Top_Primary',
+        'Top_Bottom',
+        'Top_Edge_Long',
+        'Top_Edge_Short',
       ],
       defaultFinish:
         'concrete-light',
@@ -141,8 +154,15 @@ export const U_FRAME_TABLE_CONFIG = {
         'walnut-natural',
         'pine-coated',
         'ash-natural',
+        'oak-grey',
+        'oak-silver',
+        'oak-black',
         'concrete-light',
         'marble-cream',
+        'marble-white-gold',
+        'marble-black-gold',
+        'marble-duo-gold',
+        'terrazzo-neutral',
       ],
     },
 

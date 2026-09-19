@@ -1,0 +1,21 @@
+{
+  "id": "table-05-round-fluted-pedestal",
+  "folder": "round-fluted-pedestal-table",
+  "symbol": "ROUND_FLUTED_PEDESTAL_TABLE_CONFIG",
+  "label": "Круглый стол с рифлёной опорой",
+  "kind": "fluted-pedestal",
+  "diameter": 1.1,
+  "maxDiameter": 1.4,
+  "height": 0.76,
+  "thickness": 0.022,
+  "defaultTop": "marble-black-gold",
+  "textureFolder": "marble-black-gold",
+  "reference": "стол 6.jpg",
+  "step": 0.01,
+  "topBevel": 0.001,
+  "radialSegments": 192,
+  "texturePeriodMeters": 1,
+  "heightReadiness": "height-fixed",
+  "thicknessReadiness": "thickness-fixed",
+  "normalScale": 0.28
+}

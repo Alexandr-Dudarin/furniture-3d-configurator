@@ -14,6 +14,7 @@ import bpy
 
 
 MODEL_ID = "table-03-slat-pedestal"
+TABLETOP_TEXTURE_METERS = 1.0  # Один тайл на метр, включая толщину торцов.
 SOURCE_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SOURCE_DIR.parents[2]
 TEXTURE_DIR = SOURCE_DIR / "textures"
@@ -165,13 +166,13 @@ def assign_tabletop_surfaces_and_uv(obj, materials, length, width, thickness):
         for loop_index in polygon.loop_indices:
             vertex = obj.data.vertices[obj.data.loops[loop_index].vertex_index].co
             if material_index == 0:
-                uv = (vertex.x / length + 0.5, -vertex.y / width + 0.5)
+                uv = (vertex.x / TABLETOP_TEXTURE_METERS + 0.5, -vertex.y / TABLETOP_TEXTURE_METERS + 0.5)
             elif material_index == 1:
-                uv = (vertex.x / length + 0.5, vertex.y / width + 0.5)
+                uv = (vertex.x / TABLETOP_TEXTURE_METERS + 0.5, vertex.y / TABLETOP_TEXTURE_METERS + 0.5)
             elif material_index == 2:
-                uv = (vertex.x / length + 0.5, vertex.z / thickness + 0.5)
+                uv = (vertex.x / TABLETOP_TEXTURE_METERS + 0.5, vertex.z / TABLETOP_TEXTURE_METERS + 0.5)
             else:
-                uv = (-vertex.y / width + 0.5, vertex.z / thickness + 0.5)
+                uv = (-vertex.y / TABLETOP_TEXTURE_METERS + 0.5, vertex.z / TABLETOP_TEXTURE_METERS + 0.5)
 
             uv_layer.data[loop_index].uv = uv
 

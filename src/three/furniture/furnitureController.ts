@@ -600,6 +600,10 @@ export function createFurnitureController(
     },
 
     refreshTextures() {
+      // У неизменённых текстур repeat/offset уже учитывают текущий размер.
+      // Вернём исходные значения перед захватом, чтобы смена другого slot
+      // не применяла компенсацию повторно. Новые текстуры ещё не затронуты.
+      textureStates.forEach(resetTexture)
       textureStates.length = 0
 
       prepareMaterialsAndTextures(

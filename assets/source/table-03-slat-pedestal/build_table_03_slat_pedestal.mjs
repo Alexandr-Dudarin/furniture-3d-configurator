@@ -26,6 +26,8 @@ const OUTPUT_PATH = path.join(PROJECT_ROOT, 'public/models/table-03-slat-pedesta
 const TOP_LENGTH = 1.2
 const TOP_WIDTH = 0.75
 const TOP_THICKNESS = 0.022
+// Единый физический масштаб с V-Pedestal: один тайл на метр.
+const TABLETOP_TEXTURE_METERS = 1
 
 const document = new Document()
 const buffer = document.createBuffer('Table03_Buffer')
@@ -279,28 +281,28 @@ function classifyTableTopSurface([normalX, normalY, normalZ]) {
 function tableTopUv(surface, [x, y, z]) {
   if (surface === 'top') {
     return [
-      x / TOP_LENGTH + 0.5,
-      z / TOP_WIDTH + 0.5,
+      x / TABLETOP_TEXTURE_METERS + 0.5,
+      z / TABLETOP_TEXTURE_METERS + 0.5,
     ]
   }
 
   if (surface === 'bottom') {
     return [
-      x / TOP_LENGTH + 0.5,
-      0.5 - z / TOP_WIDTH,
+      x / TABLETOP_TEXTURE_METERS + 0.5,
+      0.5 - z / TABLETOP_TEXTURE_METERS,
     ]
   }
 
   if (surface === 'longEdge') {
     return [
-      x / TOP_LENGTH + 0.5,
-      y / TOP_THICKNESS + 0.5,
+      x / TABLETOP_TEXTURE_METERS + 0.5,
+      y / TABLETOP_TEXTURE_METERS + 0.5,
     ]
   }
 
   return [
-    z / TOP_WIDTH + 0.5,
-    y / TOP_THICKNESS + 0.5,
+    z / TABLETOP_TEXTURE_METERS + 0.5,
+    y / TABLETOP_TEXTURE_METERS + 0.5,
   ]
 }
 

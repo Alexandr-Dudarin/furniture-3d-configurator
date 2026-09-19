@@ -1,6 +1,6 @@
 # Validation report: Table 04 V-Pedestal
 
-Validation date: 2026-08-14.
+Validation date: 2026-08-15.
 
 ## Production asset
 
@@ -41,6 +41,8 @@ The production-GLB test verifies:
 - `Stretch segment` and signed `Delta move` transforms;
 - unchanged 25 mm corner scale and unchanged fixed support transforms;
 - all eleven semantic tabletop surfaces and independent UV compensation;
+- physical UV spans for center, straight, corner and vertical edge surfaces;
+- common length/width compensation across every horizontal 9-slice surface;
 - unique ownership of `primaryTop` and `frameMetal` targets;
 - generic replacement to `marble-cream` / `metal-black-matte`, then
   `walnut-natural` / `metal-white-matte`;

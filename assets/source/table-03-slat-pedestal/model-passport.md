@@ -228,6 +228,16 @@ use the OpenGL normal convention and every normal-mapped primitive has tangents.
 `Wood_Slats` and `Wood_Plinth` have ordinary object UVs and no runtime
 `textureAxes` entry because their geometry is fixed during length/width resize.
 
+### Physical UV density — v3, 2026-09-18
+
+Tabletop surfaces use one UV unit per metre on both texture axes, matching
+the V-Pedestal convention. Top and bottom use metric X/Z projections. Long
+edges use X/Y and short edges use Z/Y; the full 22 mm thickness spans 0.022
+UV units rather than V=0..1. The base top spans about 1.2 × 0.75 UV units
+before bevel subtraction. Runtime compensation preserves this density after
+length/width resize and material replacement, including every PBR map.
+Pedestal wood UVs and the independent pedestalWood slot are unchanged.
+
 ## Pivot and local-axis notes
 
 ```text
@@ -279,3 +289,7 @@ slats:              7 front + 7 back, 24 mm wide
 The physical insert, seams and folding mechanism are represented by the
 approved continuous centered resize. Literal insert visibility would require a
 future generic conditional visibility/variant behavior.
+
+
+Примечание v3: существующие `previews/` — исторические рендеры геометрии до
+исправления UV. Новый браузерный visual QA ещё требуется; см. validation-report.md.

@@ -18,6 +18,14 @@ import {
   V_PEDESTAL_TABLE_CONFIG,
 } from '../three/models/v-pedestal-table/config'
 
+import {
+  ROUND_FLUTED_PEDESTAL_TABLE_CONFIG,
+} from '../three/models/round-fluted-pedestal-table/config'
+
+import {
+  ROUND_SPLAYED_LEGS_TABLE_CONFIG,
+} from '../three/models/round-splayed-legs-table/config'
+
 /*
  * --------------------------------
  * FURNITURE REGISTRY
@@ -50,6 +58,14 @@ const furnitureRegistry =
     [
       V_PEDESTAL_TABLE_CONFIG.id,
       V_PEDESTAL_TABLE_CONFIG,
+    ],
+    [
+      ROUND_FLUTED_PEDESTAL_TABLE_CONFIG.id,
+      ROUND_FLUTED_PEDESTAL_TABLE_CONFIG,
+    ],
+    [
+      ROUND_SPLAYED_LEGS_TABLE_CONFIG.id,
+      ROUND_SPLAYED_LEGS_TABLE_CONFIG,
     ],
   ])
 

@@ -606,6 +606,37 @@ describe(
   },
 )
 
+it('preserves authored texture transforms through repeated refresh and captures replacement maps at the current size', () => {
+  const { model, top } = createFirstTableFixture()
+  const controller = createFurnitureController(model, FIRST_TABLE_CONFIG)
+  const original = getRequiredMap(top)
+  controller.setDimensions({ length: 2, width: 1 })
+  const resized = [...original.repeat.toArray(), ...original.offset.toArray()]
+  for (let index = 0; index < 4; index++) controller.refreshTextures()
+  expect([...original.repeat.toArray(), ...original.offset.toArray()]).toEqual(resized)
+  controller.setDimensions({ length: 1.2, width: 0.6 })
+  expectTextureTransform(original, 2, 3, 0.1, 0.2)
+
+  // Новый материал поступает уже при увеличенном столе. Его собственный
+  // масштаб и смещение должны стать исходными, без наследования старой карты.
+  controller.setDimensions({ length: 2, width: 1 })
+  const replacement = new THREE.Texture()
+  replacement.repeat.set(4, 5)
+  replacement.offset.set(0.25, 0.4)
+  const material = new THREE.MeshStandardMaterial({
+    map: replacement,
+    normalMap: replacement,
+    roughnessMap: replacement,
+  })
+  material.name = 'Wood_Top'
+  top.material = material
+  controller.refreshTextures()
+  expectTextureTransform(replacement, 4 * (2 / 1.2), 5 * (1 / 0.6), 0.25 + 2 * (1 - 2 / 1.2), 0.4 + 2.5 * (1 - 1 / 0.6))
+  controller.refreshTextures()
+  controller.setDimensions({ length: 1.2, width: 0.6 })
+  expectTextureTransform(replacement, 4, 5, 0.25, 0.4)
+})
+
 const DELTA_MOVE_DEFINITION = {
   id: 'delta-move-fixture',
   label: 'Delta Move Fixture',

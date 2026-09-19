@@ -31,6 +31,14 @@ import {
 } from '../models/u-frame-table/config'
 
 import {
+  SLAT_PEDESTAL_TABLE_CONFIG,
+} from '../models/slat-pedestal-table/config'
+
+import {
+  V_PEDESTAL_TABLE_CONFIG,
+} from '../models/v-pedestal-table/config'
+
+import {
   disposeMaterialFinishCache,
 } from './createMaterial'
 
@@ -311,7 +319,7 @@ describe(
 
         expect(
           textureFinishes,
-        ).toHaveLength(6)
+        ).toHaveLength(13)
 
         for (
           const finish of
@@ -352,11 +360,13 @@ describe(
     )
 
     it(
-      'resolves every finish declared by both production model configs',
+      'resolves every finish declared by every production model config',
       () => {
         const definitions = [
           FIRST_TABLE_CONFIG,
           U_FRAME_TABLE_CONFIG,
+          SLAT_PEDESTAL_TABLE_CONFIG,
+          V_PEDESTAL_TABLE_CONFIG,
         ]
 
         definitions.forEach(
@@ -389,6 +399,73 @@ describe(
               },
             )
           },
+        )
+      },
+    )
+
+    it(
+      'keeps custom finishes non-metallic and model availability declarative',
+      () => {
+        const goldMarbles = [
+          'marble-white-gold',
+          'marble-black-gold',
+          'marble-duo-gold',
+        ] as const
+
+        goldMarbles.forEach(
+          (finishId) => {
+            const finish =
+              getMaterialFinish(
+                finishId,
+              )
+
+            expect(
+              finish.category,
+            ).toBe('stone')
+
+            expect(
+              finish.metalness,
+            ).toBe(0)
+          },
+        )
+
+        expect(
+          SLAT_PEDESTAL_TABLE_CONFIG
+            .materialSlots.pedestalWood
+            .allowedFinishes,
+        ).toEqual(
+          expect.arrayContaining([
+            'oak-grey',
+            'oak-silver',
+            'oak-black',
+          ]),
+        )
+
+        expect(
+          SLAT_PEDESTAL_TABLE_CONFIG
+            .materialSlots.pedestalWood
+            .allowedFinishes,
+        ).not.toContain(
+          'marble-white-gold',
+        )
+
+        expect(
+          V_PEDESTAL_TABLE_CONFIG
+            .materialSlots.primaryTop
+            .allowedFinishes,
+        ).toEqual(
+          expect.arrayContaining([
+            ...goldMarbles,
+            'terrazzo-neutral',
+          ]),
+        )
+
+        expect(
+          V_PEDESTAL_TABLE_CONFIG
+            .materialSlots.primaryTop
+            .allowedFinishes,
+        ).not.toContain(
+          'oak-grey',
         )
       },
     )

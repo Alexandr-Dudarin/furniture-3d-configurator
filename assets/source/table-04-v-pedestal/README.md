@@ -6,6 +6,10 @@ The v2.4 source preserves the existing nine resize targets and adds separate
 top, bottom, long-edge, short-edge and corner material primitives according to
 each segment's independent UV compensation.
 
+Horizontal 9-slice surfaces share one physical projected UV coordinate system.
+Vertical edges use the same physical texture density along their length and
+17 mm thickness, avoiding the former full-tile compression on thin sides.
+
 The four fixed supports are built between source anchors embedded in the floor
 plinth and under-top mount. This removes bevel-related visual gaps without a
 runtime `Fit between anchors` behavior and without changing the 9-slice resize.

@@ -172,10 +172,12 @@ export const V_PEDESTAL_TABLE_CONFIG = {
 
     Stone_Top_LongSegment: {
       length: 'x',
+      width: 'y',
     },
 
     Stone_Bottom_LongSegment: {
       length: 'x',
+      width: 'y',
     },
 
     Stone_Edge_Long: {
@@ -183,10 +185,22 @@ export const V_PEDESTAL_TABLE_CONFIG = {
     },
 
     Stone_Top_ShortSegment: {
+      length: 'x',
       width: 'y',
     },
 
     Stone_Bottom_ShortSegment: {
+      length: 'x',
+      width: 'y',
+    },
+
+    Stone_Top_Corner: {
+      length: 'x',
+      width: 'y',
+    },
+
+    Stone_Bottom_Corner: {
+      length: 'x',
       width: 'y',
     },
 
@@ -220,6 +234,10 @@ export const V_PEDESTAL_TABLE_CONFIG = {
         'ash-natural',
         'concrete-light',
         'marble-cream',
+        'marble-white-gold',
+        'marble-black-gold',
+        'marble-duo-gold',
+        'terrazzo-neutral',
       ],
     },
 

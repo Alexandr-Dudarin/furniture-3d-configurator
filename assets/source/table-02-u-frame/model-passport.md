@@ -170,6 +170,9 @@ Bottom rails:
 
 ```text
 Top_Primary
+Top_Bottom
+Top_Edge_Long
+Top_Edge_Short
 Metal_Frame
 ```
 
@@ -178,12 +181,15 @@ Metal_Frame
 ```text
 PrimaryTop:
   Top_Primary
+  Top_Bottom
+  Top_Edge_Long
+  Top_Edge_Short
 
 FrameMetal:
   Metal_Frame
 ```
 
-`Top_Primary` предназначен для полной замены материала столешницы: бетон, дерево, камень и другие совместимые finishes.
+`Top_Primary` обозначает верх столешницы. Вместе с `Top_Bottom`, `Top_Edge_Long` и `Top_Edge_Short` он входит в один пользовательский slot `primaryTop`. Все четыре поверхности меняют покрытие вместе, но имеют независимую UV-компенсацию.
 
 `Metal_Frame` предназначен для замены варианта порошковой окраски. Базовый preview — чёрное порошковое покрытие. Предусмотрен будущий белый/светлый вариант, который также должен оставаться окрашенным металлом, а не белым пластиком или матовой белой поверхностью без металлического specular response.
 
@@ -193,7 +199,8 @@ FrameMetal:
 primaryTop:
   default: concrete-light
   allowed: oak-natural, walnut-natural, pine-coated, ash-natural,
-           concrete-light, marble-cream
+           concrete-light, marble-cream, oak-grey, oak-silver, oak-black,
+           marble-white-gold, marble-black-gold, marble-duo-gold, terrazzo-neutral
 
 frameMetal:
   default: metal-black-matte
@@ -226,13 +233,22 @@ Roughness: 0.29
 ## UV behavior
 
 ```text
-Top_Primary:
+Top_Primary / Top_Bottom:
   length -> texture U
   width  -> texture V
-  anchor -> centered
+
+Top_Edge_Long:
+  length -> texture U
+  width не влияет на UV торца
+
+Top_Edge_Short:
+  width -> texture U
+  length не влияет на UV торца
+
+Все поверхности: anchor -> centered
 ```
 
-UV density столешницы подготовлена под повторяемую текстуру. Runtime изменяет texture repeat/offset при resize, поэтому рисунок не должен растягиваться вместе со столешницей.
+Исправление v3 от 18.09.2026: исходная UV-плотность — 1 UV-единица на метр, как у V-Pedestal. Старый масштаб примерно 0.36 м на тайл удалён. Верх и низ используют X/Z; длинный торец — X/Y; короткий — Z/Y. Полная толщина 15 мм занимает 0.015 UV-единицы, а не целую высоту картинки. Runtime сохраняет эту плотность при изменении длины и ширины. Все PBR-карты используют одну развёртку; tangents пересчитаны.
 
 Металлическая рама использует однородный PBR material и не требует динамической UV-компенсации.
 
@@ -256,11 +272,12 @@ No asset-specific lights, camera, HDRI or floor.
 ## Performance
 
 ```text
-GLB size: approximately 451 KB
-Triangles: 1,188
+GLB size: 454,040 bytes
+Triangles: 1,188 unique; 2,388 with node instances
 Unique geometry meshes: 3
 Runtime nodes: 9
-Materials: 2
+Materials: 5
+Draw calls with node instances: 10
 Embedded textures: 3 × 512 × 512
 Compression: none
 glTF Validator: 0 errors, 0 warnings
@@ -283,3 +300,7 @@ glTF Validator: 0 errors, 0 warnings
 - нижняя поперечина считается растягиваемым конструктивным сегментом при изменении ширины.
 
 Эти параметры выбраны по референсам и не меняют generic architecture. Если появится точный технический чертёж производителя, их можно скорректировать в source script и повторно экспортировать asset.
+
+
+Примечание v3: существующие `previews/` — исторические рендеры геометрии до
+исправления UV. Новый браузерный visual QA ещё требуется; см. validation-report.md.

@@ -192,6 +192,48 @@ describe(
           },
         )
 
+        // The 9-slice asset uses one physical UV scale across every top and
+        // bottom segment.  Vertical edges keep the same scale in both
+        // directions instead of squeezing a full texture tile into 17 mm.
+        expectMaterialUvSpan(
+          model,
+          'Stone_Top_Center',
+          [1.15, 0.75],
+        )
+        expectMaterialUvSpan(
+          model,
+          'Stone_Top_LongSegment',
+          [1.15, 0.025],
+        )
+        expectMaterialUvSpan(
+          model,
+          'Stone_Top_ShortSegment',
+          [0.025, 0.75],
+        )
+        expectMaterialUvSpan(
+          model,
+          'Stone_Top_Corner',
+          [0.025, 0.025],
+        )
+        expectMaterialUvSpan(
+          model,
+          'Stone_Edge_Long',
+          [1.15, 0.017],
+        )
+        expectMaterialUvSpan(
+          model,
+          'Stone_Edge_Short',
+          [0.75, 0.017],
+        )
+        expectMaterialUvSpan(
+          model,
+          'Stone_Edge_Corner',
+          [
+            0.025 * Math.PI / 2,
+            0.017,
+          ],
+        )
+
         expectFinishGroup(
           model,
           'Metal_Support',
@@ -410,17 +452,17 @@ describe(
           Stone_Bottom_Center:
             [1.6 / 1.2, 1.2 / 0.8],
           Stone_Top_LongSegment:
-            [1.6 / 1.2, 1],
+            [1.6 / 1.2, 1.2 / 0.8],
           Stone_Bottom_LongSegment:
-            [1.6 / 1.2, 1],
+            [1.6 / 1.2, 1.2 / 0.8],
           Stone_Top_ShortSegment:
-            [1, 1.2 / 0.8],
+            [1.6 / 1.2, 1.2 / 0.8],
           Stone_Bottom_ShortSegment:
-            [1, 1.2 / 0.8],
+            [1.6 / 1.2, 1.2 / 0.8],
           Stone_Top_Corner:
-            [1, 1],
+            [1.6 / 1.2, 1.2 / 0.8],
           Stone_Bottom_Corner:
-            [1, 1],
+            [1.6 / 1.2, 1.2 / 0.8],
           Stone_Edge_Long:
             [1.6 / 1.2, 1],
           Stone_Edge_Short:
@@ -742,6 +784,86 @@ function expectMaterialHasUv(
   })
 
   expect(found).toBe(true)
+}
+
+function expectMaterialUvSpan(
+  model: THREE.Object3D,
+  materialName: string,
+  expected: readonly [
+    number,
+    number,
+  ],
+): void {
+  const sizes:
+    THREE.Vector2[] = []
+
+  model.traverse((object) => {
+    if (!(object instanceof THREE.Mesh)) {
+      return
+    }
+
+    const materials =
+      Array.isArray(object.material)
+        ? object.material
+        : [object.material]
+
+    if (
+      !materials.some(
+        (material) =>
+          material.name ===
+          materialName,
+      )
+    ) {
+      return
+    }
+
+    const uv =
+      object.geometry
+        .getAttribute('uv')
+
+    if (!uv) {
+      return
+    }
+
+    const objectBounds =
+      new THREE.Box2()
+
+    for (
+      let index = 0;
+      index < uv.count;
+      index += 1
+    ) {
+      objectBounds.expandByPoint(
+        new THREE.Vector2(
+          uv.getX(index),
+          uv.getY(index),
+        ),
+      )
+    }
+
+    sizes.push(
+      objectBounds.getSize(
+        new THREE.Vector2(),
+      ),
+    )
+  })
+
+  if (sizes.length === 0) {
+    throw new Error(
+      `Expected UV bounds for material "${materialName}".`,
+    )
+  }
+
+  sizes.forEach((size) => {
+    expect(size.x).toBeCloseTo(
+      expected[0],
+      6,
+    )
+    expect(size.y).toBeCloseTo(
+      expected[1],
+      6,
+    )
+  })
 }
 
 function expectMaterialNamesUnderObject(

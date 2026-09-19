@@ -1,56 +1,39 @@
-# Validation report: Table 02 U-Frame
+# Validation report: table-02-u-frame
 
-Дата проверки: 2026-08-12.
+Дата: 18.09.2026. Пакет: material-uv-fixes-v3, поверх material-library-v1 + material-fixes-v2.
 
-## Production asset
+## Выполненные проверки
 
-```text
-public/models/table-02-u-frame.glb
-```
+- Полный `npm test`: 7 файлов, 19 тестов — PASS.
+- `npm run build`: TypeScript + Vite — PASS. Осталось предупреждение о размере JS chunk.
+- ESLint для изменённых TypeScript-файлов — PASS.
+- Khronos glTF Validator: 0 ошибок, 0 предупреждений, 0 infos, 0 hints.
+- Синтаксис Python/Node генераторов — PASS.
+- Сравнение до/после: позиции и нормали всех треугольников, hierarchy и transforms всех nodes идентичны.
+- Число треугольников с учётом инстансов: 2388.
+- Draw calls с учётом инстансов: 10.
+- Materials: 5; GLB: 454,040 bytes.
 
-Результат Khronos glTF Validator:
+## UV-регрессия
 
-```text
-Errors:   0
-Warnings: 0
-Infos:    0
-Hints:    0
-```
+Новый `src/three/models/tabletopUv.integration.test.ts` загружает production GLB,
+подключает реальные furniture/material controllers и измеряет UV-плотность
+в мировых координатах на плоских участках верха, низа, длинного и короткого торца.
+Проверяются base, отдельные max длины/ширины, общий max, intermediate, возврат
+в base и смена marble-duo-gold / oak-natural на уже растянутой модели.
+Все три карты (цвет, normal, roughness) сохраняют один тайл на метр по обеим осям.
+Толщина 15 мм занимает 0.015 UV-единицы, а не целый квадрат изображения.
+Новые тесты отклоняют исходные GLB; полный комплект исправленных файлов проходит.
 
-Метрики GLB:
+## Границы проверки
 
-```text
-Bounds:       0.95 × 0.55 × 0.75 m
-Triangles:    1,188
-Vertices:     3,564
-Draw calls:   3
-Materials:    2
-Textures:     3
-File size:    450,920 bytes
-```
+Скриншоты пользователя до исправления изучены. Новый браузерный визуальный прогон
+в этой среде не выполнен: браузер отсутствует, загрузка headless Chromium недоступна.
+Это не отчёт о визуальной приёмке пользователем. Необходимо посмотреть длинные
+и короткие торцы с камнем и деревом, верх/низ при base → max → base.
+Старые изображения в `previews/` сохраняются как исторические проверки геометрии;
+они не являются контрольными рендерами обновлённой UV-развёртки.
 
-## Runtime checks
-
-```text
-npm test
-Test files: 2 passed
-Tests:      5 passed
-
-npm run build
-Result:     passed
-```
-
-Integration test проверяет реальный production GLB в базовом и максимальном
-размерах, неизменность профиля стоек, перемещение рам, локальное растяжение
-нижних поперечин, UV-компенсацию столешницы и точный возврат к base state.
-
-## Source-script check
-
-```text
-python3 -m py_compile assets/source/table-02-u-frame/create_table_02_u_frame.py
-Result: passed
-```
-
-Фактическое открытие и сохранение `.blend` требует Blender 4.x. Blender не был
-доступен в среде сборки, поэтому бинарный `.blend` создаётся приложенным
-воспроизводимым Blender-скриптом.
+Blender отсутствует. Blender-скрипт проверен синтаксически; создание, экспорт
+и визуальная приёмка `.blend` остаются отдельной проверкой в Blender.
+Машинный отчёт GLB сохранён в `gltf-validator-report.json`.

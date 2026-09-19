@@ -1,0 +1,21 @@
+{
+  "id": "table-06-round-splayed-legs",
+  "folder": "round-splayed-legs-table",
+  "symbol": "ROUND_SPLAYED_LEGS_TABLE_CONFIG",
+  "label": "Круглый стол на наклонных ножках",
+  "kind": "splayed-legs",
+  "diameter": 0.85,
+  "maxDiameter": 1.05,
+  "height": 0.73,
+  "thickness": 0.017,
+  "defaultTop": "marble-white-gold",
+  "textureFolder": "marble-white-gold",
+  "reference": "стол круглый мал бел.jpg",
+  "step": 0.01,
+  "topBevel": 0.001,
+  "radialSegments": 192,
+  "texturePeriodMeters": 1,
+  "heightReadiness": "height-fixed",
+  "thicknessReadiness": "thickness-fixed",
+  "normalScale": 0.3
+}

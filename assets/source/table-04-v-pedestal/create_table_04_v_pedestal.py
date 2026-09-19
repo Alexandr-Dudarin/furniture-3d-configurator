@@ -23,6 +23,7 @@ GLB_PATH = PROJECT_ROOT / "public" / "models" / f"{MODEL_ID}.glb"
 # bevel cannot expose a light gap. No runtime fit behavior is required.
 LOWER_SUPPORT_ANCHOR_Y = 0.020
 UPPER_SUPPORT_ANCHOR_Y = 0.731
+TABLETOP_TEXTURE_METERS = 1.0
 
 
 def gltf_location(x, y, z):
@@ -90,6 +91,8 @@ def create_rect_segment(
     parent,
     edge_material=None,
     outer_face=None,
+    texture_center_x=0.0,
+    texture_center_z=0.0,
 ):
     """Create only the visible semantic surfaces of one 9-slice segment."""
 
@@ -149,18 +152,18 @@ def create_rect_segment(
 
             if material_index in (0, 1):
                 uv = (
-                    gltf_x / size_x + 0.5,
-                    gltf_z / size_z + 0.5,
+                    (gltf_x + texture_center_x) / TABLETOP_TEXTURE_METERS + 0.5,
+                    (gltf_z + texture_center_z) / TABLETOP_TEXTURE_METERS + 0.5,
                 )
             elif outer_face in ("front", "back"):
                 uv = (
-                    gltf_x / size_x + 0.5,
-                    gltf_y / thickness + 0.5,
+                    (gltf_x + texture_center_x) / TABLETOP_TEXTURE_METERS + 0.5,
+                    gltf_y / TABLETOP_TEXTURE_METERS + 0.5,
                 )
             else:
                 uv = (
-                    gltf_z / size_z + 0.5,
-                    gltf_y / thickness + 0.5,
+                    (gltf_z + texture_center_z) / TABLETOP_TEXTURE_METERS + 0.5,
+                    gltf_y / TABLETOP_TEXTURE_METERS + 0.5,
                 )
 
             uv_layer.data[loop_index].uv = uv
@@ -178,6 +181,8 @@ def create_quarter_cylinder(
     bottom_material,
     edge_material,
     parent,
+    texture_center_x=0.0,
+    texture_center_z=0.0,
 ):
     segments = 12
     vertices = []
@@ -228,8 +233,8 @@ def create_quarter_cylinder(
 
             if material_index in (0, 1):
                 uv = (
-                    gltf_x / (radius * 2) + 0.5,
-                    gltf_z / (radius * 2) + 0.5,
+                    (gltf_x + texture_center_x) / TABLETOP_TEXTURE_METERS + 0.5,
+                    (gltf_z + texture_center_z) / TABLETOP_TEXTURE_METERS + 0.5,
                 )
             else:
                 arc_u = math.atan2(
@@ -237,8 +242,8 @@ def create_quarter_cylinder(
                     abs(gltf_x),
                 ) / (math.pi / 2)
                 uv = (
-                    arc_u,
-                    gltf_y / height + 0.5,
+                    arc_u * radius * math.pi / 2 / TABLETOP_TEXTURE_METERS + 0.5,
+                    gltf_y / TABLETOP_TEXTURE_METERS + 0.5,
                 )
 
             uv_layer.data[loop_index].uv = uv
@@ -315,6 +320,8 @@ def create_top(root, materials):
         materials["top_center"],
         materials["bottom_center"],
         root,
+        texture_center_x=0,
+        texture_center_z=0,
     )
     center["runtimeBehavior"] = "stretch-segment"
     center["lengthLocalAxis"] = "x"
@@ -337,6 +344,8 @@ def create_top(root, materials):
             root,
             materials["edge_long"],
             side_name.lower(),
+            texture_center_x=0,
+            texture_center_z=z,
         )
         edge["runtimeBehavior"] = "stretch-segment+delta-move"
         edge["stretchDimension"] = "length"
@@ -361,6 +370,8 @@ def create_top(root, materials):
             root,
             materials["edge_short"],
             side_name.lower(),
+            texture_center_x=x,
+            texture_center_z=0,
         )
         edge["runtimeBehavior"] = "stretch-segment+delta-move"
         edge["stretchDimension"] = "width"
@@ -387,6 +398,8 @@ def create_top(root, materials):
             materials["bottom_corner"],
             materials["edge_corner"],
             root,
+            texture_center_x=x_sign * (length / 2 - radius),
+            texture_center_z=z_sign * (width / 2 - radius),
         )
         corner["runtimeBehavior"] = "delta-move"
         corner["lengthLocalAxis"] = "x"

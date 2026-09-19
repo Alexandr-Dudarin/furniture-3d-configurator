@@ -26,6 +26,7 @@ const OUTPUT_PATH = path.join(PROJECT_ROOT, 'public/models/table-04-v-pedestal.g
 // keeps all four joints closed after beveling without adding a runtime fit rule.
 const LOWER_SUPPORT_ANCHOR_Y = 0.020
 const UPPER_SUPPORT_ANCHOR_Y = 0.731
+const TABLETOP_TEXTURE_METERS = 1
 
 const document = new Document()
 const buffer = document.createBuffer('Table04_Buffer')
@@ -145,6 +146,8 @@ function createNineSliceTop() {
       sizeX: centerLength,
       sizeZ: centerWidth,
       thickness,
+      textureCenterX: 0,
+      textureCenterZ: 0,
       topMaterial: stoneMaterials.Stone_Top_Center,
       bottomMaterial: stoneMaterials.Stone_Bottom_Center,
     }),
@@ -169,6 +172,8 @@ function createNineSliceTop() {
         sizeX: centerLength,
         sizeZ: radius,
         thickness,
+        textureCenterX: 0,
+        textureCenterZ: side.z,
         topMaterial: stoneMaterials.Stone_Top_LongSegment,
         bottomMaterial: stoneMaterials.Stone_Bottom_LongSegment,
         edgeMaterial: stoneMaterials.Stone_Edge_Long,
@@ -198,6 +203,8 @@ function createNineSliceTop() {
         sizeX: radius,
         sizeZ: centerWidth,
         thickness,
+        textureCenterX: side.x,
+        textureCenterZ: 0,
         topMaterial: stoneMaterials.Stone_Top_ShortSegment,
         bottomMaterial: stoneMaterials.Stone_Bottom_ShortSegment,
         edgeMaterial: stoneMaterials.Stone_Edge_Short,
@@ -232,6 +239,8 @@ function createNineSliceTop() {
         thickness,
         signX: corner.x,
         signZ: corner.z,
+        textureCenterX: corner.x * (length / 2 - radius),
+        textureCenterZ: corner.z * (width / 2 - radius),
         topMaterial: stoneMaterials.Stone_Top_Corner,
         bottomMaterial: stoneMaterials.Stone_Bottom_Corner,
         edgeMaterial: stoneMaterials.Stone_Edge_Corner,
@@ -257,6 +266,8 @@ function createRectangularSegmentSurfaces({
   sizeX,
   sizeZ,
   thickness,
+  textureCenterX,
+  textureCenterZ,
   topMaterial,
   bottomMaterial,
   edgeMaterial,
@@ -266,8 +277,8 @@ function createRectangularSegmentSurfaces({
   const halfZ = sizeZ / 2
   const halfY = thickness / 2
   const topUv = ([x, , z]) => [
-    x / sizeX + 0.5,
-    z / sizeZ + 0.5,
+    (x + textureCenterX) / TABLETOP_TEXTURE_METERS + 0.5,
+    (z + textureCenterZ) / TABLETOP_TEXTURE_METERS + 0.5,
   ]
 
   const surfaces = [
@@ -314,7 +325,10 @@ function createRectangularSegmentSurfaces({
         [-halfX, halfY, halfZ],
       ],
       normal: [0, 0, 1],
-      uv: ([x, y]) => [x / sizeX + 0.5, y / thickness + 0.5],
+      uv: ([x, y]) => [
+        (x + textureCenterX) / TABLETOP_TEXTURE_METERS + 0.5,
+        y / TABLETOP_TEXTURE_METERS + 0.5,
+      ],
     },
     back: {
       vertices: [
@@ -324,7 +338,10 @@ function createRectangularSegmentSurfaces({
         [halfX, halfY, -halfZ],
       ],
       normal: [0, 0, -1],
-      uv: ([x, y]) => [0.5 - x / sizeX, y / thickness + 0.5],
+      uv: ([x, y]) => [
+        0.5 - (x + textureCenterX) / TABLETOP_TEXTURE_METERS,
+        y / TABLETOP_TEXTURE_METERS + 0.5,
+      ],
     },
     left: {
       vertices: [
@@ -334,7 +351,10 @@ function createRectangularSegmentSurfaces({
         [-halfX, halfY, -halfZ],
       ],
       normal: [-1, 0, 0],
-      uv: ([, y, z]) => [z / sizeZ + 0.5, y / thickness + 0.5],
+      uv: ([, y, z]) => [
+        (z + textureCenterZ) / TABLETOP_TEXTURE_METERS + 0.5,
+        y / TABLETOP_TEXTURE_METERS + 0.5,
+      ],
     },
     right: {
       vertices: [
@@ -344,7 +364,10 @@ function createRectangularSegmentSurfaces({
         [halfX, halfY, halfZ],
       ],
       normal: [1, 0, 0],
-      uv: ([, y, z]) => [0.5 - z / sizeZ, y / thickness + 0.5],
+      uv: ([, y, z]) => [
+        0.5 - (z + textureCenterZ) / TABLETOP_TEXTURE_METERS,
+        y / TABLETOP_TEXTURE_METERS + 0.5,
+      ],
     },
   }
   const spec = edgeSpecs[outerFace]
@@ -367,6 +390,8 @@ function createQuarterCornerSurfaces({
   thickness,
   signX,
   signZ,
+  textureCenterX,
+  textureCenterZ,
   topMaterial,
   bottomMaterial,
   edgeMaterial,
@@ -386,8 +411,8 @@ function createQuarterCornerSurfaces({
   const bottomTriangles = []
   const edgeTriangles = []
   const horizontalUv = ([x, , z]) => [
-    x / (radius * 2) + 0.5,
-    z / (radius * 2) + 0.5,
+    (x + textureCenterX) / TABLETOP_TEXTURE_METERS + 0.5,
+    (z + textureCenterZ) / TABLETOP_TEXTURE_METERS + 0.5,
   ]
 
   for (let index = 0; index < segments; index += 1) {
@@ -423,19 +448,31 @@ function createQuarterCornerSurfaces({
     const sideQuad = [
       {
         position: [current.x, -halfY, current.z],
-        uv: [current.fraction, 0],
+        uv: [
+          current.fraction * radius * Math.PI / 2 / TABLETOP_TEXTURE_METERS + 0.5,
+          0.5 - halfY / TABLETOP_TEXTURE_METERS,
+        ],
       },
       {
         position: [next.x, -halfY, next.z],
-        uv: [next.fraction, 0],
+        uv: [
+          next.fraction * radius * Math.PI / 2 / TABLETOP_TEXTURE_METERS + 0.5,
+          0.5 - halfY / TABLETOP_TEXTURE_METERS,
+        ],
       },
       {
         position: [next.x, halfY, next.z],
-        uv: [next.fraction, 1],
+        uv: [
+          next.fraction * radius * Math.PI / 2 / TABLETOP_TEXTURE_METERS + 0.5,
+          0.5 + halfY / TABLETOP_TEXTURE_METERS,
+        ],
       },
       {
         position: [current.x, halfY, current.z],
-        uv: [current.fraction, 1],
+        uv: [
+          current.fraction * radius * Math.PI / 2 / TABLETOP_TEXTURE_METERS + 0.5,
+          0.5 + halfY / TABLETOP_TEXTURE_METERS,
+        ],
       },
     ]
 

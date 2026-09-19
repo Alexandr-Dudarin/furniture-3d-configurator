@@ -230,6 +230,10 @@ primaryTop:
     ash-natural
     concrete-light
     marble-cream
+    marble-white-gold
+    marble-black-gold
+    marble-duo-gold
+    terrazzo-neutral
 
 frameMetal:
   targets:
@@ -243,40 +247,41 @@ frameMetal:
 ```
 
 Every target belongs to exactly one slot. The embedded production preview is
-black marble, but the current shared registry has no black-marble finish ID.
-Therefore the declarative runtime default is the existing `marble-cream`; the
-shared registry is intentionally not changed by this model package.
+black marble, while the declarative runtime default remains the shared
+`marble-cream` finish.
 
 ## UV behavior
 
 ```text
-Stone_Top_Center / Stone_Bottom_Center:
+All Stone_Top_* / Stone_Bottom_* surfaces:
   length -> texture U
   width  -> texture V
 
-Stone_Top_LongSegment / Stone_Bottom_LongSegment:
-  length -> texture U
-
-Stone_Top_ShortSegment / Stone_Bottom_ShortSegment:
-  width -> texture V
-
 Stone_Edge_Long:
   length -> texture U
-  tabletop thickness -> ordinary UV V only
+  tabletop thickness -> physical-scale UV V
 
 Stone_Edge_Short:
   width -> texture U
-  tabletop thickness -> ordinary UV V only
+  tabletop thickness -> physical-scale UV V
 
-Stone_Top_Corner / Stone_Bottom_Corner / Stone_Edge_Corner:
-  fixed physical UV; no runtime dimension binding
+Stone_Edge_Corner:
+  fixed physical arc/thickness UV; no runtime dimension binding
 
 runtime UV anchor -> centered
 ```
 
+The whole horizontal 9-slice surface is projected in one common
+one-texture-tile-per-meter coordinate system. Adjacent center, straight and
+corner segments therefore start from matching UV coordinates. Every horizontal
+surface receives the same centered length/width compensation, including fixed
+corners that move with the outer boundary. Vertical edges use the same physical
+UV density in their longitudinal and 17 mm thickness directions, so the finish
+is not compressed into a full square tile on the thin edge.
+
 Only `length` and `width` occur in `textureAxes`. Thickness is used only for
-the static edge unwrap. All normal-mapped primitives export OpenGL normal maps,
-UV0 and tangents.
+the static physical-scale edge unwrap. All normal-mapped primitives export
+OpenGL normal maps, UV0 and tangents.
 
 ## Pivot and local-axis notes
 

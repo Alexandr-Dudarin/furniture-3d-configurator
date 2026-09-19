@@ -30,6 +30,43 @@ https://polyhaven.com/license
 | `concrete-light` | stone | [Brushed Concrete 2](https://polyhaven.com/a/brushed_concrete_2) | `brushed_concrete_2` |
 | `marble-cream` | stone | [Marble 01](https://polyhaven.com/a/marble_01) | `marble_01` |
 
+## Generated project finishes
+
+The following seamless 2K texture sets are produced by
+`generate_custom_finishes.py`. The three oak variants are colorways derived from
+the registered CC0 `oak-natural` source so they retain believable veneer grain.
+The marble and terrazzo sets are original procedural artwork inspired by general
+material categories and do not copy the supplied visual references. Each set
+contains Base Color, Roughness and OpenGL Normal maps.
+
+| Project finish ID | Category | User-facing finish |
+| --- | --- | --- |
+| `oak-grey` | wood | Серый дуб |
+| `oak-silver` | wood | Светлый серебристый дуб |
+| `oak-black` | wood | Чёрный дуб |
+| `marble-white-gold` | stone | Белый мрамор с золотым рисунком |
+| `marble-black-gold` | stone | Чёрный мрамор с золотым рисунком |
+| `marble-duo-gold` | stone | Контрастный мрамор с золотым рисунком |
+| `terrazzo-neutral` | stone | Нейтральное терраццо |
+
+The gold veins are a decorative printed/coated pattern. They intentionally keep
+`metalness: 0`; the runtime must not interpret them as exposed metallic geometry.
+
+Marble fields are periodic on both texture axes and deliberately avoid baked-in
+large-area lighting gradients. This keeps repeated regions visually continuous
+when runtime UV compensation raises `repeat` for a resized surface.
+
+Model availability remains declarative in each `FurnitureDefinition.materialSlots`.
+For example, the wooden pedestal slot accepts only wood finishes, while the new
+oak finishes are not automatically added to the stone-oriented V-pedestal top.
+
+To regenerate these source-controlled maps and their contact sheet:
+
+```bash
+python -m pip install numpy pillow scipy
+python assets/materials/source/generate_custom_finishes.py
+```
+
 ## Procedural coated-metal finishes
 
 The following finishes do not use downloaded texture maps:

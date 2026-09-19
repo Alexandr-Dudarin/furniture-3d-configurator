@@ -35,7 +35,7 @@ From the project root:
 
 ```text
 python3 assets/source/table-03-slat-pedestal/generate_textures.py
-npm install --no-save --package-lock=false @gltf-transform/core@4.4.2
+npm install --no-save --package-lock=false @gltf-transform/core@4.5.0
 node assets/source/table-03-slat-pedestal/build_table_03_slat_pedestal.mjs
 ```
 
@@ -58,3 +58,19 @@ the editable production source.
 
 After any source rebuild, rerun the production integration test, project build
 and Khronos glTF Validator.
+
+
+## UV correction v3 — 2026-09-18
+
+The Node and Blender builders now use one UV unit per metre on all four
+semantic tabletop surfaces. The 22 mm edge occupies a 0.022-high UV strip,
+not the full texture height. Top/bottom texture density now matches the
+V-Pedestal metre convention. Node hierarchy, geometry, material names,
+material slots and runtime resize rules are unchanged. Tangents are rebuilt.
+The additional `tabletopUv.integration.test.ts` measures actual UV density
+through the production GLB and material controller at base, intermediate,
+independent-axis maximum and return-to-base dimensions.
+
+
+Примечание v3: существующие `previews/` — исторические рендеры геометрии до
+исправления UV. Новый браузерный visual QA ещё требуется; см. validation-report.md.

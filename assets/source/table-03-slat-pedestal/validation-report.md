@@ -1,88 +1,39 @@
-# Validation report: Table 03 Slat Pedestal
+# Validation report: table-03-slat-pedestal
 
-Validation date: 2026-08-14.
+Дата: 18.09.2026. Пакет: material-uv-fixes-v3, поверх material-library-v1 + material-fixes-v2.
 
-## Production asset
+## Выполненные проверки
 
-```text
-public/models/table-03-slat-pedestal.glb
-```
+- Полный `npm test`: 7 файлов, 19 тестов — PASS.
+- `npm run build`: TypeScript + Vite — PASS. Осталось предупреждение о размере JS chunk.
+- ESLint для изменённых TypeScript-файлов — PASS.
+- Khronos glTF Validator: 0 ошибок, 0 предупреждений, 0 infos, 0 hints.
+- Синтаксис Python/Node генераторов — PASS.
+- Сравнение до/после: позиции и нормали всех треугольников, hierarchy и transforms всех nodes идентичны.
+- Число треугольников с учётом инстансов: 11832.
+- Draw calls с учётом инстансов: 21.
+- Materials: 7; GLB: 1,064,096 bytes.
 
-Khronos glTF Validator `2.0.0-dev.3.10`:
+## UV-регрессия
 
-```text
-Errors:   0
-Warnings: 0
-Infos:    0
-Hints:    0
-```
+Новый `src/three/models/tabletopUv.integration.test.ts` загружает production GLB,
+подключает реальные furniture/material controllers и измеряет UV-плотность
+в мировых координатах на плоских участках верха, низа, длинного и короткого торца.
+Проверяются base, отдельные max длины/ширины, общий max, intermediate, возврат
+в base и смена marble-duo-gold / oak-natural на уже растянутой модели.
+Все три карты (цвет, normal, roughness) сохраняют один тайл на метр по обеим осям.
+Толщина 22 мм занимает 0.022 UV-единицы, а не целый квадрат изображения.
+Новые тесты отклоняют исходные GLB; полный комплект исправленных файлов проходит.
 
-The complete machine-readable result is stored in
-`gltf-validator-report.json`.
+## Границы проверки
 
-Asset metrics:
+Скриншоты пользователя до исправления изучены. Новый браузерный визуальный прогон
+в этой среде не выполнен: браузер отсутствует, загрузка headless Chromium недоступна.
+Это не отчёт о визуальной приёмке пользователем. Необходимо посмотреть длинные
+и короткие торцы с камнем и деревом, верх/низ при base → max → base.
+Старые изображения в `previews/` сохраняются как исторические проверки геометрии;
+они не являются контрольными рендерами обновлённой UV-развёртки.
 
-```text
-Base bounds:  1.20 × 0.75 × 0.75 m
-Max bounds:   1.60 × 1.15 × 0.75 m
-Triangles:    11,832
-Draw calls:   21
-Materials:    7
-Textures:     3
-GLB size:     1,064,096 bytes
-```
-
-## Runtime verification
-
-The production-GLB test verifies:
-
-- exact controlled and fixed node names;
-- base, intermediate, max and return-to-base dimensions;
-- X/Z tabletop scaling only and unchanged pedestal transforms;
-- all four semantic tabletop surfaces and their independent UV compensation;
-- unique target ownership across `primaryTop` and `pedestalWood`;
-- default `oak-natural` on both slots;
-- independent `primaryTop -> walnut-natural` and
-  `pedestalWood -> ash-natural` replacement;
-- `Dark_Pedestal` remains outside replacement and keeps no runtime `finishId`;
-- valid finish IDs for every allowed option.
-
-Compatibility checks executed in the supplied integration snapshot:
-
-```text
-npm test      passed — 2 test files, 2 production-GLB tests
-npm run build passed — TypeScript no-emit compatibility build
-```
-
-The supplied integration archive did not contain the application
-`package.json`, App, generic FurnitureController or shared material sources.
-Therefore these commands were run in a temporary package-level compatibility
-harness around the unchanged model tests and model files. The harness is not
-included in the model-only ZIP; the central integration chat must rerun the
-complete application suite against current main.
-
-## Source checks
-
-```text
-Python syntax: create_table_03_slat_pedestal.py passed
-Node syntax:   build_table_03_slat_pedestal.mjs passed
-Node builder:  completed successfully
-```
-
-Blender was not installed. The included Blender 4.x script is syntax-checked,
-but no unverified `.blend` is supplied. A `.blend` must be generated, opened and
-visually accepted later in a Blender-enabled environment.
-
-## Visual verification
-
-The regenerated previews are rasterized from the final production GLB after
-applying the same declarative base/max transforms:
-
-```text
-base-1200x750.png
-max-1600x1150.png
-```
-
-Both views show the complete model with the default oak tabletop and default
-oak pedestal wood. The tabletop grows symmetrically; the charcoal core, wooden
-slats and lower plinth remain centered and geometrically fixed.
+Blender отсутствует. Blender-скрипт проверен синтаксически; создание, экспорт
+и визуальная приёмка `.blend` остаются отдельной проверкой в Blender.
+Машинный отчёт GLB сохранён в `gltf-validator-report.json`.
