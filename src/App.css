@@ -19,3 +19,92 @@
   width: 100%;
   height: 100%;
 }
+
+.configuration-panel {
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.configuration-actions {
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.configuration-save-status,
+.configuration-notice,
+.configuration-copy-status,
+.configuration-manual-link {
+  display: block;
+  margin: 0 0 10px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #526070;
+}
+
+.configuration-notice {
+  color: #79531d;
+}
+
+.configuration-copy-status {
+  margin-top: 8px;
+  color: #216747;
+}
+
+.configuration-actions button {
+  width: 100%;
+  min-height: 38px;
+  padding: 8px 10px;
+  border: 1px solid #d5dae2;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.configuration-share {
+  color: white;
+  background: #1767ca;
+}
+
+.configuration-share:hover {
+  background: #1257af;
+}
+
+.configuration-share:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.configuration-reset {
+  margin-top: 8px;
+  color: #344253;
+  background: white;
+}
+
+.configuration-reset:hover {
+  background: #f3f6fa;
+}
+
+.configuration-actions button:focus-visible,
+.configuration-manual-link textarea:focus-visible {
+  outline: 2px solid #1767ca;
+  outline-offset: 2px;
+}
+
+.configuration-manual-link {
+  margin-top: 10px;
+}
+
+.configuration-manual-link textarea {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  padding: 6px;
+  border: 1px solid #d5dae2;
+  border-radius: 6px;
+  font: inherit;
+  overflow-wrap: anywhere;
+  resize: vertical;
+}

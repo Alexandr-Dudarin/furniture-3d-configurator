@@ -1,7 +1,6 @@
 import {
   useEffect,
   useRef,
-  useState,
 } from 'react'
 
 import type {
@@ -14,17 +13,10 @@ import {
   type CustomSelectOption,
 } from './components/ui/CustomSelect/CustomSelect'
 
-import {
-  createInitialDimensions,
-  updateDimension,
-  type ConfiguratorDimensions,
-} from './configurator/configuratorState'
-
-import {
-  DEFAULT_FURNITURE_ID,
-  getFurnitureDefinition,
-  getFurnitureDefinitions,
-} from './configurator/furnitureRegistry'
+import type { ConfiguratorDimensions } from './configurator/configuratorState'
+import { useConfigurator } from './configurator/useConfigurator'
+import { ConfigurationActions } from './components/ConfigurationActions'
+import { getFurnitureDefinition, getFurnitureDefinitions } from './configurator/furnitureRegistry'
 
 import {
   createSceneEnvironment,
@@ -45,17 +37,12 @@ import {
 
 import {
   createFurnitureMaterialController,
-  createInitialMaterialSelections,
   type FurnitureMaterialController,
 } from './three/materials/materialController'
 
 import {
   getMaterialFinish,
 } from './three/materials/materialRegistry'
-
-import type {
-  MaterialSelections,
-} from './three/materials/types'
 
 import './App.css'
 
@@ -80,84 +67,11 @@ function App() {
       null,
     )
 
-  /*
-   * --------------------------------
-   * SELECTED MODEL
-   * --------------------------------
-   */
-
-  const [
-    selectedModelId,
-    setSelectedModelId,
-  ] =
-    useState<string>(
-      DEFAULT_FURNITURE_ID,
-    )
-
-  const furnitureDefinition =
-    getFurnitureDefinition(
-      selectedModelId,
-    )
-
-  /*
-   * --------------------------------
-   * CONFIGURATOR DIMENSIONS
-   * --------------------------------
-   */
-
-  const [
-    dimensions,
-    setDimensions,
-  ] =
-    useState<ConfiguratorDimensions>(
-      () =>
-        createInitialDimensions(
-          furnitureDefinition,
-        ),
-    )
-
-  const currentDimensionsRef =
-    useRef<ConfiguratorDimensions>(
-      dimensions,
-    )
-
-  /*
-   * --------------------------------
-   * MATERIAL SELECTIONS
-   * --------------------------------
-   *
-   * Selections are kept per model for the
-   * current session. Switching furniture and
-   * returning to it restores its finishes.
-   */
-
-  const [
-    materialSelectionsByModel,
-    setMaterialSelectionsByModel,
-  ] = useState<
-    Record<
-      string,
-      MaterialSelections
-    >
-  >(() => ({
-    [furnitureDefinition.id]:
-      createInitialMaterialSelections(
-        furnitureDefinition,
-      ),
-  }))
-
-  const materialSelections =
-    materialSelectionsByModel[
-      furnitureDefinition.id
-    ] ??
-    createInitialMaterialSelections(
-      furnitureDefinition,
-    )
-
-  const currentMaterialSelectionsRef =
-    useRef<MaterialSelections>(
-      materialSelections,
-    )
+  const { store, session, persistence, notice } = useConfigurator()
+  const selectedModelId = session.selectedModelId
+  const furnitureDefinition = getFurnitureDefinition(selectedModelId)
+  const { dimensions, materials: materialSelections } = session.models[selectedModelId]
+  const activeModelIdRef = useRef<string | null>(null)
 
   const materialControllerRef =
     useRef<
@@ -197,20 +111,12 @@ function App() {
    */
 
   useEffect(() => {
-    currentDimensionsRef.current =
-      dimensions
-
-    applyDimensionsRef.current(
-      dimensions,
-    )
-  }, [
-    dimensions,
-  ])
+    if (activeModelIdRef.current === furnitureDefinition.id) {
+      applyDimensionsRef.current(dimensions)
+    }
+  }, [dimensions, furnitureDefinition.id])
 
   useEffect(() => {
-    currentMaterialSelectionsRef.current =
-      materialSelections
-
     const activeController =
       materialControllerRef.current
 
@@ -390,10 +296,14 @@ function App() {
               },
             )
 
-          await materialController
-            .setFinishes(
-              currentMaterialSelectionsRef.current,
-            )
+          // Selections can change while GLB or textures are loading. Finish
+          // preparation with the latest configuration before showing the model.
+          let appliedSelections
+          do {
+            appliedSelections = store.getSnapshot().session.models[furnitureDefinition.id].materials
+            await materialController.setFinishes(appliedSelections)
+          } while (!cancelled &&
+            appliedSelections !== store.getSnapshot().session.models[furnitureDefinition.id].materials)
 
           if (cancelled) {
             materialController.dispose()
@@ -421,6 +331,7 @@ function App() {
                 materialController,
             }
 
+          activeModelIdRef.current = furnitureDefinition.id
           applyDimensionsRef.current =
             (
               nextDimensions,
@@ -431,7 +342,7 @@ function App() {
             }
 
           controller.setDimensions(
-            currentDimensionsRef.current,
+            store.getSnapshot().session.models[furnitureDefinition.id].dimensions,
           )
 
           furnitureModel =
@@ -473,6 +384,7 @@ function App() {
     return () => {
       cancelled =
         true
+      activeModelIdRef.current = null
 
       applyDimensionsRef.current =
         () => {}
@@ -511,9 +423,7 @@ function App() {
         furnitureModel,
       )
     }
-  }, [
-    furnitureDefinition,
-  ])
+  }, [furnitureDefinition, store])
 
   /*
    * =================================
@@ -521,64 +431,9 @@ function App() {
    * =================================
    */
 
-  const handleModelChange =
-    (
-      nextModelId:
-        string,
-    ) => {
-      if (
-        nextModelId ===
-        selectedModelId
-      ) {
-        return
-      }
-
-      const nextDefinition =
-        getFurnitureDefinition(
-          nextModelId,
-        )
-
-      const nextDimensions =
-        createInitialDimensions(
-          nextDefinition,
-        )
-
-      currentDimensionsRef.current =
-        nextDimensions
-
-      setDimensions(
-        nextDimensions,
-      )
-
-      const nextMaterialSelections =
-        materialSelectionsByModel[
-          nextModelId
-        ] ??
-        createInitialMaterialSelections(
-          nextDefinition,
-        )
-
-      currentMaterialSelectionsRef.current =
-        nextMaterialSelections
-
-      if (
-        !materialSelectionsByModel[
-          nextModelId
-        ]
-      ) {
-        setMaterialSelectionsByModel(
-          (current) => ({
-            ...current,
-            [nextModelId]:
-              nextMaterialSelections,
-          }),
-        )
-      }
-
-      setSelectedModelId(
-        nextModelId,
-      )
-    }
+  const handleModelChange = (modelId: string) => {
+    store.dispatch({ type: 'select-model', modelId })
+  }
 
   /*
    * =================================
@@ -616,6 +471,7 @@ function App() {
       />
 
       <div
+        className="configuration-panel"
         style={{
           position:
             'absolute',
@@ -757,6 +613,8 @@ function App() {
 
                     <input
                       type="range"
+                      aria-label={config.label}
+                      aria-valuetext={`${value.toFixed(2)} м`}
 
                       min={
                         config.min
@@ -784,16 +642,7 @@ function App() {
                               .value,
                           )
 
-                        setDimensions(
-                          (
-                            current,
-                          ) =>
-                            updateDimension(
-                              current,
-                              dimension,
-                              nextValue,
-                            ),
-                        )
+                        store.dispatch({ type: 'set-dimension', name: dimension, value: nextValue })
                       }}
 
                       style={{
@@ -863,22 +712,7 @@ function App() {
                   onChange={(
                     finishId,
                   ) => {
-                    const next = {
-                      ...materialSelections,
-                      [slotName]:
-                        finishId,
-                    }
-
-                    currentMaterialSelectionsRef.current =
-                      next
-
-                    setMaterialSelectionsByModel(
-                      (current) => ({
-                        ...current,
-                        [furnitureDefinition.id]:
-                          next,
-                      }),
-                    )
+                    store.dispatch({ type: 'set-material', slot: slotName, finishId })
                   }}
                   ariaLabel={
                     slot.label
@@ -888,6 +722,13 @@ function App() {
             )
           },
         )}
+        <ConfigurationActions
+          key={JSON.stringify(session)}
+          persistence={persistence}
+          notice={notice}
+          getShareUrl={store.getShareUrl}
+          onReset={() => store.dispatch({ type: 'reset-model' })}
+        />
       </div>
     </div>
   )
