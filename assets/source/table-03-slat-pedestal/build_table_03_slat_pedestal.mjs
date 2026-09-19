@@ -100,9 +100,10 @@ addMesh({
 
 addMesh({
   name: 'Pedestal_Core',
-  geometry: new RoundedBoxGeometry(0.37, 0.675, 0.34, 3, 0.006),
+  // Верх остаётся на Y=0.716. Низ Y=0.028: фаска 6 мм скрыта в плите до Y=0.035.
+  geometry: new RoundedBoxGeometry(0.37, 0.688, 0.34, 3, 0.006),
   material: materials.pedestal,
-  translation: [0, 0.3785, 0],
+  translation: [0, 0.372, 0],
   extras: { runtimeBehavior: 'fixed' },
 })
 

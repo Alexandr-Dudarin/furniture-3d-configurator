@@ -240,7 +240,8 @@ def build_model():
     )
 
     fixed(create_box("Base_Plinth", (0.62, 0.035, 0.46), (0, 0.0175, 0), plinth_material, 0.012, root))
-    fixed(create_box("Pedestal_Core", (0.37, 0.675, 0.34), (0, 0.3785, 0), dark_material, 0.006, root))
+    # Верх Y=0.716 сохранён; нижняя фаска целиком входит в плиту (верх плиты Y=0.035).
+    fixed(create_box("Pedestal_Core", (0.37, 0.688, 0.34), (0, 0.372, 0), dark_material, 0.006, root))
     fixed(create_box("Pedestal_TopPlate", (0.48, 0.018, 0.40), (0, 0.719, 0), dark_material, 0.004, root))
 
     slat_xs = (-0.144, -0.096, -0.048, 0, 0.048, 0.096, 0.144)

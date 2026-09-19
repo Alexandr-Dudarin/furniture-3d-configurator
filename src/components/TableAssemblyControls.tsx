@@ -1,5 +1,5 @@
 import { CustomSelect } from './ui/CustomSelect/CustomSelect'
-import { getTableBase, TABLE_BASES, TOP_FINISHES, TOP_SHAPES, TOP_THICKNESS } from '../configurator/tableAssembly/catalog'
+import { getTableBase, getTabletopWidthConfig, TABLE_BASES, TOP_FINISHES, TOP_SHAPES, TOP_THICKNESS } from '../configurator/tableAssembly/catalog'
 import type { TableAssemblyConfiguration } from '../configurator/tableAssembly/state'
 import type { FurnitureDimensionConfig } from '../three/furniture/types'
 import { getMaterialFinish } from '../three/materials/materialRegistry'
@@ -43,8 +43,11 @@ export function TableAssemblyControls({ configuration, onChange }: Props) {
         <SizeControl name="Диаметр" value={configuration.length} config={base.diameter!} onChange={(length) => onChange({ length })} />
       ) : <>
         <SizeControl name="Длина" value={configuration.length} config={base.length} onChange={(length) => onChange({ length })} />
-        <SizeControl name="Ширина" value={configuration.width} config={{ ...base.width, max: Math.min(base.width.max, configuration.length) }} onChange={(width) => onChange({ width })} />
+        <SizeControl name="Ширина" value={configuration.width} config={getTabletopWidthConfig(base, configuration.shape, configuration.length)} onChange={(width) => onChange({ width })} />
       </>}
+      {(configuration.shape === 'ellipse' || configuration.shape === 'capsule') && (
+        <p className="assembly-summary">Длина больше ширины минимум на 20 см — столешница сохраняет овальную форму.</p>
+      )}
       <SizeControl name="Толщина столешницы" value={configuration.thickness} config={TOP_THICKNESS} millimeters onChange={(thickness) => onChange({ thickness })} />
       {base.heightMode !== 'fixed' ? (
         <SizeControl name="Высота основания" value={configuration.baseHeight} config={base.height} onChange={(baseHeight) => onChange({ baseHeight })} />

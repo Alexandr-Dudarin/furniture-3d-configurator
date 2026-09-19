@@ -1,4 +1,4 @@
-"""Извлекает самостоятельные основания из принятых GLB 03/05 без изменения геометрии.
+"""Извлекает самостоятельные основания из GLB 01/03/05 без изменения геометрии.
 Запуск из корня проекта: python assets/source/table-modules/extract_bases.py
 Только стандартная библиотека Python; исходные GLB остаются неизменными.
 """
@@ -16,7 +16,7 @@ def extract(source, target, attachment_height):
     doc = json.loads(raw[20:20 + json_size])
     binary = raw[28 + json_size:]
     assert not doc.get('extensionsUsed'), 'Расширения требуют отдельного экспортера'
-    result = {'asset': {'version': '2.0', 'generator': 'Furniture Configurator module extractor v1'},
+    result = {'asset': {'version': '2.0', 'generator': 'Furniture Configurator module extractor v2'},
               'scene': 0, 'scenes': [{'nodes': [0]}]}
     maps = {key: {} for key in ['nodes', 'meshes', 'materials', 'accessors', 'bufferViews', 'textures', 'images', 'samplers']}
     output = bytearray()
@@ -86,5 +86,6 @@ def extract(source, target, attachment_height):
 
 
 if __name__ == '__main__':
+    extract('public/models/first-table.glb', 'public/modules/bases/four-legs.glb', 0.71)
     extract('public/models/table-03-slat-pedestal.glb', 'public/modules/bases/slat-pedestal.glb', 0.728)
     extract('public/models/table-05-round-fluted-pedestal.glb', 'public/modules/bases/round-fluted.glb', 0.738)

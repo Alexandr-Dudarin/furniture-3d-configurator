@@ -25,7 +25,12 @@ export type TableBaseDefinition = {
   width: FurnitureDimensionConfig
   diameter?: FurnitureDimensionConfig
   height: FurnitureDimensionConfig
-  heightMode: 'fixed' | 'stretch-column'
+  heightMode: 'fixed' | 'stretch-column' | 'stretch-legs'
+  cornerLegs?: {
+    targets: readonly string[]
+    insetByShape: Partial<Record<TopShape, number>>
+    endBand: number
+  }
   resizeRules: readonly FurnitureResizeRule[]
   materialTargets: readonly string[]
   allowedFinishes: readonly string[]
@@ -33,6 +38,24 @@ export type TableBaseDefinition = {
 }
 
 export const TABLE_BASES: readonly TableBaseDefinition[] = [
+  {
+    id: 'four-legs', label: 'Четыре прямые ножки', modelUrl: '/modules/bases/four-legs.glb',
+    compatibleShapes: ['rectangle', 'rounded-rectangle', 'chamfered', 'wide-chamfered'],
+    attachment: 'Attachment_Tabletop',
+    length: { label: 'Длина', base: 1.2, min: 1.2, max: 2, step: 0.01 },
+    width: { label: 'Ширина', base: 0.6, min: 0.6, max: 1, step: 0.01 },
+    height: { label: 'Высота основания', base: 0.71, min: 0.61, max: 0.81, step: 0.005 },
+    heightMode: 'stretch-legs',
+    cornerLegs: {
+      targets: ['Leg_01', 'Leg_02', 'Leg_03', 'Leg_04'],
+      insetByShape: { rectangle: 0.07, 'rounded-rectangle': 0.07, chamfered: 0.1, 'wide-chamfered': 0.16 },
+      endBand: 0.01,
+    },
+    resizeRules: [
+      { type: 'delta-move', targets: [{ target: 'Attachment_Tabletop', factor: 1 }], dimension: 'baseHeight', axis: 'y' },
+    ],
+    materialTargets: ['Metal_Graphite'], allowedFinishes: METAL_FINISHES, defaultFinish: 'metal-anthracite',
+  },
   {
     id: 'slat-pedestal', label: 'Реечное основание', modelUrl: '/modules/bases/slat-pedestal.glb',
     compatibleShapes: ['rectangle', 'rounded-rectangle', 'chamfered', 'wide-chamfered', 'ellipse', 'capsule'],
@@ -62,6 +85,17 @@ export const TABLE_BASES: readonly TableBaseDefinition[] = [
 ]
 
 export const TOP_THICKNESS: FurnitureDimensionConfig = { label: 'Толщина столешницы', base: 0.022, min: 0.02, max: 0.05, step: 0.001 }
+
+// Различие размеров сохраняет вытянутую форму, в том числе после открытия старой ссылки.
+export const OVAL_MIN_LENGTH_DIFFERENCE = 0.2
+
+export function getTabletopWidthConfig(base: TableBaseDefinition, shape: TopShape, length: number): FurnitureDimensionConfig {
+  const difference = shape === 'ellipse' || shape === 'capsule' ? OVAL_MIN_LENGTH_DIFFERENCE : 0
+  const limit = Math.min(base.width.max, length - difference)
+  const steps = Math.floor((limit - base.width.min + 1e-8) / base.width.step)
+  const max = Number((base.width.min + steps * base.width.step).toFixed(8))
+  return { ...base.width, max, base: Math.min(base.width.base, max) }
+}
 
 export function getTableBase(id: string) {
   const base = TABLE_BASES.find((entry) => entry.id === id)

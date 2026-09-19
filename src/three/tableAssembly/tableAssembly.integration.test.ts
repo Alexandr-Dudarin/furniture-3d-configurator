@@ -1,13 +1,14 @@
 /// <reference types="node" />
 import { readFile } from 'node:fs/promises'
 import { afterEach, expect, it, vi } from 'vitest'
-import { Box3, Mesh, MeshStandardMaterial, Vector3 } from 'three'
+import { Box3, Mesh, MeshStandardMaterial, Raycaster, Vector2, Vector3 } from 'three'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import { TABLE_BASES, TOP_SHAPES } from '../../configurator/tableAssembly/catalog'
 import { normalizeTableAssembly } from '../../configurator/tableAssembly/state'
 import { disposeMaterialFinishCache } from '../materials/createMaterial'
 import { createFurnitureMaterialController } from '../materials/materialController'
 import { createTableAssembly } from './tableAssembly'
+import { createTabletopOutline } from './tabletopGeometry'
 
 afterEach(() => { disposeMaterialFinishCache(); vi.unstubAllGlobals() })
 
@@ -22,7 +23,7 @@ async function loadBase(url: string) {
   return (await new GLTFLoader().parseAsync(Uint8Array.from(bytes).buffer, '')).scene
 }
 
-it.each(TABLE_BASES)('$id keeps its footprint and mounting plane while its top changes', async (base) => {
+it.each(TABLE_BASES.filter((base) => !base.cornerLegs))('$id keeps its footprint and mounting plane while its top changes', async (base) => {
   const loaded = await loadBase(base.modelUrl)
   expect(loaded.getObjectByName('TableTop')).toBeUndefined()
   const initial = normalizeTableAssembly({ baseId: base.id, baseHeight: base.height.base })
@@ -44,6 +45,85 @@ it.each(TABLE_BASES)('$id keeps its footprint and mounting plane while its top c
       expect(loaded.scale.toArray()).toEqual([1, 1, 1])
     }
   }
+  assembly.dispose()
+})
+
+it.each(['/models/table-03-slat-pedestal.glb', '/modules/bases/slat-pedestal.glb'])('%s has a continuous core/plinth joint including the lower bevel', async (url) => {
+  const model = await loadBase(url)
+  model.updateMatrixWorld(true)
+  const core = model.getObjectByName('Pedestal_Core')!
+  const plinth = model.getObjectByName('Base_Plinth')!
+  const coreBounds = new Box3().setFromObject(core)
+  const plinthBounds = new Box3().setFromObject(plinth)
+  expect(coreBounds.min.y).toBeCloseTo(0.028, 6)
+  expect(coreBounds.max.y).toBeCloseTo(0.716, 6)
+  expect(plinthBounds.min.y).toBeCloseTo(0, 6)
+  expect(plinthBounds.max.y).toBeCloseTo(0.035, 6)
+  // AABB-overlap alone would miss a visible gap along a rounded end.
+  for (const y of [0.0349, 0.035, 0.0351, 0.038, 0.041]) {
+    const ray = new Raycaster(new Vector3(0, y, 1), new Vector3(0, 0, -1))
+    const hits = ray.intersectObject(core, true)
+    expect(hits.length).toBeGreaterThan(0)
+    expect(hits[0].point.z).toBeCloseTo(0.17, 5)
+  }
+})
+
+it.each(['rectangle', 'rounded-rectangle', 'chamfered', 'wide-chamfered'] as const)('four legs stay inside %s and touch floor/top through size and height changes', async (shape) => {
+  const base = TABLE_BASES.find((entry) => entry.id === 'four-legs')!
+  const model = await loadBase(base.modelUrl)
+  const initial = normalizeTableAssembly({ baseId: base.id, shape, baseHeight: base.height.base })
+  const assembly = createTableAssembly(model, initial)
+  const legs = base.cornerLegs!.targets.map((name) => model.getObjectByName(name) as Mesh)
+  const originals = legs.map((leg) => leg.geometry.getAttribute('position').clone())
+  for (const length of [1.2, 2, 1.2]) for (const width of [0.6, 1]) for (const baseHeight of [0.61, 0.81, 0.71]) for (const thickness of [0.02, 0.05]) {
+    const config = normalizeTableAssembly({ ...initial, length, width, baseHeight, thickness })
+    assembly.update(config)
+    const outline = createTabletopOutline(config)
+    for (const [index, leg] of legs.entries()) {
+      const bounds = new Box3().setFromObject(leg)
+      const size = bounds.getSize(new Vector3())
+      expect(bounds.min.y).toBeCloseTo(0, 6)
+      expect(bounds.max.y).toBeCloseTo(baseHeight, 6)
+      expect(size.x).toBeCloseTo(0.04, 6)
+      expect(size.z).toBeCloseTo(0.04, 6)
+      expect(leg.scale.toArray()).toEqual([1, 1, 1])
+      // All four outer corners of each leg must clear every actual contour edge.
+      for (const x of [bounds.min.x, bounds.max.x]) for (const z of [bounds.min.z, bounds.max.z]) {
+        const corner = new Vector2(x, z)
+        outline.forEach((p, i) => {
+          const edge = outline[(i + 1) % outline.length].clone().sub(p)
+          expect(edge.cross(corner.clone().sub(p)) / edge.length()).toBeGreaterThan(0.02)
+        })
+      }
+      const position = leg.geometry.getAttribute('position')
+      for (let i = 0; i < position.count; i++) {
+        const y = originals[index].getY(i)
+        if (y < -0.345) expect(position.getY(i)).toBeCloseTo(y, 6)
+        if (y > 0.345) expect(position.getY(i) - y).toBeCloseTo(baseHeight - 0.71, 6)
+      }
+    }
+    expect(new Box3().setFromObject(assembly.top).min.y).toBeCloseTo(baseHeight, 6)
+    expect(new Box3().setFromObject(assembly.top).max.y).toBeCloseTo(baseHeight + thickness, 6)
+  }
+  assembly.dispose()
+})
+
+it('insets four legs further for cut corners and restores them after changing shapes or materials', async () => {
+  const model = await loadBase('/modules/bases/four-legs.glb')
+  const initial = normalizeTableAssembly({ baseId: 'four-legs', shape: 'rectangle' })
+  const assembly = createTableAssembly(model, initial)
+  const leg = model.getObjectByName('Leg_01')!
+  const first = leg.position.clone()
+  for (const shape of ['chamfered', 'wide-chamfered'] as const) {
+    assembly.update({ ...initial, shape })
+    expect(Math.abs(leg.position.x)).toBeLessThan(Math.abs(first.x))
+    expect(Math.abs(leg.position.z)).toBeLessThan(Math.abs(first.z))
+    const beforeRefresh = leg.position.clone()
+    assembly.refreshTextures()
+    expect(leg.position).toEqual(beforeRefresh)
+  }
+  assembly.update(initial)
+  expect(leg.position).toEqual(first)
   assembly.dispose()
 })
 

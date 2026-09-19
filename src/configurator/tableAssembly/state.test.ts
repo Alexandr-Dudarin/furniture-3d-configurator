@@ -1,7 +1,7 @@
 import { expect, it } from 'vitest'
 import { createConfiguratorStore } from '../configuratorStore'
 import { CONFIGURATION_STORAGE_KEY, LEGACY_CONFIGURATION_STORAGE_KEY, createConfigurationUrl, createDefaultSession, readSharedConfiguration, readSavedSession, updateSession } from '../savedConfiguration'
-import { TABLE_BASES, TOP_SHAPES } from './catalog'
+import { getTableBase, getTabletopWidthConfig, TABLE_BASES, TOP_SHAPES } from './catalog'
 import { createDefaultAssembly, normalizeTableAssembly, updateTableAssembly } from './state'
 
 it.each(TOP_SHAPES)('$id always resolves a compatible base, dimensions and material', ({ id }) => {
@@ -90,5 +90,53 @@ it('sanitizes an outdated assembly link and rejects malformed payloads', () => {
   for (const payload of [{ version: 2, kind: 'table-assembly', assembly: [] }, { version: 3, kind: 'table-assembly', assembly: {} }, { version: 1, kind: 'table-assembly', assembly: {} }]) {
     url.searchParams.set('config', JSON.stringify(payload))
     expect(readSharedConfiguration(url.href).status).toBe('invalid')
+  }
+})
+
+it.each(['ellipse', 'capsule'] as const)('%s stays elongated when reducing length, switching from a circle and restoring an old square configuration', (shape) => {
+  const circle = normalizeTableAssembly({ shape: 'circle', length: 1.1 })
+  const changed = updateTableAssembly(circle, { shape })
+  expect(changed.configuration.length).toBe(1.1)
+  expect(changed.configuration.width).toBe(0.9)
+  expect(changed.notice).toContain('20 см')
+  const large = normalizeTableAssembly({ shape, baseId: 'round-fluted', length: 1.4, width: 1.1 })
+  expect(updateTableAssembly(large, { length: 1.1 }).configuration.width).toBe(0.9)
+  const old = { ...circle, shape }
+  const stored = readSavedSession(JSON.stringify({ ...createDefaultSession(), mode: 'builder', assembly: old }))
+  expect(stored.session.assembly.width).toBe(0.9)
+  const shared = readSharedConfiguration(createConfigurationUrl('https://example.test', { ...createDefaultSession(), mode: 'builder', assembly: old }))
+  expect(shared.status).toBe('adjusted')
+  expect(shared.assembly).toEqual(changed.configuration)
+  for (const baseId of ['slat-pedestal', 'round-fluted']) {
+    const base = getTableBase(baseId)
+    for (let i = 0; i <= Math.round((base.length.max - base.length.min) / base.length.step); i++) {
+      const length = base.length.min + i * base.length.step
+      const config = normalizeTableAssembly({ baseId, shape, length, width: 99 })
+      const ui = getTabletopWidthConfig(base, shape, config.length)
+      expect(config.length - config.width).toBeGreaterThanOrEqual(0.2 - 1e-8)
+      expect(ui.max).toBe(config.width)
+      expect(ui.min).toBeLessThanOrEqual(ui.max)
+      expect(normalizeTableAssembly(config)).toEqual(config)
+    }
+  }
+})
+
+it('shares four-leg height limits and excludes the three curved shapes', () => {
+  const base = getTableBase('four-legs')
+  expect(base.height.min).toBeCloseTo(base.height.base - 0.1)
+  expect(base.height.max).toBeCloseTo(base.height.base + 0.1)
+  for (const shape of base.compatibleShapes) for (const baseHeight of [0.61, 0.71, 0.81]) {
+    const assembly = normalizeTableAssembly({ baseId: base.id, shape, length: 2, width: 1, baseHeight, baseFinish: 'metal-white-matte' })
+    const session = { ...createDefaultSession(), mode: 'builder' as const, assembly }
+    expect(readSavedSession(JSON.stringify(session)).session.assembly).toEqual(assembly)
+    const parsed = readSharedConfiguration(createConfigurationUrl('https://example.test', session))
+    expect(parsed.status).toBe('valid')
+    expect(parsed.assembly).toEqual(assembly)
+  }
+  for (const shape of ['circle', 'ellipse', 'capsule'] as const) {
+    expect(base.compatibleShapes).not.toContain(shape)
+    const changed = updateTableAssembly(normalizeTableAssembly({ baseId: base.id }), { shape })
+    expect(changed.configuration.baseId).not.toBe(base.id)
+    expect(changed.notice).toContain('Для этой формы')
   }
 })

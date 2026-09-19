@@ -1,3 +1,24 @@
+# Проверка соединения Slat Pedestal — 2026-09-19
+
+Поставка: modular-tables-v2. Исправлены production GLB, Node-генератор и
+Blender-скрипт; отдельное основание для сборки извлечено повторно.
+
+- `Pedestal_Core`: размер 370×688×340 мм, центр Y=372 мм, низ Y=28 мм,
+  верх Y=716 мм. Нижняя фаска 6 мм скрыта в площадке до Y=35 мм.
+- В сравнении с UV v3 изменились только transform, позиции и нормали ядра.
+  Столешница, рейки, площадка, материалы, UV и правила resize сохранены.
+- 101 тест / 15 файлов, production build и ESLint изменённых TS/TSX — PASS.
+- Проверены bounds и попадания лучей в стенку на высотах прежней щели в обоих GLB.
+- glTF Validator production GLB: 0 ошибок, 0 предупреждений, 0 INFO, 0 hints.
+- Браузерный рендер обоих режимов выполнен и просмотрен:
+  `../table-modules/previews/slat-joint-v2.png`,
+  `../table-modules/previews/slat-module-joint-v2.png`.
+- Blender-скрипт проверен синтаксически. Blender-экспорт здесь не выполнялся.
+
+Ниже сохранён исторический отчёт UV v3; его ограничения относятся к тому этапу.
+
+---
+
 # Validation report: table-03-slat-pedestal
 
 Дата: 18.09.2026. Пакет: material-uv-fixes-v3, поверх material-library-v1 + material-fixes-v2.

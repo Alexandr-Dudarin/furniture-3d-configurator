@@ -1,5 +1,5 @@
 import type { FurnitureDimensionConfig } from '../../three/furniture/types'
-import { getTableBase, TABLE_BASES, TOP_FINISHES, TOP_SHAPES, TOP_THICKNESS, type TopShape } from './catalog'
+import { getTableBase, getTabletopWidthConfig, TABLE_BASES, TOP_FINISHES, TOP_SHAPES, TOP_THICKNESS, type TopShape } from './catalog'
 
 export type TableAssemblyConfiguration = {
   shape: TopShape
@@ -22,9 +22,11 @@ export function normalizeTableAssembly(input: unknown): TableAssemblyConfigurati
   const raw = typeof input === 'object' && input !== null && !Array.isArray(input) ? input as Record<string, unknown> : {}
   const shape = TOP_SHAPES.find((entry) => entry.id === raw.shape)?.id ?? 'rounded-rectangle'
   const requestedBase = TABLE_BASES.find((entry) => entry.id === raw.baseId)
-  const base = requestedBase?.compatibleShapes.includes(shape) ? requestedBase : TABLE_BASES.find((entry) => entry.compatibleShapes.includes(shape))!
+  // Реечное основание остаётся исходным и резервным для некруглых столешниц.
+  const fallback = getTableBase(shape === 'circle' ? 'round-fluted' : 'slat-pedestal')
+  const base = requestedBase?.compatibleShapes.includes(shape) ? requestedBase : fallback
   const length = size(raw.length, shape === 'circle' ? base.diameter! : base.length)
-  const width = shape === 'circle' ? length : Math.min(length, size(raw.width, base.width))
+  const width = shape === 'circle' ? length : size(raw.width, getTabletopWidthConfig(base, shape, length))
   return {
     shape, baseId: base.id, length, width,
     thickness: size(raw.thickness, TOP_THICKNESS), baseHeight: size(raw.baseHeight, base.height),
@@ -42,7 +44,9 @@ export function updateTableAssembly(current: TableAssemblyConfiguration, patch: 
   if (next.baseHeight !== (patch.baseHeight ?? current.baseHeight)) notices.push('Высота приведена к допустимому значению выбранного основания.')
   if (next.baseFinish !== (patch.baseFinish ?? current.baseFinish)) notices.push('Покрытие основания заменено на совместимое.')
   if (next.length !== (patch.length ?? current.length) || (next.shape !== 'circle' && next.width !== (patch.width ?? current.width))) {
-    notices.push('Размеры приведены к диапазону выбранного основания.')
+    notices.push(next.shape === 'ellipse' || next.shape === 'capsule'
+      ? 'Размеры скорректированы: у овальной столешницы длина больше ширины минимум на 20 см.'
+      : 'Размеры приведены к диапазону выбранного основания.')
   }
   return { configuration: next, notice: notices.length ? notices.join(' ') : null }
 }
