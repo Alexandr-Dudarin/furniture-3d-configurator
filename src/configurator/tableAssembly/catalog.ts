@@ -15,7 +15,7 @@ export const TABLETOP_EDGE_PROFILES = [
   { id: 'bevel-1', label: 'Фаска 1 мм', kind: 'bevel', size: 0.001, description: 'Небольшой скос по верхнему и нижнему краю.' },
   { id: 'bevel-5', label: 'Фаска 5 мм', kind: 'bevel', size: 0.005, description: 'Скос 45° по верхнему и нижнему краю.' },
   { id: 'round-5', label: 'Скругление R5', kind: 'round', size: 0.005, description: 'Скругление верхнего и нижнего края радиусом 5 мм.' },
-  { id: 'bullnose', label: 'Полукруглая кромка', kind: 'bullnose', description: 'Полукруглый торец. Радиус равен половине толщины столешницы.' },
+  { id: 'bullnose', label: 'Мягкая кромка', kind: 'bullnose', description: 'Пологий овальный торец с плавным переходом рисунка сверху. Заход на плоскость — не больше 10 мм.' },
 ] as const
 export type TabletopEdgeProfile = typeof TABLETOP_EDGE_PROFILES[number]['id']
 export const DEFAULT_EDGE_PROFILE: TabletopEdgeProfile = 'bevel-1'

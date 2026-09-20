@@ -47,12 +47,12 @@ it.each(cases)('$shape / $profile.id is closed, has outward normals and preserve
   }
 })
 
-it.each(TABLETOP_EDGE_PROFILES)('$id keeps its physical size and profile UV length when thickness changes', (profile) => {
+it.each(TABLETOP_EDGE_PROFILES.filter((profile) => profile.kind !== 'bullnose'))('$id keeps its physical size and profile UV length when thickness changes', (profile) => {
   for (const thickness of [0.02, 0.035, 0.05]) {
     const config = normalizeTableAssembly({ shape: 'rectangle', baseId: 'four-legs', length: 1.2, width: 0.8, thickness, edgeProfile: profile.id })
     const geometry = createTabletopGeometry(config)
     const p = geometry.getAttribute('position'), uv = geometry.getAttribute('uv'), n = geometry.getAttribute('normal')
-    const radius = profile.kind === 'bullnose' ? thickness / 2 : profile.size
+    const radius = profile.size
     let capMaxX = -Infinity
     for (let i = 0; i < geometry.groups[0].count; i++) capMaxX = Math.max(capMaxX, p.getX(i))
     expect(capMaxX).toBeCloseTo(config.length / 2 - radius, 6)

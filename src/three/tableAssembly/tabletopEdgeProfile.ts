@@ -14,6 +14,29 @@ const ROUND_SEGMENTS = 8 // На четверть окружности; точк
 // Профиль всегда внутри исходного контура; низ Y=0, верх Y=thickness.
 export function createTabletopEdgeProfile(id: TabletopEdgeProfile, thickness: number): ProfileRing[] {
   const profile = getTabletopEdgeProfile(id)
+  if (profile.kind === 'bullnose') {
+    // Более узкий полуэллипс вместо выпуклого полукруга R=T/2.
+    // ID сохраняется для совместимости с уже сохранёнными сборками.
+    const horizontal = Math.min(thickness / 4, 0.01)
+    const vertical = thickness / 2
+    const rings: ProfileRing[] = []
+    const segments = 32
+    const speed = (angle: number) => Math.hypot(horizontal * Math.cos(angle), vertical * Math.sin(angle))
+    let distance = 0
+    for (let i = 0; i <= segments; i++) {
+      const angle = i * Math.PI / segments
+      if (i > 0) {
+        // Длина дуги эллипса по Симпсону; UV не сплющиваются у вертикального торца.
+        const start = (i - 1) * Math.PI / segments
+        distance += (angle - start) / 6 * (speed(start) + 4 * speed((start + angle) / 2) + speed(angle))
+      }
+      rings.push({
+        inset: horizontal * (1 - Math.sin(angle)), y: vertical * (1 - Math.cos(angle)), distance,
+        normal: new Vector2(vertical * Math.sin(angle), -horizontal * Math.cos(angle)).normalize(),
+      })
+    }
+    return rings
+  }
   if (profile.kind === 'bevel') {
     const b = profile.size
     const diagonal = b * Math.SQRT2
@@ -24,7 +47,7 @@ export function createTabletopEdgeProfile(id: TabletopEdgeProfile, thickness: nu
       { inset: b, y: thickness, distance: 2 * diagonal + thickness - 2 * b },
     ]
   }
-  const radius = profile.kind === 'bullnose' ? thickness / 2 : profile.size
+  const radius = profile.size
   const rings: ProfileRing[] = []
   for (let i = 0; i <= ROUND_SEGMENTS; i++) {
     const angle = i * Math.PI / (2 * ROUND_SEGMENTS)
@@ -36,7 +59,7 @@ export function createTabletopEdgeProfile(id: TabletopEdgeProfile, thickness: nu
   const middleHeight = thickness - 2 * radius
   const upperStart = Math.PI * radius / 2 + middleHeight
   if (middleHeight > 1e-9) rings.push({ inset: 0, y: thickness - radius, distance: upperStart, normal: new Vector2(1, 0) })
-  // У полукруглой кромки две дуги встречаются в одном кольце, без нулевой полосы.
+  // Начальное кольцо верхней дуги уже добавлено вместе с прямым участком.
   for (let i = 1; i <= ROUND_SEGMENTS; i++) {
     const angle = i * Math.PI / (2 * ROUND_SEGMENTS)
     rings.push({

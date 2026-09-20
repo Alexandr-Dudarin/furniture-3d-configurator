@@ -89,7 +89,20 @@ export function createTabletopGeometry(config: TableAssemblyConfiguration) {
       }
       // Независимая развёртка торца: U — метры периметра, V — метры профиля кромки.
       for (const [index, ring, u] of [[i, band, distance], [j, band + 1, end], [j, band, end], [i, band, distance], [i, band + 1, distance], [j, band + 1, end]]) {
-        vertex(ringContours[ring][index], profile[ring].y, normal(index, ring), u + 0.5, profile[ring].distance + 0.5)
+        let edgeU = u + 0.5
+        let edgeV = profile[ring].distance + 0.5
+        if (config.edgeProfile === 'bullnose') {
+          // Разворачиваем торец наружу от границы верхней плоскости по длине дуги.
+          // В верхнем стыке UV точно совпадают с плоскостью, включая угол рисунка.
+          // Общая биссектриса также сохраняет непрерывность на срезанных углах.
+          const direction = cornerNormals[index]
+          const travel = profile.at(-1)!.distance - profile[ring].distance
+          const unfolded = ringContours.at(-1)![index].clone()
+            .addScaledVector(direction, travel / direction.dot(normals[index]))
+          edgeU = unfolded.x + 0.5
+          edgeV = unfolded.y + 0.5
+        }
+        vertex(ringContours[ring][index], profile[ring].y, normal(index, ring), edgeU, edgeV)
       }
     }
     distance = end

@@ -206,7 +206,7 @@ it.each(TABLE_BASES)('$id retains contact and materials when only the edge profi
       expect(topBounds.min.y).toBeCloseTo(config.baseHeight, 6)
       expect(topBounds.max.y).toBeCloseTo(config.baseHeight + 0.05, 6)
       // Под плоскостью крепления нет полости: луч из центра каждой опоры
-      // упирается в плоский низ, включая максимальное скругление R25.
+      // упирается в плоский низ, включая мягкую кромку при толщине 50 мм.
       const names = base.cornerLegs?.targets ?? base.uFrames?.targets.flatMap((frame) => frame.posts)
         ?? [base.id === 'v-pedestal' ? 'UnderTop_Mount' : base.id === 'round-fluted' ? 'Top_Mount' : 'Pedestal_Core']
       for (const name of names) {

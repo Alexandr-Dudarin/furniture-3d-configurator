@@ -40,9 +40,8 @@ import {
   type FurnitureMaterialController,
 } from './three/materials/materialController'
 
-import {
-  getMaterialFinish,
-} from './three/materials/materialRegistry'
+import { SizeControl } from './components/assembly/SizeControl'
+import { FinishPicker } from './components/assembly/FinishPicker'
 
 import { TableAssemblyControls } from './components/TableAssemblyControls'
 import { useTableAssemblyScene } from './three/tableAssembly/useTableAssemblyScene'
@@ -447,67 +446,11 @@ function App() {
    */
 
   return (
-    <div
-      style={{
-        position:
-          'relative',
-
-        width:
-          '100vw',
-
-        height:
-          '100vh',
-
-        overflow:
-          'hidden',
-      }}
-    >
-      <div
-        ref={
-          containerRef
-        }
-        style={{
-          width:
-            '100%',
-
-          height:
-            '100%',
-        }}
-      />
+    <div className="app">
+      <div className="viewer" ref={containerRef} />
 
       <div
         className="configuration-panel"
-        style={{
-          position:
-            'absolute',
-
-          top:
-            16,
-
-          left:
-            16,
-
-          width:
-            220,
-
-          padding:
-            14,
-
-          background:
-            'white',
-
-          borderRadius:
-            8,
-
-          boxShadow:
-            '0 4px 14px rgba(0, 0, 0, 0.15)',
-
-          color:
-            '#111',
-
-          fontFamily:
-            'sans-serif',
-        }}
       >
         <div className="configuration-mode" role="group" aria-label="Способ выбора стола">
           <button type="button" aria-pressed={session.mode === 'catalog'} onClick={() => store.dispatch({ type: 'set-mode', mode: 'catalog' })}>Готовые модели</button>
@@ -565,180 +508,17 @@ function App() {
           />
         </div>
 
-        {/*
-         * -----------------------------
-         * DIMENSION CONTROLS
-         * -----------------------------
-         */}
-
-        {
-          furnitureDefinition
-            .dimensionOrder
-            .map(
-              (
-                dimension,
-                index,
-              ) => {
-                const config =
-                  furnitureDefinition
-                    .dimensions[
-                      dimension
-                    ]
-
-                const value =
-                  dimensions[
-                    dimension
-                  ] ??
-                  config.base
-
-                return (
-                  <div
-                    key={
-                      dimension
-                    }
-
-                    style={{
-                      marginTop:
-                        index === 0
-                          ? 0
-                          : 16,
-                    }}
-                  >
-                    <div
-                      style={{
-                        marginBottom:
-                          6,
-
-                        fontSize:
-                          14,
-
-                        fontWeight:
-                          600,
-                      }}
-                    >
-                      {
-                        config.label
-                      }
-                      :{' '}
-                      {
-                        value.toFixed(
-                          2,
-                        )
-                      }{' '}
-                      м
-                    </div>
-
-                    <input
-                      type="range"
-                      aria-label={config.label}
-                      aria-valuetext={`${value.toFixed(2)} м`}
-
-                      min={
-                        config.min
-                      }
-
-                      max={
-                        config.max
-                      }
-
-                      step={
-                        config.step
-                      }
-
-                      value={
-                        value
-                      }
-
-                      onChange={(
-                        event,
-                      ) => {
-                        const nextValue =
-                          Number(
-                            event
-                              .target
-                              .value,
-                          )
-
-                        store.dispatch({ type: 'set-dimension', name: dimension, value: nextValue })
-                      }}
-
-                      style={{
-                        width:
-                          '100%',
-                      }}
-                    />
-                  </div>
-                )
-              },
-            )
-        }
-
-
-        {Object.entries(
-          furnitureDefinition
-            .materialSlots ?? {},
-        ).map(
-          ([slotName, slot]) => {
-            const value =
-              materialSelections[
-                slotName
-              ] ??
-              slot.defaultFinish
-
-            const options =
-              slot.allowedFinishes.map(
-                (finishId) => {
-                  const finish =
-                    getMaterialFinish(
-                      finishId,
-                    )
-
-                  return {
-                    value:
-                      finish.id,
-                    label:
-                      finish.label,
-                  }
-                },
-              )
-
-            return (
-              <div
-                key={
-                  slotName
-                }
-                style={{
-                  marginTop: 16,
-                }}
-              >
-                <div
-                  style={{
-                    marginBottom:
-                      6,
-                    fontSize: 14,
-                    fontWeight:
-                      600,
-                  }}
-                >
-                  {slot.label}
-                </div>
-
-                <CustomSelect
-                  value={value}
-                  options={options}
-                  onChange={(
-                    finishId,
-                  ) => {
-                    store.dispatch({ type: 'set-material', slot: slotName, finishId })
-                  }}
-                  ariaLabel={
-                    slot.label
-                  }
-                />
-              </div>
-            )
-          },
-        )}
+        {furnitureDefinition.dimensionOrder.map((dimension) => {
+          const config = furnitureDefinition.dimensions[dimension]
+          return <SizeControl key={`${selectedModelId}-${dimension}`} name={config.label}
+            config={config} value={dimensions[dimension] ?? config.base}
+            onChange={(value) => store.dispatch({ type: 'set-dimension', name: dimension, value })} />
+        })}
+        {Object.entries(furnitureDefinition.materialSlots ?? {}).map(([slotName, slot]) => (
+          <FinishPicker key={`${selectedModelId}-${slotName}`} label={slot.label}
+            value={materialSelections[slotName] ?? slot.defaultFinish} ids={slot.allowedFinishes}
+            onChange={(finishId) => store.dispatch({ type: 'set-material', slot: slotName, finishId })} />
+        ))}
         </>}
         <ConfigurationActions
           resetLabel={session.mode === 'builder' ? 'Сбросить сборку' : 'Сбросить эту модель'}
