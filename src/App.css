@@ -194,8 +194,24 @@
 .assembly-section summary::-webkit-details-marker { display: none; }
 .assembly-section summary strong { font-size: 14px; }
 .section-value { display: block; margin-top: 4px; font-size: 12px; line-height: 1.45; color: #58677b; }
-.section-chevron { color: #64748b; font-size: 20px; }
-.assembly-section[open] .section-chevron { transform: rotate(180deg); }
+.section-chevron {
+  display: grid; place-items: center; flex: 0 0 28px; height: 28px;
+  border-radius: 9px; background: #f2f5f8; color: #64748b;
+  transition: background-color .2s ease, color .2s ease;
+}
+.section-chevron svg {
+  display: block; transform: rotate(0deg);
+  transition: transform .2s cubic-bezier(.2, .7, .3, 1);
+}
+.assembly-section[open] > summary .section-chevron { background: #eef5ff; color: #1767ca; }
+.assembly-section[open] > summary .section-chevron svg { transform: rotate(180deg); }
+@media (hover: hover) {
+  .assembly-section > summary:hover .section-chevron { background: #e2edfc; color: #155fb9; }
+}
+.assembly-section > summary:focus-visible .section-chevron { background: #e2edfc; color: #155fb9; }
+@media (prefers-reduced-motion: reduce) {
+  .section-chevron, .section-chevron svg { transition: none; }
+}
 .assembly-section-content { padding-bottom: 16px; }
 .assembly-section summary:focus-visible { outline: 2px solid #1767ca; outline-offset: 2px; border-radius: 4px; }
 .choice-fieldset { min-width: 0; padding: 0; margin: 0; border: 0; }
