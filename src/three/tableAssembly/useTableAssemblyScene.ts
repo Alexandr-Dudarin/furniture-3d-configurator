@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type RefObject } from 'react'
+import { useEffect, useMemo, useRef, useState, type RefObject } from 'react'
 import type { Scene } from 'three'
 import type { ConfiguratorStore } from '../../configurator/configuratorStore'
 import type { TableAssemblyConfiguration } from '../../configurator/tableAssembly/state'
@@ -16,8 +16,9 @@ export function useTableAssemblyScene(
 ) {
   const activeRef = useRef<{ baseId: string; assembly: TableAssembly; materials: FurnitureMaterialController } | null>(null)
   const [attempt, setAttempt] = useState(0)
-  const [failure, setFailure] = useState<{ baseId: string; attempt: number; message: string } | null>(null)
+  const [status, setStatus] = useState<{ token: object; error: string | null } | null>(null)
   const baseId = configuration.baseId
+  const token = useMemo(() => ({ baseId, enabled, attempt }), [baseId, enabled, attempt])
 
   useEffect(() => {
     const scene = sceneRef.current
@@ -47,13 +48,13 @@ export function useTableAssemblyScene(
         assembly.update(store.getSnapshot().session.assembly)
         activeRef.current = { baseId, assembly, materials }
         scene.add(assembly.group)
-        setFailure(null)
+        setStatus({ token, error: null })
       } catch (error) {
         if (cancelled) return
         materials?.dispose()
         assembly?.dispose()
         console.error('Ошибка сборки стола:', error)
-        setFailure({ baseId, attempt, message: 'Не удалось загрузить стол. Проверьте соединение и повторите загрузку.' })
+        setStatus({ token, error: 'Не удалось загрузить стол. Проверьте соединение и повторите загрузку.' })
       }
     }
     void prepare()
@@ -63,23 +64,24 @@ export function useTableAssemblyScene(
       materials?.dispose()
       if (assembly) { scene.remove(assembly.group); assembly.dispose() }
     }
-  }, [enabled, baseId, attempt, maxAnisotropyRef, sceneRef, store])
+  }, [enabled, baseId, token, maxAnisotropyRef, sceneRef, store])
 
   useEffect(() => {
     const active = activeRef.current
     if (!enabled || !active || active.baseId !== configuration.baseId) return
     active.assembly.update(configuration)
     void active.materials.setFinishes({ primaryTop: configuration.topFinish, baseFinish: configuration.baseFinish }).then(() => {
-      if (activeRef.current === active) setFailure(null)
+      if (activeRef.current === active) setStatus({ token, error: null })
     }).catch((error) => {
       if (activeRef.current !== active) return
       console.error('Ошибка материала сборки:', error)
-      setFailure({ baseId: configuration.baseId, attempt, message: 'Не удалось загрузить покрытие. Повторите загрузку стола.' })
+      setStatus({ token, error: 'Не удалось загрузить покрытие. Повторите загрузку стола.' })
     })
-  }, [configuration, enabled, attempt])
+  }, [configuration, enabled, token])
 
   return {
-    error: enabled && failure?.baseId === baseId && failure.attempt === attempt ? failure.message : null,
+    loading: enabled && status?.token !== token,
+    error: enabled && status?.token === token ? status.error : null,
     retry: () => setAttempt((value) => value + 1),
   }
 }

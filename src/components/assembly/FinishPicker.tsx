@@ -1,4 +1,3 @@
-import { Color } from 'three'
 import { getMaterialFinish } from '../../three/materials/materialRegistry'
 import { ChoiceGrid } from './ChoiceGrid'
 
@@ -10,8 +9,8 @@ export function FinishPicker({ label, value, ids, onChange }: {
     <ChoiceGrid label={label} value={value} className="finish-choices" onChange={onChange} choices={ids.map((id) => {
       const finish = getMaterialFinish(id)
       return { id, label: finish.label, preview: finish.kind === 'texture'
-        ? <img src={finish.maps.color} alt="" loading="lazy" decoding="async" />
-        : <span className="solid-swatch" style={{ backgroundColor: `#${new Color(finish.color).getHexString()}` }} /> }
+        ? <img src={finish.previewUrl} width={192} height={192} alt="" loading="lazy" decoding="async" />
+        : <span className="solid-swatch" style={{ backgroundColor: finish.previewColor }} /> }
     })} />
   </div>
 }

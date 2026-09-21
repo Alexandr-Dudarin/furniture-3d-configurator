@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { createResourceCache } from '../core/resourceCache'
 
 import {
   getMaterialFinish,
@@ -7,11 +8,18 @@ import {
 const textureLoader =
   new THREE.TextureLoader()
 
-const textureTemplatePromises =
-  new Map<
-    string,
-    Promise<THREE.Texture>
-  >()
+// Budget for decoded source images retained for reuse, not total process/GPU memory.
+// Active material clones can keep their own image references after eviction.
+const textureTemplates = createResourceCache<THREE.Texture>({
+  maxEntries: 12,
+  maxBytes: 96 * 1024 * 1024,
+  sizeOf: (texture) => {
+    const image = texture.image as { width?: number; height?: number } | undefined
+    return (image?.width ?? 2048) * (image?.height ?? 2048) * 4
+  },
+  // Do not close shared images: active clones may still use them.
+  dispose: (texture) => texture.dispose(),
+})
 
 export async function createFinishMaterial(
   finishId: string,
@@ -99,51 +107,14 @@ function loadTextureTemplate(
   colorSpace:
     THREE.ColorSpace,
 ): Promise<THREE.Texture> {
-  const cached =
-    textureTemplatePromises.get(
-      url,
-    )
-
-  if (cached) {
-    return cached
-  }
-
-  const loading =
-    textureLoader
-      .loadAsync(url)
-      .then(
-        (texture) => {
-          texture.colorSpace =
-            colorSpace
-
-          texture.wrapS =
-            THREE.RepeatWrapping
-
-          texture.wrapT =
-            THREE.RepeatWrapping
-
-          texture.needsUpdate =
-            true
-
-          return texture
-        },
-      )
-      .catch(
-        (error) => {
-          textureTemplatePromises.delete(
-            url,
-          )
-
-          throw error
-        },
-      )
-
-  textureTemplatePromises.set(
-    url,
-    loading,
-  )
-
-  return loading
+  return textureTemplates.get(`${colorSpace}:${url}`, async () => {
+    const texture = await textureLoader.loadAsync(url)
+    texture.colorSpace = colorSpace
+    texture.wrapS = THREE.RepeatWrapping
+    texture.wrapT = THREE.RepeatWrapping
+    texture.needsUpdate = true
+    return texture
+  })
 }
 
 function cloneTextureForMaterial(
@@ -175,16 +146,5 @@ function cloneTextureForMaterial(
 }
 
 export function disposeMaterialFinishCache(): void {
-  textureTemplatePromises.forEach(
-    (loading) => {
-      void loading.then(
-        (texture) => {
-          texture.dispose()
-        },
-        () => {},
-      )
-    },
-  )
-
-  textureTemplatePromises.clear()
+  textureTemplates.clear()
 }

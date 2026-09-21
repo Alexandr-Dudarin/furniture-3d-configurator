@@ -225,6 +225,14 @@ export function createFurnitureMaterialController(
                 maxAnisotropy,
               )
 
+            // The model may have been removed while a texture was loading.
+            // Stop before requesting the remaining targets of a disposed owner.
+            if (disposed) {
+              disposeMaterialResources(material)
+              prepared.forEach(({ replacements }) => replacements.forEach(({ material }) => disposeMaterialResources(material)))
+              return
+            }
+
             material.name =
               target
 

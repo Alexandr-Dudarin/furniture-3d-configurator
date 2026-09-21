@@ -594,3 +594,29 @@ function getMaterialMapByMaterial(
 
   return material.map
 }
+
+it('stops loading remaining targets after its owner is disposed during a request', async () => {
+  const model = new THREE.Group()
+  for (const name of ['Surface_Top', 'Surface_Edge', 'Frame_Metal']) {
+    const original = new THREE.MeshStandardMaterial()
+    original.name = name
+    model.add(new THREE.Mesh(new THREE.BoxGeometry(), original))
+  }
+  let resolve!: (material: THREE.MeshStandardMaterial) => void
+  const createMaterial = vi.fn(() => new Promise<THREE.MeshStandardMaterial>((done) => { resolve = done }))
+  const controller = createFurnitureMaterialController(model, TEST_DEFINITION, { createMaterial })
+  const pending = controller.setFinishes({ primary: 'finish-a', frame: 'metal-a' })
+  await vi.waitFor(() => expect(createMaterial).toHaveBeenCalledTimes(1))
+  controller.dispose()
+  const late = new THREE.MeshStandardMaterial({ map: new THREE.Texture() })
+  const materialDispose = vi.spyOn(late, 'dispose')
+  const textureDispose = vi.spyOn(late.map!, 'dispose')
+  resolve(late)
+  await pending
+  expect(createMaterial).toHaveBeenCalledTimes(1)
+  expect(materialDispose).toHaveBeenCalledTimes(1)
+  expect(textureDispose).toHaveBeenCalledTimes(1)
+  model.traverse((object) => {
+    if (object instanceof THREE.Mesh) { object.geometry.dispose(); object.material.dispose() }
+  })
+})

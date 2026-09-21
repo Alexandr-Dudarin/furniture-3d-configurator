@@ -269,3 +269,13 @@
 @media (max-width: 700px) {
   .viewer { left: 0; bottom: 46%; height: auto !important; }
 }
+
+.scene-canvas { position: absolute; inset: 0; }
+.viewer-status { position: absolute; inset: 0; display: grid; place-items: center; padding: 20px; pointer-events: none; }
+.viewer-status-card { max-width: 340px; padding: 20px 24px; border: 1px solid #dce3ec; border-radius: 14px; background: #ffffffed; box-shadow: 0 6px 24px #20334b12; text-align: center; color: #344253; pointer-events: auto; }
+.viewer-status-card p { margin: 10px 0 0; font-size: 14px; line-height: 1.5; }
+.viewer-status-card button { margin-top: 14px; padding: 10px 16px; border: 1px solid #1767ca; border-radius: 8px; background: #1767ca; color: white; font: inherit; font-size: 13px; cursor: pointer; }
+.viewer-status-card button:focus-visible { outline: 2px solid #1767ca; outline-offset: 3px; }
+.viewer-spinner { display: inline-block; width: 22px; height: 22px; border: 2px solid #dce8f6; border-top-color: #1767ca; border-radius: 50%; animation: viewer-spin .9s linear infinite; }
+@keyframes viewer-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .viewer-spinner { animation: none; } }

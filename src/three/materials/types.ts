@@ -19,6 +19,7 @@ type MaterialFinishBase = {
 export type TextureMaterialFinish =
   MaterialFinishBase & {
     kind: 'texture'
+    previewUrl: string
 
     maps: {
       color: string
@@ -35,6 +36,7 @@ export type TextureMaterialFinish =
 export type ProceduralMaterialFinish =
   MaterialFinishBase & {
     kind: 'procedural'
+    previewColor: string
 
     color: THREE.ColorRepresentation
     metalness: number

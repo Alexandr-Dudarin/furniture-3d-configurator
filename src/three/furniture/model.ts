@@ -1,5 +1,19 @@
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
+import { createResourceCache } from '../core/resourceCache'
+
+// Cache bytes only. Each parse owns its geometry and materials independently.
+const modelSources = createResourceCache<ArrayBuffer>({
+  maxEntries: 4, maxBytes: 24 * 1024 * 1024,
+  sizeOf: (data) => data.byteLength, dispose: () => {},
+})
+
+// GLTFLoader creates ImageBitmaps for embedded maps. Keep ownership even when
+// finish replacement detaches the original material before model disposal.
+const ownedImages = new WeakMap<THREE.Object3D, Set<ImageBitmap>>()
+
+export function disposeFurnitureSourceCache(): void { modelSources.clear() }
+
 
 /*
  * --------------------------------
@@ -13,13 +27,30 @@ export async function loadFurnitureModel(
   const loader =
     new GLTFLoader()
 
-  const gltf =
-    await loader.loadAsync(
-      url,
-    )
+  const data = await modelSources.get(url, async () => {
+    const fileLoader = new THREE.FileLoader().setResponseType('arraybuffer')
+    return await fileLoader.loadAsync(url) as ArrayBuffer
+  })
+  let gltf
+  try {
+    gltf = await loader.parseAsync(data, THREE.LoaderUtils.extractUrlBase(url))
+  } catch (error) {
+    modelSources.invalidate(url, data)
+    throw error
+  }
 
   const model =
     gltf.scene
+
+  const images = new Set<ImageBitmap>()
+  model.traverse((object) => {
+    if (!(object instanceof THREE.Mesh)) return
+    const materials = Array.isArray(object.material) ? object.material : [object.material]
+    for (const material of materials) for (const value of Object.values(material)) {
+      if (value instanceof THREE.Texture && typeof ImageBitmap !== 'undefined' && value.image instanceof ImageBitmap) images.add(value.image)
+    }
+  })
+  ownedImages.set(model, images)
 
   /*
    * Тени включаем для всех Mesh
@@ -65,6 +96,10 @@ export async function loadFurnitureModel(
 export function disposeFurnitureModel(
   model: THREE.Object3D,
 ): void {
+  model.traverse((object) => {
+    ownedImages.get(object)?.forEach((image) => image.close())
+    ownedImages.delete(object)
+  })
   const geometries =
     new Set<THREE.BufferGeometry>()
 

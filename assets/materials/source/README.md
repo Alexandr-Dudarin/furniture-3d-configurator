@@ -77,3 +77,11 @@ The following finishes do not use downloaded texture maps:
 
 They are intentionally modeled as powder-coated surfaces with low metalness
 (`0.04`) rather than as exposed metal or plain plastic.
+
+
+## Превью карточек материалов
+
+`generate_material_previews.py` создаёт WebP до 192 × 192 из исходного base-color
+в `public/materials/previews/`, сохраняя ICC-профиль при его наличии. Он не меняет
+ни одну production PBR-карту. Для генерации нужен Pillow; при обычной сборке
+используются уже сохранённые превью. В реестре отделка явно задаёт `previewUrl`.

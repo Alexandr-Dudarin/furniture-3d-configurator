@@ -1,5 +1,5 @@
 import type { TopShape } from '../../configurator/tableAssembly/catalog'
-import { createTabletopOutline } from '../../three/tableAssembly/tabletopGeometry'
+import { createTabletopOutline } from '../../configurator/tableAssembly/outline'
 
 export function ShapePreview({ shape }: { shape: TopShape }) {
   const points = createTabletopOutline({ shape, length: 1.5, width: 0.9 })
