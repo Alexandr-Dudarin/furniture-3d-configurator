@@ -16,6 +16,7 @@ export type FurnitureDimensionConfig = {
   min: number
   max: number
   step: number
+  displayUnit?: 'cm' | 'mm'
 }
 
 /*
@@ -179,7 +180,29 @@ export type FurnitureMaterialSlots =
     >
   >
 
+// UV anchor is in exported UV units; geometric lengths are in metres.
+export type AffineTextureBinding = {
+  dimension: DimensionName
+  baseLength: number
+  stretchFactor: number
+  translationFactor: number
+  anchor: number
+  uvUnitsPerMeter: number
+}
+
+export type AffineTextureBindings = Readonly<{
+  u?: AffineTextureBinding
+  v?: AffineTextureBinding
+}>
+
 export type FurnitureDefinition = {
+  category?: 'tables' | 'wardrobes' | 'dressers'
+  framing?: { width: number; height: number; depth: number }
+  description?: string
+  // Lightweight catalogue entries defer geometry rules and UV contracts.
+  loadRuntime?: () => Promise<FurnitureDefinition>
+  textureTransforms?: Readonly<Record<string, AffineTextureBindings>>
+
   id: string
 
   label: string

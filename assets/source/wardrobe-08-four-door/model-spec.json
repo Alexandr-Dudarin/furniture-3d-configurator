@@ -1,0 +1,30 @@
+{
+  "id": "wardrobe-08-four-door",
+  "number": 8,
+  "kind": "four-door",
+  "folder": "wardrobe-four-door",
+  "label": "Четырёхдверный шкаф с длинными ручками",
+  "boardColor": "#646770",
+  "base": {
+    "width": 1.6,
+    "height": 2.2,
+    "depth": 0.52
+  },
+  "limits": {
+    "width": [
+      1.4,
+      2.0
+    ],
+    "height": [
+      1.9,
+      2.4
+    ],
+    "depth": [
+      0.4,
+      0.65
+    ]
+  },
+  "approvedPlan": "cabinet-models-07-08-plan.md",
+  "approval": "User: Да, подходит, можешь приступать",
+  "assumptions": "Construction details estimated from reference photos; not manufacturing measurements"
+}

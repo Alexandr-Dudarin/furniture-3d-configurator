@@ -9,6 +9,7 @@ export type MaterialFinishCategory =
   | 'wood'
   | 'stone'
   | 'metal'
+  | 'board'
 
 type MaterialFinishBase = {
   id: MaterialFinishId

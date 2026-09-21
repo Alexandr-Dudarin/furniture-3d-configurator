@@ -1,0 +1,276 @@
+{
+  "checks": [
+    "No wardrobe GLB/runtime chunk fetched when viewing a table",
+    "wardrobe-07-center-drawers: mm input, independent wood/white finishes, maximum dimensions visible, stable camera",
+    "wardrobe-08-four-door: mm input, independent wood/white finishes, maximum dimensions visible, stable camera",
+    "wardrobe-09-chelsea-two-door: mm input, independent wood/white finishes, maximum dimensions visible, stable camera",
+    "Wardrobe dimensions and finishes survive reload",
+    "Reset and shared link restore the exact wardrobe configuration",
+    "Returning to the table builder restores its camera",
+    "Mobile wardrobe view has no horizontal page overflow"
+  ],
+  "models": [
+    {
+      "id": "wardrobe-07-center-drawers",
+      "bounds": [
+        2.000000000759959,
+        2.400000045817718,
+        0.6500000004749746
+      ],
+      "corners": [
+        [
+          -0.3312136528044479,
+          -0.4694346673930277,
+          0.9641356617715716
+        ],
+        [
+          -0.5030757969758495,
+          -0.5890578680918079,
+          0.9594911693403482
+        ],
+        [
+          -0.36521214481637004,
+          0.6651009992053191,
+          0.9602487493362167
+        ],
+        [
+          -0.561788725254451,
+          0.6869138400183715,
+          0.9545298186171942
+        ],
+        [
+          0.5304074689883707,
+          -0.6485431532823814,
+          0.9571815926426597
+        ],
+        [
+          0.4502684010877448,
+          -0.8200000130964658,
+          0.9505246056782906
+        ],
+        [
+          0.5960898106567045,
+          0.6979691632779732,
+          0.9516313136338258
+        ],
+        [
+          0.515508311325656,
+          0.730638579181199,
+          0.943065986092001
+        ]
+      ],
+      "memory": {
+        "geometries": 910,
+        "textures": 7
+      },
+      "drawCalls": 1819,
+      "triangles": 33290
+    },
+    {
+      "id": "wardrobe-08-four-door",
+      "bounds": [
+        2.000000023815222,
+        2.4000000476803627,
+        0.6500000001471491
+      ],
+      "corners": [
+        [
+          -0.33121365698817823,
+          -0.46943466692012564,
+          0.9641356618068028
+        ],
+        [
+          -0.5030758013959111,
+          -0.5890578673682211,
+          0.9594911693873813
+        ],
+        [
+          -0.36521214942376823,
+          0.6651009995337328,
+          0.9602487493757252
+        ],
+        [
+          -0.5617887301687139,
+          0.6869138403557926,
+          0.9545298186715465
+        ],
+        [
+          0.5304074748439527,
+          -0.6485431549692583,
+          0.9571815925971331
+        ],
+        [
+          0.45026840776596105,
+          -0.8200000151345949,
+          0.9505246056220923
+        ],
+        [
+          0.5960898173696727,
+          0.6979691640937388,
+          0.9516313135714847
+        ],
+        [
+          0.5155083191109985,
+          0.7306385801637126,
+          0.9430659860117102
+        ]
+      ],
+      "memory": {
+        "geometries": 580,
+        "textures": 7
+      },
+      "drawCalls": 1159,
+      "triangles": 29666
+    },
+    {
+      "id": "wardrobe-09-chelsea-two-door",
+      "bounds": [
+        0.9999999862130731,
+        2.400000021367986,
+        0.6499999992895871
+      ],
+      "corners": [
+        [
+          -0.15178951469484336,
+          -0.5443056101576543,
+          0.9598578067915096
+        ],
+        [
+          -0.3209174320938835,
+          -0.6896780621083071,
+          0.9540237982024186
+        ],
+        [
+          -0.1693341084522537,
+          0.724562094227269,
+          0.954986569238062
+        ],
+        [
+          -0.36383213899860795,
+          0.7588873581420758,
+          0.947607909416197
+        ],
+        [
+          0.30853398122366144,
+          -0.6435455165783825,
+          0.9558751645599839
+        ],
+        [
+          0.1916384666840547,
+          -0.8200000110196094,
+          0.9487937882583497
+        ],
+        [
+          0.3479969981053064,
+          0.7478742726684406,
+          0.949975314704056
+        ],
+        [
+          0.22047928490651497,
+          0.7906218659316862,
+          0.9407861661609946
+        ]
+      ],
+      "memory": {
+        "geometries": 277,
+        "textures": 7
+      },
+      "drawCalls": 553,
+      "triangles": 12314
+    }
+  ],
+  "errors": [],
+  "requests": [
+    "/",
+    "/assets/index-CC_z3Jxc.js",
+    "/assets/index-DRdsdTub.css",
+    "/materials/previews/oak-natural.webp",
+    "/materials/previews/walnut-natural.webp",
+    "/materials/previews/pine-coated.webp",
+    "/materials/previews/ash-natural.webp",
+    "/materials/previews/oak-grey.webp",
+    "/materials/previews/oak-silver.webp",
+    "/materials/previews/oak-black.webp",
+    "/materials/previews/concrete-light.webp",
+    "/materials/previews/marble-cream.webp",
+    "/materials/previews/marble-white-gold.webp",
+    "/materials/previews/marble-black-gold.webp",
+    "/materials/previews/marble-duo-gold.webp",
+    "/materials/previews/terrazzo-neutral.webp",
+    "/assets/SceneView-BvkLrNoA.js",
+    "/models/first-table.glb",
+    "http://127.0.0.1:5183/8ed00f3c-31dc-48dd-aa6d-279970df89d3",
+    "http://127.0.0.1:5183/3b25425a-f70c-413d-8dd9-503a466d71a5",
+    "http://127.0.0.1:5183/215f6e1f-adb6-4e38-a3fc-a99ae8748ceb",
+    "/materials/wood/oak-natural/base-color.jpg",
+    "/materials/wood/oak-natural/roughness.jpg",
+    "/materials/wood/oak-natural/normal-gl.jpg",
+    "/assets/runtime-YWVMhzqm.js",
+    "/models/wardrobe-07-center-drawers.glb",
+    "http://127.0.0.1:5183/801538f2-8aec-4e88-9731-398022275d8f",
+    "http://127.0.0.1:5183/304b3644-3f78-447f-91c5-aadbc290b678",
+    "http://127.0.0.1:5183/0e5f4cb9-bacd-4145-bd83-51fa4b6506c6",
+    "/assets/runtime-DUODPkVV.js",
+    "/models/wardrobe-08-four-door.glb",
+    "http://127.0.0.1:5183/18bdcd44-9304-4bd6-9616-a345ffe9f74e",
+    "http://127.0.0.1:5183/1d889855-69a0-434f-b16c-061ffb80dcf7",
+    "http://127.0.0.1:5183/24f0d743-2fba-492c-9024-fc1ebcaa02bf",
+    "/assets/runtime-CbPDVkHM.js",
+    "/models/wardrobe-09-chelsea-two-door.glb",
+    "http://127.0.0.1:5183/e463619a-8517-4077-9e7b-3478ae4e235e",
+    "http://127.0.0.1:5183/85ce1bd5-7ef6-419a-a95b-983ef0180684",
+    "http://127.0.0.1:5183/624fc5bb-d03c-4d3c-82de-b7fc547004fe",
+    "/",
+    "/assets/index-CC_z3Jxc.js",
+    "/assets/index-DRdsdTub.css",
+    "/materials/previews/oak-natural.webp",
+    "/materials/previews/oak-grey.webp",
+    "/materials/previews/oak-silver.webp",
+    "/materials/previews/oak-black.webp",
+    "/assets/SceneView-BvkLrNoA.js",
+    "/assets/runtime-CbPDVkHM.js",
+    "/models/wardrobe-09-chelsea-two-door.glb",
+    "http://127.0.0.1:5183/caceaf7f-d7a0-42d9-a643-13c5226b52a4",
+    "http://127.0.0.1:5183/32f41470-577e-4712-9595-f647d89bddd9",
+    "http://127.0.0.1:5183/b71f911a-c068-4e08-a79a-4fa2d10932cb",
+    "/materials/wood/oak-natural/base-color.jpg",
+    "/materials/wood/oak-natural/roughness.jpg",
+    "/materials/wood/oak-natural/normal-gl.jpg",
+    "/",
+    "/assets/index-CC_z3Jxc.js",
+    "/assets/index-DRdsdTub.css",
+    "/materials/previews/oak-natural.webp",
+    "/materials/previews/oak-grey.webp",
+    "/materials/previews/oak-silver.webp",
+    "/materials/previews/oak-black.webp",
+    "/assets/SceneView-BvkLrNoA.js",
+    "/assets/runtime-CbPDVkHM.js",
+    "/models/wardrobe-09-chelsea-two-door.glb",
+    "http://127.0.0.1:5183/666d2a1f-3b90-4c13-b093-7e981678ba6a",
+    "http://127.0.0.1:5183/9d2037c1-5c41-4afe-ae42-641f6752c12f",
+    "http://127.0.0.1:5183/a3376c27-90fb-42da-af50-ebfa0ace78db",
+    "/materials/wood/oak-natural/base-color.jpg",
+    "/materials/wood/oak-natural/roughness.jpg",
+    "/materials/wood/oak-natural/normal-gl.jpg",
+    "/modules/bases/slat-pedestal.glb",
+    "http://127.0.0.1:5183/aeef05fd-20aa-4a9a-88cd-656991787e54",
+    "http://127.0.0.1:5183/fa3589d5-af7e-4814-993e-3d81344b780d",
+    "http://127.0.0.1:5183/a2c20cac-9b0c-4c83-ae28-8cf397e6ffa8",
+    "/",
+    "/assets/index-CC_z3Jxc.js",
+    "/assets/index-DRdsdTub.css",
+    "/materials/previews/oak-natural.webp",
+    "/materials/previews/oak-grey.webp",
+    "/materials/previews/oak-silver.webp",
+    "/materials/previews/oak-black.webp",
+    "/assets/SceneView-BvkLrNoA.js",
+    "/assets/runtime-CbPDVkHM.js",
+    "/models/wardrobe-09-chelsea-two-door.glb",
+    "http://127.0.0.1:5183/7a3ec495-bef4-4628-97e5-7c219e4814d3",
+    "http://127.0.0.1:5183/f2557e2c-5eab-45fb-b8f3-f0fb134b0bc3",
+    "http://127.0.0.1:5183/ce3322bc-485a-4276-9c3d-501bb319d993",
+    "/materials/wood/oak-natural/base-color.jpg",
+    "/materials/wood/oak-natural/roughness.jpg",
+    "/materials/wood/oak-natural/normal-gl.jpg"
+  ]
+}

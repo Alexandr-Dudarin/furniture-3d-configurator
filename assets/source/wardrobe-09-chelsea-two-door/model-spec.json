@@ -1,0 +1,114 @@
+{
+  "id": "wardrobe-09-chelsea-two-door",
+  "number": 9,
+  "kind": "two-door-handleless",
+  "folder": "wardrobe-chelsea-two-door",
+  "label": "Двухдверный шкаф «Челси»",
+  "boardColor": "#626466",
+  "base": {
+    "width": 0.802,
+    "height": 2.022,
+    "depth": 0.514
+  },
+  "limits": {
+    "width": [
+      0.6,
+      1.0
+    ],
+    "height": [
+      1.9,
+      2.4
+    ],
+    "depth": [
+      0.4,
+      0.65
+    ]
+  },
+  "authorization": "User requested another wardrobe from the supplied photographs and assembly instruction.",
+  "configurationPolicy": "Ranges are modelling choices for review, not manufacturer offerings or load certification.",
+  "sources": [
+    {
+      "file": "references/SHkaf-platyanoy-skhema.pdf",
+      "pages": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "file": "references/reference-01.png"
+    },
+    {
+      "file": "references/reference-02-dimensions.png"
+    }
+  ],
+  "measuredMm": {
+    "overallWidthHeightDepth": [
+      802,
+      2022,
+      514
+    ],
+    "sideHeightDepth": [
+      2006,
+      490
+    ],
+    "doorHeightWidth": [
+      1933,
+      397
+    ],
+    "backPanelHeightWidth": [
+      1948,
+      397
+    ],
+    "backJoinLength": 1920,
+    "topWidthDepth": [
+      802,
+      514
+    ],
+    "horizontalPanelWidthDepth": [
+      768,
+      490
+    ],
+    "horizontalPanelCountExcludingTop": 3,
+    "rearBraceWidthHeight": [
+      768,
+      120
+    ],
+    "plinthWidthHeight": [
+      768,
+      70
+    ],
+    "ovalRailLength": 765,
+    "doorCount": 2,
+    "hingeCount": 8,
+    "pushLatchCount": 2
+  },
+  "inferredMm": {
+    "mainBoardThickness": 16,
+    "backThickness": 3,
+    "sideTopOverhang": 1,
+    "doorCenterGap": 4,
+    "doorOuterInsetFromTop": 2,
+    "doorTopGapUnderTop": 2,
+    "doorBottom": 71,
+    "frontClearanceFromCarcass": 3,
+    "topFrontOverhang": 2,
+    "shelfLowerTop": 386,
+    "shelfUpperTopFromOverallTop": 350,
+    "railCenterFromOverallTop": 440,
+    "railCrossSectionHeightDepth": [
+      30,
+      15
+    ],
+    "rearBraceCenter": 1016,
+    "bevelRadius": 0.7
+  },
+  "assumptions": [
+    "The 16 mm top thickness is inferred from 2022 minus 2006; other main boards use the same thickness.",
+    "800 mm carcass plus 1 mm top overhang each side reconciles the 768 mm internal panels and 802 mm lid.",
+    "Shelf and fitting mount heights, rear-board thickness, oval rail section and hinge dimensions are estimates.",
+    "Six unspecified heel pads and hidden fasteners are omitted at this LOD; catalogue envelope is preserved.",
+    "Push-to-open bodies and hinges are simplified visible fittings. Technical door poses are not a mechanism simulation."
+  ]
+}

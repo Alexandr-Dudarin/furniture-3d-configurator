@@ -1,0 +1,12 @@
+{
+  "id": "wardrobe-07-center-drawers",
+  "glbBytes": 3313176,
+  "nodes": 467,
+  "meshes": 417,
+  "primitives": 909,
+  "triangles": 16644,
+  "materials": 358,
+  "physicalParts": 89,
+  "resizeRules": 191,
+  "boardTextureResolution": "1×1 uniform PBR maps; physical UV for later finish replacement"
+}

@@ -1,0 +1,12 @@
+{
+  "id": "wardrobe-08-four-door",
+  "glbBytes": 2316052,
+  "nodes": 325,
+  "meshes": 291,
+  "primitives": 579,
+  "triangles": 14832,
+  "materials": 211,
+  "physicalParts": 99,
+  "resizeRules": 136,
+  "boardTextureResolution": "1×1 uniform PBR maps; physical UV for later finish replacement"
+}

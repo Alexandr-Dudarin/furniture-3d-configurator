@@ -1,0 +1,6 @@
+{
+  "modelId": "wardrobe-07-center-drawers",
+  "baseAndReturnBodyPixelsIdentical": true,
+  "comparison": "Entire furniture/floor render, excluding text labels",
+  "renderer": "offline CPU"
+}

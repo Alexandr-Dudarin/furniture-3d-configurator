@@ -1,0 +1,30 @@
+{
+  "id": "wardrobe-07-center-drawers",
+  "number": 7,
+  "kind": "center-drawers",
+  "folder": "wardrobe-center-drawers",
+  "label": "Шкаф с центральными ящиками",
+  "boardColor": "#636563",
+  "base": {
+    "width": 1.601,
+    "height": 2.052,
+    "depth": 0.48
+  },
+  "limits": {
+    "width": [
+      1.4,
+      2.0
+    ],
+    "height": [
+      1.9,
+      2.4
+    ],
+    "depth": [
+      0.4,
+      0.65
+    ]
+  },
+  "approvedPlan": "cabinet-models-07-08-plan.md",
+  "approval": "User: Да, подходит, можешь приступать",
+  "assumptions": "Construction details estimated from reference photos; not manufacturing measurements"
+}

@@ -1,0 +1,46 @@
+{
+  "modelId": "wardrobe-09-chelsea-two-door",
+  "status": "REQUIRES_ENGINE_EXTENSION",
+  "integrationReady": false,
+  "previewConfig": "Geometry plus hardware slot; original nonmetallic grey board materials retained",
+  "boardFinishCatalogReady": false,
+  "registeredFinishIds": [
+    "oak-natural",
+    "walnut-natural",
+    "pine-coated",
+    "ash-natural",
+    "oak-grey",
+    "oak-silver",
+    "oak-black",
+    "concrete-light",
+    "marble-cream",
+    "marble-white-gold",
+    "marble-black-gold",
+    "marble-duo-gold",
+    "terrazzo-neutral",
+    "metal-black-matte",
+    "metal-white-matte",
+    "metal-anthracite"
+  ],
+  "affineUvReady": false,
+  "probe": {
+    "productionGlb": true,
+    "semanticMaterial": "Front_Door_Tall_ccc_Z",
+    "dimension": "height",
+    "base": 2.022,
+    "max": 2.4,
+    "expectedRepeat": 1.1956926899979292,
+    "actualLegacyRepeat": 1.1869436201780417,
+    "featureSizeErrorPercent": 0.7371091323255197
+  },
+  "fixedBevelUv": "Moving edge/corner UV phases also need translationFactor; mere repeat correction is insufficient",
+  "required": [
+    "generic affine UV mapping with repeat and offset per surface",
+    "registered nonmetallic board finishes",
+    "UI precision for 1 mm step"
+  ],
+  "manualQa": {
+    "webglBrowser": "NOT RUN",
+    "blenderExportReimport": "NOT RUN"
+  }
+}

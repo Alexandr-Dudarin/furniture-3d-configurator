@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { createFurnitureFraming } from './furnitureFraming'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 
 type Vector3Tuple =
@@ -34,6 +35,8 @@ export type ThreeRuntime = {
 
   controls:
     OrbitControls
+
+  framing: ReturnType<typeof createFurnitureFraming>
 
   dispose: () => void
 }
@@ -191,6 +194,8 @@ export function createThreeRuntime(
    * --------------------------------
    */
 
+  const framing = createFurnitureFraming(camera, controls)
+
   const resize =
     () => {
       const width =
@@ -210,6 +215,7 @@ export function createThreeRuntime(
       camera.fov = cameraFieldOfView(camera.aspect)
 
       camera.updateProjectionMatrix()
+      framing.resize()
 
       renderer.setSize(
         width,
@@ -304,6 +310,7 @@ export function createThreeRuntime(
     camera,
     renderer,
     controls,
+    framing,
     dispose,
   }
 }

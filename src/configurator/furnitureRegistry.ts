@@ -26,6 +26,10 @@ import {
   ROUND_SPLAYED_LEGS_TABLE_CONFIG,
 } from '../three/models/round-splayed-legs-table/config'
 
+import { catalogue as wardrobe07 } from '../three/models/wardrobe-center-drawers/catalog'
+import { catalogue as wardrobe08 } from '../three/models/wardrobe-four-door/catalog'
+import { catalogue as wardrobe09 } from '../three/models/wardrobe-chelsea-two-door/catalog'
+
 /*
  * --------------------------------
  * FURNITURE REGISTRY
@@ -67,6 +71,9 @@ const furnitureRegistry =
       ROUND_SPLAYED_LEGS_TABLE_CONFIG.id,
       ROUND_SPLAYED_LEGS_TABLE_CONFIG,
     ],
+    [wardrobe07.id, wardrobe07],
+    [wardrobe08.id, wardrobe08],
+    [wardrobe09.id, wardrobe09],
   ])
 
 /*

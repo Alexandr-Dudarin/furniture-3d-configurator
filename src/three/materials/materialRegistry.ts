@@ -6,6 +6,56 @@ const MATERIAL_ROOT =
   '/materials'
 
 const materialFinishes = [
+{
+  "id": "board-grey-neutral",
+  "label": "Серый нейтральный",
+  "category": "board",
+  "kind": "procedural",
+  "previewColor": "#636563",
+  "color": "#636563",
+  "metalness": 0,
+  "roughness": 0.62
+},
+{
+  "id": "board-grey-cool",
+  "label": "Серый холодный",
+  "category": "board",
+  "kind": "procedural",
+  "previewColor": "#646770",
+  "color": "#646770",
+  "metalness": 0,
+  "roughness": 0.62
+},
+{
+  "id": "board-grey-chelsea",
+  "label": "Серый «Челси»",
+  "category": "board",
+  "kind": "procedural",
+  "previewColor": "#626466",
+  "color": "#626466",
+  "metalness": 0,
+  "roughness": 0.62
+},
+{
+  "id": "board-white-matte",
+  "label": "Белый матовый",
+  "category": "board",
+  "kind": "procedural",
+  "previewColor": "#efefea",
+  "color": "#efefea",
+  "metalness": 0,
+  "roughness": 0.62
+},
+{
+  "id": "board-graphite-matte",
+  "label": "Графит матовый",
+  "category": "board",
+  "kind": "procedural",
+  "previewColor": "#333639",
+  "color": "#333639",
+  "metalness": 0,
+  "roughness": 0.62
+},
   {
     id: 'oak-natural',
     label: 'Дуб натуральный',

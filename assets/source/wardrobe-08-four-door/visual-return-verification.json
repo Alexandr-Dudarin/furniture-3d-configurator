@@ -1,0 +1,6 @@
+{
+  "modelId": "wardrobe-08-four-door",
+  "baseAndReturnBodyPixelsIdentical": true,
+  "comparison": "Entire furniture/floor render, excluding text labels",
+  "renderer": "offline CPU"
+}

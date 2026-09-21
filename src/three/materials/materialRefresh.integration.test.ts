@@ -15,7 +15,7 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-it.each(getFurnitureDefinitions())('$id keeps tabletop texture transforms stable when only the base finish changes', async definition => {
+it.each(getFurnitureDefinitions().filter(definition => definition.materialSlots?.primaryTop))('$id keeps tabletop texture transforms stable when only the base finish changes', async definition => {
   stubImages()
   const bytes = await readFile(`public${definition.modelUrl}`)
   const { scene } = await new GLTFLoader().parseAsync(Uint8Array.from(bytes).buffer, '')

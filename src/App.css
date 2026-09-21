@@ -279,3 +279,9 @@
 .viewer-spinner { display: inline-block; width: 22px; height: 22px; border: 2px solid #dce8f6; border-top-color: #1767ca; border-radius: 50%; animation: viewer-spin .9s linear infinite; }
 @keyframes viewer-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .viewer-spinner { animation: none; } }
+
+.furniture-categories { display: flex; gap: 8px; margin: 20px 0; }
+.furniture-categories button { flex: 1; border: 1px solid #d4deeb; border-radius: 10px; padding: 10px 12px; background: white; color: #35465e; font: inherit; cursor: pointer; }
+.furniture-categories button[aria-pressed="true"] { background: #edf4ff; border-color: #1769d1; color: #0757bf; }
+.furniture-categories button:focus-visible { outline: 2px solid #1769d1; outline-offset: 3px; }
+.catalog-description { margin: 12px 0 20px; color: #586a84; font-size: 13px; line-height: 1.55; }

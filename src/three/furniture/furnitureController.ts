@@ -1,6 +1,8 @@
 import * as THREE from 'three'
+import { affineTextureTransform, validateTextureTransforms } from './affineTexture'
 
 import type {
+  AffineTextureBindings,
   DimensionName,
   FurnitureDefinition,
   MaterialTextureAxisBinding,
@@ -45,6 +47,7 @@ type StretchSegmentState = {
 }
 
 type TextureState = {
+  transforms?: AffineTextureBindings
   texture: THREE.Texture
 
   baseRepeatX: number
@@ -342,6 +345,9 @@ export function createFurnitureController(
    * --------------------------------
    */
 
+  if (definition.loadRuntime) throw new Error('Load the furniture runtime definition before creating its controller.')
+  validateTextureTransforms(definition)
+
   const textureStates:
     TextureState[] = []
 
@@ -499,6 +505,18 @@ export function createFurnitureController(
       textureStates.forEach(
         (state) => {
           resetTexture(state)
+          if (state.transforms) {
+            for (const [uvAxis, binding] of Object.entries(state.transforms)) {
+              const axis = uvAxis === 'u' ? 'x' : 'y'
+              const { repeat, offset } = affineTextureTransform(binding,
+                dimensions[binding.dimension] - definition.dimensions[binding.dimension].base,
+                axis === 'x' ? state.baseRepeatX : state.baseRepeatY,
+                axis === 'x' ? state.baseOffsetX : state.baseOffsetY)
+              state.texture.repeat[axis] = repeat
+              state.texture.offset[axis] = offset
+            }
+            return
+          }
 
           Object.entries(
             state.axes,
@@ -728,220 +746,48 @@ function setDimensionValue(
  */
 
 function prepareMaterialsAndTextures(
-  model:
-    THREE.Object3D,
-
-  definition:
-    FurnitureDefinition,
-
-  textureStates:
-    TextureState[],
-
-  cloneResources:
-    boolean,
+  model: THREE.Object3D, definition: FurnitureDefinition,
+  textureStates: TextureState[], cloneResources: boolean,
 ): void {
-  model.traverse(
-    (object) => {
-      if (
-        !(
-          object instanceof
-          THREE.Mesh
-        )
-      ) {
-        return
+  const prepared = new Map<THREE.Material, THREE.Material>()
+  const seenTextures = new Set<THREE.Texture>()
+  const prepare = (original: THREE.Material): THREE.Material => {
+    const cached = prepared.get(original)
+    if (cached) return cached
+    const textureConfig = definition.textureAxes[original.name]
+    const transforms = definition.textureTransforms?.[original.name]
+    if ((!textureConfig && !transforms) || !(original instanceof THREE.MeshStandardMaterial)) return original
+    const material = cloneResources ? original.clone() : original
+    prepared.set(original, material)
+    const textureClones = new Map<THREE.Texture, THREE.Texture>()
+    // Includes every texture map supported by the material, not only colour.
+    for (const key of Object.keys(material) as (keyof THREE.MeshStandardMaterial)[]) {
+      const source = original[key]
+      if (cloneResources && source instanceof THREE.Texture) {
+        let clone = textureClones.get(source)
+        if (!clone) { clone = source.clone(); textureClones.set(source, clone) }
+        Object.assign(material, { [key]: clone })
       }
-
-      /*
-       * GLB может содержать Mesh
-       * как с одним материалом,
-       * так и с массивом материалов.
-       */
-
-      if (
-        Array.isArray(
-          object.material,
-        )
-      ) {
-        object.material =
-          object.material.map(
-            (material) =>
-              prepareMaterial(
-                material,
-                definition,
-                textureStates,
-                cloneResources,
-              ),
-          )
-
-        return
-      }
-
-      object.material =
-        prepareMaterial(
-          object.material,
-          definition,
-          textureStates,
-          cloneResources,
-        )
-    },
-  )
-}
-
-function prepareMaterial(
-  originalMaterial:
-    THREE.Material,
-
-  definition:
-    FurnitureDefinition,
-
-  textureStates:
-    TextureState[],
-
-  cloneResources:
-    boolean,
-): THREE.Material {
-  const textureConfig =
-    definition.textureAxes[
-      originalMaterial.name
-    ]
-
-  /*
-   * Этот материал не участвует
-   * в динамическом texture tiling.
-   *
-   * Например металл ножек.
-   */
-  if (!textureConfig) {
-    return originalMaterial
+    }
+    const axes = normalizeMaterialAxes(textureConfig ?? {})
+    for (const texture of Object.values(material)) {
+      if (!(texture instanceof THREE.Texture) || seenTextures.has(texture)) continue
+      seenTextures.add(texture)
+      if (transforms) {
+        if (transforms.u) texture.wrapS = THREE.RepeatWrapping
+        if (transforms.v) texture.wrapT = THREE.RepeatWrapping
+        texture.needsUpdate = true
+      } else enableTextureWrapping(texture, axes)
+      textureStates.push({ texture, transforms, axes,
+        baseRepeatX: texture.repeat.x, baseRepeatY: texture.repeat.y,
+        baseOffsetX: texture.offset.x, baseOffsetY: texture.offset.y })
+    }
+    return material
   }
-
-  if (
-    !(
-      originalMaterial instanceof
-      THREE.MeshStandardMaterial
-    )
-  ) {
-    return originalMaterial
-  }
-
-  /*
-   * Материал клонируем,
-   * потому что runtime-transform
-   * текстур должен принадлежать
-   * именно этой модели.
-   */
-
-  const material =
-    cloneResources
-      ? originalMaterial.clone()
-      : originalMaterial
-
-  if (cloneResources) {
-    material.map =
-      cloneTexture(
-        originalMaterial.map,
-      )
-
-    material.normalMap =
-      cloneTexture(
-        originalMaterial.normalMap,
-      )
-
-    material.roughnessMap =
-      cloneTexture(
-        originalMaterial
-          .roughnessMap,
-      )
-
-    material.metalnessMap =
-      cloneTexture(
-        originalMaterial
-          .metalnessMap,
-      )
-
-    material.aoMap =
-      cloneTexture(
-        originalMaterial.aoMap,
-      )
-
-    material.bumpMap =
-      cloneTexture(
-        originalMaterial.bumpMap,
-      )
-  }
-
-  const textures = [
-    material.map,
-    material.normalMap,
-    material.roughnessMap,
-    material.metalnessMap,
-    material.aoMap,
-    material.bumpMap,
-  ]
-
-  const uniqueTextures =
-    new Set(
-      textures.filter(
-        (
-          texture,
-        ): texture is THREE.Texture =>
-          texture !== null,
-      ),
-    )
-
-  const axes =
-    normalizeMaterialAxes(
-      textureConfig,
-    )
-
-  uniqueTextures.forEach(
-    (texture) => {
-      enableTextureWrapping(
-        texture,
-        axes,
-      )
-
-      textureStates.push({
-        texture,
-
-        baseRepeatX:
-          texture.repeat.x,
-
-        baseRepeatY:
-          texture.repeat.y,
-
-        baseOffsetX:
-          texture.offset.x,
-
-        baseOffsetY:
-          texture.offset.y,
-
-        axes,
-      })
-    },
-  )
-
-  return material
-}
-
-function cloneTexture(
-  texture:
-    | THREE.Texture
-    | null,
-):
-  | THREE.Texture
-  | null {
-  if (!texture) {
-    return null
-  }
-
-  const clone =
-    texture.clone()
-
-  clone.needsUpdate =
-    true
-
-  return clone
+  model.traverse(object => {
+    if (!(object instanceof THREE.Mesh)) return
+    object.material = Array.isArray(object.material) ? object.material.map(prepare) : prepare(object.material)
+  })
 }
 
 function normalizeMaterialAxes(

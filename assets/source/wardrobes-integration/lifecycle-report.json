@@ -1,0 +1,83 @@
+{
+  "checks": [
+    "Wardrobe runtime import failure recovers by reload and preserves selection",
+    "Two wardrobe/table cycles release previous geometries and keep GPU resource counts stable",
+    "All six catalog tables still load after wardrobe integration",
+    "Late wardrobe load is disposed after switching to table builder"
+  ],
+  "cycles": [
+    {
+      "round": 0,
+      "id": "wardrobe-07-center-drawers",
+      "memory": {
+        "geometries": 910,
+        "textures": 4
+      },
+      "groups": 1
+    },
+    {
+      "round": 0,
+      "id": "wardrobe-08-four-door",
+      "memory": {
+        "geometries": 580,
+        "textures": 4
+      },
+      "groups": 1
+    },
+    {
+      "round": 0,
+      "id": "wardrobe-09-chelsea-two-door",
+      "memory": {
+        "geometries": 277,
+        "textures": 4
+      },
+      "groups": 1
+    },
+    {
+      "round": 0,
+      "id": "table-01",
+      "memory": {
+        "geometries": 9,
+        "textures": 7
+      },
+      "groups": 1
+    },
+    {
+      "round": 1,
+      "id": "wardrobe-07-center-drawers",
+      "memory": {
+        "geometries": 910,
+        "textures": 4
+      },
+      "groups": 1
+    },
+    {
+      "round": 1,
+      "id": "wardrobe-08-four-door",
+      "memory": {
+        "geometries": 580,
+        "textures": 4
+      },
+      "groups": 1
+    },
+    {
+      "round": 1,
+      "id": "wardrobe-09-chelsea-two-door",
+      "memory": {
+        "geometries": 277,
+        "textures": 4
+      },
+      "groups": 1
+    },
+    {
+      "round": 1,
+      "id": "table-01",
+      "memory": {
+        "geometries": 9,
+        "textures": 7
+      },
+      "groups": 1
+    }
+  ],
+  "errors": []
+}

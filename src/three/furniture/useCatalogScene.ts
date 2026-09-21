@@ -15,7 +15,7 @@ export function useCatalogScene(
   const id = session.selectedModelId
   const configuration = session.models[id]
   const [attempt, setAttempt] = useState(0)
-  const [status, setStatus] = useState<{ token: object; error: string | null } | null>(null)
+  const [status, setStatus] = useState<{ token: object; error: string | null; reload?: boolean } | null>(null)
   const active = useRef<{
     token: object; id: string
     controller: ReturnType<typeof createFurnitureController>
@@ -33,9 +33,14 @@ export function useCatalogScene(
       materials?.dispose()
       if (model) { scene.remove(model); disposeFurnitureModel(model); model = null }
     }
+    let loadingRuntime = false
     const prepare = async () => {
       try {
-        const definition = getFurnitureDefinition(id)
+        const catalogue = getFurnitureDefinition(id)
+        loadingRuntime = !!catalogue.loadRuntime
+        const definition = catalogue.loadRuntime ? await catalogue.loadRuntime() : catalogue
+        loadingRuntime = false
+        if (cancelled) return
         const loaded = await loadFurnitureModel(definition.modelUrl)
         if (cancelled) { disposeFurnitureModel(loaded); return }
         model = loaded
@@ -57,7 +62,9 @@ export function useCatalogScene(
         if (cancelled) return
         dispose()
         console.error('Ошибка подготовки мебели:', error)
-        setStatus({ token, error: 'Не удалось загрузить модель и материалы. Проверьте соединение и повторите попытку.' })
+        setStatus({ token, reload: loadingRuntime, error: loadingRuntime
+          ? 'Не удалось загрузить настройки модели. Повтор обновит страницу, сохранив ваш выбор.'
+          : 'Не удалось загрузить модель и материалы. Проверьте соединение и повторите попытку.' })
       }
     }
     void prepare()
@@ -85,6 +92,9 @@ export function useCatalogScene(
   return {
     loading: enabled && status?.token !== token,
     error: enabled && status?.token === token ? status?.error ?? null : null,
-    retry: () => setAttempt((value) => value + 1),
+    retry: () => {
+      if (status?.reload) window.location.replace(store.getShareUrl())
+      else setAttempt((value) => value + 1)
+    },
   }
 }

@@ -1,0 +1,46 @@
+{
+  "modelId": "wardrobe-08-four-door",
+  "status": "REQUIRES_ENGINE_EXTENSION",
+  "integrationReady": false,
+  "previewConfig": "Geometry plus hardware slot; original nonmetallic grey board materials retained",
+  "boardFinishCatalogReady": false,
+  "registeredFinishIds": [
+    "oak-natural",
+    "walnut-natural",
+    "pine-coated",
+    "ash-natural",
+    "oak-grey",
+    "oak-silver",
+    "oak-black",
+    "concrete-light",
+    "marble-cream",
+    "marble-white-gold",
+    "marble-black-gold",
+    "marble-duo-gold",
+    "terrazzo-neutral",
+    "metal-black-matte",
+    "metal-white-matte",
+    "metal-anthracite"
+  ],
+  "affineUvReady": false,
+  "probe": {
+    "productionGlb": true,
+    "semanticMaterial": "Front_Door_Tall_ccc_Z",
+    "dimension": "height",
+    "base": 2.2,
+    "max": 2.4,
+    "expectedRepeat": 1.0937822376441901,
+    "actualLegacyRepeat": 1.0909090909090908,
+    "featureSizeErrorPercent": 0.263371784050781
+  },
+  "fixedBevelUv": "Moving edge/corner UV phases also need translationFactor; mere repeat correction is insufficient",
+  "required": [
+    "generic affine UV mapping with repeat and offset per surface",
+    "registered nonmetallic board finishes",
+    "UI precision for 1 mm step"
+  ],
+  "manualQa": {
+    "webglBrowser": "NOT RUN",
+    "blenderExportReimport": "NOT RUN"
+  }
+}
