@@ -19,7 +19,9 @@
     "topFrontOverhang": 0.002,
     "doorOuterInsetFromTop": 0.002,
     "frontCarcassClearance": 0.003,
-    "handleProjection": 0
+    "handleProjection": 0,
+    "backConstruction": "single-piece",
+    "backSideInset": 0.001
   },
   "parts": [
     {
@@ -103,46 +105,6 @@
       "pdfPart": 1
     },
     {
-      "name": "Panel_Back_Left",
-      "kind": "board",
-      "slot": "carcass",
-      "size": [
-        0.397,
-        1.948,
-        0.003
-      ],
-      "position": [
-        -0.2015,
-        1.032,
-        -0.2555
-      ],
-      "sizeFactors": [
-        0.5,
-        1,
-        0
-      ],
-      "positionFactors": {
-        "width": [
-          -0.25,
-          0,
-          0
-        ],
-        "height": [
-          0,
-          0.5,
-          0
-        ],
-        "depth": [
-          0,
-          0,
-          -0.5
-        ]
-      },
-      "thinAxis": 2,
-      "bevel": 0.0007,
-      "pdfPart": 9
-    },
-    {
       "name": "Panel_Side_Right",
       "kind": "board",
       "slot": "carcass",
@@ -183,27 +145,27 @@
       "pdfPart": 2
     },
     {
-      "name": "Panel_Back_Right",
+      "name": "Panel_Back",
       "kind": "board",
       "slot": "carcass",
       "size": [
-        0.397,
+        0.8,
         1.948,
         0.003
       ],
       "position": [
-        0.2015,
+        0,
         1.032,
         -0.2555
       ],
       "sizeFactors": [
-        0.5,
+        1,
         1,
         0
       ],
       "positionFactors": {
         "width": [
-          0.25,
+          0,
           0,
           0
         ],
@@ -220,46 +182,11 @@
       },
       "thinAxis": 2,
       "bevel": 0.0007,
-      "pdfPart": 9
-    },
-    {
-      "name": "Back_Join_Profile",
-      "kind": "hardware",
-      "size": [
-        0.006,
-        1.92,
-        0.003
-      ],
-      "position": [
-        0,
-        1.032,
-        -0.2555
-      ],
-      "sizeFactors": [
-        0,
-        1,
-        0
-      ],
-      "positionFactors": {
-        "width": [
-          0,
-          0,
-          0
-        ],
-        "height": [
-          0,
-          0.5,
-          0
-        ],
-        "depth": [
-          0,
-          0,
-          -0.5
-        ]
-      },
-      "fitting": "back-join-profile",
-      "pdfPart": 10,
-      "shapeApproximation": "central web only; interlocking lips omitted"
+      "designVariant": "single-piece-back",
+      "replacesPdfParts": [
+        9,
+        10
+      ]
     },
     {
       "name": "Panel_Bottom",
@@ -2755,7 +2682,7 @@
     },
     "Board_Back_ppc_X": {
       "slot": "carcass",
-      "exampleTarget": "Panel_Back_Left_Tile_ppc",
+      "exampleTarget": "Panel_Back_Tile_ppc",
       "surfacePlane": "x",
       "bindings": {
         "u": {
@@ -2782,7 +2709,7 @@
     },
     "Board_Back_pcc_X": {
       "slot": "carcass",
-      "exampleTarget": "Panel_Back_Left_Tile_pcc",
+      "exampleTarget": "Panel_Back_Tile_pcc",
       "surfacePlane": "x",
       "bindings": {
         "u": {
@@ -2809,7 +2736,7 @@
     },
     "Board_Back_pmc_X": {
       "slot": "carcass",
-      "exampleTarget": "Panel_Back_Left_Tile_pmc",
+      "exampleTarget": "Panel_Back_Tile_pmc",
       "surfacePlane": "x",
       "bindings": {
         "u": {
@@ -2836,7 +2763,7 @@
     },
     "Board_Back_mpc_X": {
       "slot": "carcass",
-      "exampleTarget": "Panel_Back_Left_Tile_mpc",
+      "exampleTarget": "Panel_Back_Tile_mpc",
       "surfacePlane": "x",
       "bindings": {
         "u": {
@@ -2863,7 +2790,7 @@
     },
     "Board_Back_mcc_X": {
       "slot": "carcass",
-      "exampleTarget": "Panel_Back_Left_Tile_mcc",
+      "exampleTarget": "Panel_Back_Tile_mcc",
       "surfacePlane": "x",
       "bindings": {
         "u": {
@@ -2890,7 +2817,7 @@
     },
     "Board_Back_mmc_X": {
       "slot": "carcass",
-      "exampleTarget": "Panel_Back_Left_Tile_mmc",
+      "exampleTarget": "Panel_Back_Tile_mmc",
       "surfacePlane": "x",
       "bindings": {
         "u": {
@@ -2917,7 +2844,7 @@
     },
     "Board_Back_mpc_Y": {
       "slot": "carcass",
-      "exampleTarget": "Panel_Back_Left_Tile_mpc",
+      "exampleTarget": "Panel_Back_Tile_mpc",
       "surfacePlane": "y",
       "bindings": {
         "u": {
@@ -2932,10 +2859,10 @@
         "v": {
           "axis": "x",
           "dimension": "width",
-          "baseLength": 0.3956,
+          "baseLength": 0.7986,
           "stretchFactor": 0,
-          "translationFactor": -0.25,
-          "anchor": 0.3022,
+          "translationFactor": -0.5,
+          "anchor": 0.1007,
           "uvUnitsPerMeter": 1
         }
       },
@@ -2944,7 +2871,7 @@
     },
     "Board_Back_cpc_Y": {
       "slot": "carcass",
-      "exampleTarget": "Panel_Back_Left_Tile_cpc",
+      "exampleTarget": "Panel_Back_Tile_cpc",
       "surfacePlane": "y",
       "bindings": {
         "u": {
@@ -2959,8 +2886,8 @@
         "v": {
           "axis": "x",
           "dimension": "width",
-          "baseLength": 0.3956,
-          "stretchFactor": 0.5,
+          "baseLength": 0.7986,
+          "stretchFactor": 1,
           "translationFactor": 0,
           "anchor": 0.5,
           "uvUnitsPerMeter": 1
@@ -2971,7 +2898,7 @@
     },
     "Board_Back_ppc_Y": {
       "slot": "carcass",
-      "exampleTarget": "Panel_Back_Left_Tile_ppc",
+      "exampleTarget": "Panel_Back_Tile_ppc",
       "surfacePlane": "y",
       "bindings": {
         "u": {
@@ -2986,10 +2913,10 @@
         "v": {
           "axis": "x",
           "dimension": "width",
-          "baseLength": 0.3956,
+          "baseLength": 0.7986,
           "stretchFactor": 0,
-          "translationFactor": 0.25,
-          "anchor": 0.6978,
+          "translationFactor": 0.5,
+          "anchor": 0.8993,
           "uvUnitsPerMeter": 1
         }
       },
@@ -2998,7 +2925,7 @@
     },
     "Board_Back_mmc_Y": {
       "slot": "carcass",
-      "exampleTarget": "Panel_Back_Left_Tile_mmc",
+      "exampleTarget": "Panel_Back_Tile_mmc",
       "surfacePlane": "y",
       "bindings": {
         "u": {
@@ -3013,10 +2940,10 @@
         "v": {
           "axis": "x",
           "dimension": "width",
-          "baseLength": 0.3956,
+          "baseLength": 0.7986,
           "stretchFactor": 0,
-          "translationFactor": -0.25,
-          "anchor": 0.3022,
+          "translationFactor": -0.5,
+          "anchor": 0.1007,
           "uvUnitsPerMeter": 1
         }
       },
@@ -3025,7 +2952,7 @@
     },
     "Board_Back_cmc_Y": {
       "slot": "carcass",
-      "exampleTarget": "Panel_Back_Left_Tile_cmc",
+      "exampleTarget": "Panel_Back_Tile_cmc",
       "surfacePlane": "y",
       "bindings": {
         "u": {
@@ -3040,8 +2967,8 @@
         "v": {
           "axis": "x",
           "dimension": "width",
-          "baseLength": 0.3956,
-          "stretchFactor": 0.5,
+          "baseLength": 0.7986,
+          "stretchFactor": 1,
           "translationFactor": 0,
           "anchor": 0.5,
           "uvUnitsPerMeter": 1
@@ -3052,7 +2979,7 @@
     },
     "Board_Back_pmc_Y": {
       "slot": "carcass",
-      "exampleTarget": "Panel_Back_Left_Tile_pmc",
+      "exampleTarget": "Panel_Back_Tile_pmc",
       "surfacePlane": "y",
       "bindings": {
         "u": {
@@ -3067,10 +2994,10 @@
         "v": {
           "axis": "x",
           "dimension": "width",
-          "baseLength": 0.3956,
+          "baseLength": 0.7986,
           "stretchFactor": 0,
-          "translationFactor": 0.25,
-          "anchor": 0.6978,
+          "translationFactor": 0.5,
+          "anchor": 0.8993,
           "uvUnitsPerMeter": 1
         }
       },
@@ -3079,16 +3006,16 @@
     },
     "Board_Back_mpc_Z": {
       "slot": "carcass",
-      "exampleTarget": "Panel_Back_Left_Tile_mpc",
+      "exampleTarget": "Panel_Back_Tile_mpc",
       "surfacePlane": "z",
       "bindings": {
         "u": {
           "axis": "x",
           "dimension": "width",
-          "baseLength": 0.3956,
+          "baseLength": 0.7986,
           "stretchFactor": 0,
-          "translationFactor": -0.25,
-          "anchor": 0.3022,
+          "translationFactor": -0.5,
+          "anchor": 0.1007,
           "uvUnitsPerMeter": 1
         },
         "v": {
@@ -3106,14 +3033,14 @@
     },
     "Board_Back_cpc_Z": {
       "slot": "carcass",
-      "exampleTarget": "Panel_Back_Left_Tile_cpc",
+      "exampleTarget": "Panel_Back_Tile_cpc",
       "surfacePlane": "z",
       "bindings": {
         "u": {
           "axis": "x",
           "dimension": "width",
-          "baseLength": 0.3956,
-          "stretchFactor": 0.5,
+          "baseLength": 0.7986,
+          "stretchFactor": 1,
           "translationFactor": 0,
           "anchor": 0.5,
           "uvUnitsPerMeter": 1
@@ -3133,16 +3060,16 @@
     },
     "Board_Back_ppc_Z": {
       "slot": "carcass",
-      "exampleTarget": "Panel_Back_Left_Tile_ppc",
+      "exampleTarget": "Panel_Back_Tile_ppc",
       "surfacePlane": "z",
       "bindings": {
         "u": {
           "axis": "x",
           "dimension": "width",
-          "baseLength": 0.3956,
+          "baseLength": 0.7986,
           "stretchFactor": 0,
-          "translationFactor": 0.25,
-          "anchor": 0.6978,
+          "translationFactor": 0.5,
+          "anchor": 0.8993,
           "uvUnitsPerMeter": 1
         },
         "v": {
@@ -3160,16 +3087,16 @@
     },
     "Board_Back_mcc_Z": {
       "slot": "carcass",
-      "exampleTarget": "Panel_Back_Left_Tile_mcc",
+      "exampleTarget": "Panel_Back_Tile_mcc",
       "surfacePlane": "z",
       "bindings": {
         "u": {
           "axis": "x",
           "dimension": "width",
-          "baseLength": 0.3956,
+          "baseLength": 0.7986,
           "stretchFactor": 0,
-          "translationFactor": -0.25,
-          "anchor": 0.3022,
+          "translationFactor": -0.5,
+          "anchor": 0.1007,
           "uvUnitsPerMeter": 1
         },
         "v": {
@@ -3187,14 +3114,14 @@
     },
     "Board_Back_ccc_Z": {
       "slot": "carcass",
-      "exampleTarget": "Panel_Back_Left_Tile_ccc",
+      "exampleTarget": "Panel_Back_Tile_ccc",
       "surfacePlane": "z",
       "bindings": {
         "u": {
           "axis": "x",
           "dimension": "width",
-          "baseLength": 0.3956,
-          "stretchFactor": 0.5,
+          "baseLength": 0.7986,
+          "stretchFactor": 1,
           "translationFactor": 0,
           "anchor": 0.5,
           "uvUnitsPerMeter": 1
@@ -3214,16 +3141,16 @@
     },
     "Board_Back_pcc_Z": {
       "slot": "carcass",
-      "exampleTarget": "Panel_Back_Left_Tile_pcc",
+      "exampleTarget": "Panel_Back_Tile_pcc",
       "surfacePlane": "z",
       "bindings": {
         "u": {
           "axis": "x",
           "dimension": "width",
-          "baseLength": 0.3956,
+          "baseLength": 0.7986,
           "stretchFactor": 0,
-          "translationFactor": 0.25,
-          "anchor": 0.6978,
+          "translationFactor": 0.5,
+          "anchor": 0.8993,
           "uvUnitsPerMeter": 1
         },
         "v": {
@@ -3241,16 +3168,16 @@
     },
     "Board_Back_mmc_Z": {
       "slot": "carcass",
-      "exampleTarget": "Panel_Back_Left_Tile_mmc",
+      "exampleTarget": "Panel_Back_Tile_mmc",
       "surfacePlane": "z",
       "bindings": {
         "u": {
           "axis": "x",
           "dimension": "width",
-          "baseLength": 0.3956,
+          "baseLength": 0.7986,
           "stretchFactor": 0,
-          "translationFactor": -0.25,
-          "anchor": 0.3022,
+          "translationFactor": -0.5,
+          "anchor": 0.1007,
           "uvUnitsPerMeter": 1
         },
         "v": {
@@ -3268,14 +3195,14 @@
     },
     "Board_Back_cmc_Z": {
       "slot": "carcass",
-      "exampleTarget": "Panel_Back_Left_Tile_cmc",
+      "exampleTarget": "Panel_Back_Tile_cmc",
       "surfacePlane": "z",
       "bindings": {
         "u": {
           "axis": "x",
           "dimension": "width",
-          "baseLength": 0.3956,
-          "stretchFactor": 0.5,
+          "baseLength": 0.7986,
+          "stretchFactor": 1,
           "translationFactor": 0,
           "anchor": 0.5,
           "uvUnitsPerMeter": 1
@@ -3295,16 +3222,16 @@
     },
     "Board_Back_pmc_Z": {
       "slot": "carcass",
-      "exampleTarget": "Panel_Back_Left_Tile_pmc",
+      "exampleTarget": "Panel_Back_Tile_pmc",
       "surfacePlane": "z",
       "bindings": {
         "u": {
           "axis": "x",
           "dimension": "width",
-          "baseLength": 0.3956,
+          "baseLength": 0.7986,
           "stretchFactor": 0,
-          "translationFactor": 0.25,
-          "anchor": 0.6978,
+          "translationFactor": 0.5,
+          "anchor": 0.8993,
           "uvUnitsPerMeter": 1
         },
         "v": {

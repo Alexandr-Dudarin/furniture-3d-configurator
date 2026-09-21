@@ -134,54 +134,6 @@ export const WARDROBE_09_CONFIG = {
     },
     {
       "type": "stretch-segment",
-      "target": "Panel_Back_Left_Tile_pcc",
-      "dimension": "height",
-      "axis": "y",
-      "baseLength": 1.9466,
-      "factor": 1
-    },
-    {
-      "type": "stretch-segment",
-      "target": "Panel_Back_Left_Tile_mcc",
-      "dimension": "height",
-      "axis": "y",
-      "baseLength": 1.9466,
-      "factor": 1
-    },
-    {
-      "type": "stretch-segment",
-      "target": "Panel_Back_Left_Tile_cpc",
-      "dimension": "width",
-      "axis": "x",
-      "baseLength": 0.3956,
-      "factor": 0.5
-    },
-    {
-      "type": "stretch-segment",
-      "target": "Panel_Back_Left_Tile_cmc",
-      "dimension": "width",
-      "axis": "x",
-      "baseLength": 0.3956,
-      "factor": 0.5
-    },
-    {
-      "type": "stretch-segment",
-      "target": "Panel_Back_Left_Tile_ccc",
-      "dimension": "width",
-      "axis": "x",
-      "baseLength": 0.3956,
-      "factor": 0.5
-    },
-    {
-      "type": "stretch-segment",
-      "target": "Panel_Back_Left_Tile_ccc",
-      "dimension": "height",
-      "axis": "y",
-      "baseLength": 1.9466,
-      "factor": 1
-    },
-    {
-      "type": "stretch-segment",
       "target": "Panel_Side_Right_Tile_cpc",
       "dimension": "depth",
       "axis": "z",
@@ -230,7 +182,7 @@ export const WARDROBE_09_CONFIG = {
     },
     {
       "type": "stretch-segment",
-      "target": "Panel_Back_Right_Tile_pcc",
+      "target": "Panel_Back_Tile_pcc",
       "dimension": "height",
       "axis": "y",
       "baseLength": 1.9466,
@@ -238,7 +190,7 @@ export const WARDROBE_09_CONFIG = {
     },
     {
       "type": "stretch-segment",
-      "target": "Panel_Back_Right_Tile_mcc",
+      "target": "Panel_Back_Tile_mcc",
       "dimension": "height",
       "axis": "y",
       "baseLength": 1.9466,
@@ -246,42 +198,34 @@ export const WARDROBE_09_CONFIG = {
     },
     {
       "type": "stretch-segment",
-      "target": "Panel_Back_Right_Tile_cpc",
+      "target": "Panel_Back_Tile_cpc",
       "dimension": "width",
       "axis": "x",
-      "baseLength": 0.3956,
-      "factor": 0.5
-    },
-    {
-      "type": "stretch-segment",
-      "target": "Panel_Back_Right_Tile_cmc",
-      "dimension": "width",
-      "axis": "x",
-      "baseLength": 0.3956,
-      "factor": 0.5
-    },
-    {
-      "type": "stretch-segment",
-      "target": "Panel_Back_Right_Tile_ccc",
-      "dimension": "width",
-      "axis": "x",
-      "baseLength": 0.3956,
-      "factor": 0.5
-    },
-    {
-      "type": "stretch-segment",
-      "target": "Panel_Back_Right_Tile_ccc",
-      "dimension": "height",
-      "axis": "y",
-      "baseLength": 1.9466,
+      "baseLength": 0.7986,
       "factor": 1
     },
     {
       "type": "stretch-segment",
-      "target": "Back_Join_Profile",
+      "target": "Panel_Back_Tile_cmc",
+      "dimension": "width",
+      "axis": "x",
+      "baseLength": 0.7986,
+      "factor": 1
+    },
+    {
+      "type": "stretch-segment",
+      "target": "Panel_Back_Tile_ccc",
+      "dimension": "width",
+      "axis": "x",
+      "baseLength": 0.7986,
+      "factor": 1
+    },
+    {
+      "type": "stretch-segment",
+      "target": "Panel_Back_Tile_ccc",
       "dimension": "height",
       "axis": "y",
-      "baseLength": 1.92,
+      "baseLength": 1.9466,
       "factor": 1
     },
     {
@@ -618,34 +562,6 @@ export const WARDROBE_09_CONFIG = {
           "factor": -0.5
         },
         {
-          "target": "Panel_Back_Left",
-          "factor": 0.5
-        },
-        {
-          "target": "Panel_Back_Left_Tile_ppc",
-          "factor": 0.5
-        },
-        {
-          "target": "Panel_Back_Left_Tile_pmc",
-          "factor": -0.5
-        },
-        {
-          "target": "Panel_Back_Left_Tile_mpc",
-          "factor": 0.5
-        },
-        {
-          "target": "Panel_Back_Left_Tile_mmc",
-          "factor": -0.5
-        },
-        {
-          "target": "Panel_Back_Left_Tile_cpc",
-          "factor": 0.5
-        },
-        {
-          "target": "Panel_Back_Left_Tile_cmc",
-          "factor": -0.5
-        },
-        {
           "target": "Panel_Side_Right",
           "factor": 0.5
         },
@@ -674,36 +590,32 @@ export const WARDROBE_09_CONFIG = {
           "factor": -0.5
         },
         {
-          "target": "Panel_Back_Right",
+          "target": "Panel_Back",
           "factor": 0.5
         },
         {
-          "target": "Panel_Back_Right_Tile_ppc",
+          "target": "Panel_Back_Tile_ppc",
           "factor": 0.5
         },
         {
-          "target": "Panel_Back_Right_Tile_pmc",
+          "target": "Panel_Back_Tile_pmc",
           "factor": -0.5
         },
         {
-          "target": "Panel_Back_Right_Tile_mpc",
+          "target": "Panel_Back_Tile_mpc",
           "factor": 0.5
         },
         {
-          "target": "Panel_Back_Right_Tile_mmc",
+          "target": "Panel_Back_Tile_mmc",
           "factor": -0.5
         },
         {
-          "target": "Panel_Back_Right_Tile_cpc",
+          "target": "Panel_Back_Tile_cpc",
           "factor": 0.5
         },
         {
-          "target": "Panel_Back_Right_Tile_cmc",
+          "target": "Panel_Back_Tile_cmc",
           "factor": -0.5
-        },
-        {
-          "target": "Back_Join_Profile",
-          "factor": 0.5
         },
         {
           "target": "Shelf_Upper",
@@ -873,64 +785,32 @@ export const WARDROBE_09_CONFIG = {
           "factor": -0.5
         },
         {
-          "target": "Panel_Back_Left",
-          "factor": -0.25
-        },
-        {
-          "target": "Panel_Back_Left_Tile_ppc",
-          "factor": 0.25
-        },
-        {
-          "target": "Panel_Back_Left_Tile_pcc",
-          "factor": 0.25
-        },
-        {
-          "target": "Panel_Back_Left_Tile_pmc",
-          "factor": 0.25
-        },
-        {
-          "target": "Panel_Back_Left_Tile_mpc",
-          "factor": -0.25
-        },
-        {
-          "target": "Panel_Back_Left_Tile_mcc",
-          "factor": -0.25
-        },
-        {
-          "target": "Panel_Back_Left_Tile_mmc",
-          "factor": -0.25
-        },
-        {
           "target": "Panel_Side_Right",
           "factor": 0.5
         },
         {
-          "target": "Panel_Back_Right",
-          "factor": 0.25
+          "target": "Panel_Back_Tile_ppc",
+          "factor": 0.5
         },
         {
-          "target": "Panel_Back_Right_Tile_ppc",
-          "factor": 0.25
+          "target": "Panel_Back_Tile_pcc",
+          "factor": 0.5
         },
         {
-          "target": "Panel_Back_Right_Tile_pcc",
-          "factor": 0.25
+          "target": "Panel_Back_Tile_pmc",
+          "factor": 0.5
         },
         {
-          "target": "Panel_Back_Right_Tile_pmc",
-          "factor": 0.25
+          "target": "Panel_Back_Tile_mpc",
+          "factor": -0.5
         },
         {
-          "target": "Panel_Back_Right_Tile_mpc",
-          "factor": -0.25
+          "target": "Panel_Back_Tile_mcc",
+          "factor": -0.5
         },
         {
-          "target": "Panel_Back_Right_Tile_mcc",
-          "factor": -0.25
-        },
-        {
-          "target": "Panel_Back_Right_Tile_mmc",
-          "factor": -0.25
+          "target": "Panel_Back_Tile_mmc",
+          "factor": -0.5
         },
         {
           "target": "Panel_Bottom_Tile_pcp",
@@ -1212,10 +1092,6 @@ export const WARDROBE_09_CONFIG = {
           "factor": -0.5
         },
         {
-          "target": "Panel_Back_Left",
-          "factor": -0.5
-        },
-        {
           "target": "Panel_Side_Right_Tile_cpp",
           "factor": 0.5
         },
@@ -1240,11 +1116,7 @@ export const WARDROBE_09_CONFIG = {
           "factor": -0.5
         },
         {
-          "target": "Panel_Back_Right",
-          "factor": -0.5
-        },
-        {
-          "target": "Back_Join_Profile",
+          "target": "Panel_Back",
           "factor": -0.5
         },
         {

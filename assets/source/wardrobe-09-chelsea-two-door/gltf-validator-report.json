@@ -2,7 +2,7 @@
   "uri": "wardrobe-09-chelsea-two-door.glb",
   "mimeType": "model/gltf-binary",
   "validatorVersion": "2.0.0-dev.3.10",
-  "validatedAt": "2026-09-19T11:52:36.359Z",
+  "validatedAt": "2026-09-21T13:49:51.530Z",
   "issues": {
     "numErrors": 0,
     "numWarnings": 0,
@@ -19,7 +19,7 @@
         "pointer": "/buffers/0",
         "mimeType": "application/gltf-buffer",
         "storage": "glb",
-        "byteLength": 762696
+        "byteLength": 715176
       },
       {
         "pointer": "/images/0",
@@ -67,9 +67,9 @@
     "hasSkins": false,
     "hasTextures": true,
     "hasDefaultScene": true,
-    "drawCallCount": 276,
-    "totalVertexCount": 17892,
-    "totalTriangleCount": 6156,
+    "drawCallCount": 254,
+    "totalVertexCount": 16968,
+    "totalTriangleCount": 5844,
     "maxUVs": 1,
     "maxInfluences": 0,
     "maxAttributes": 4

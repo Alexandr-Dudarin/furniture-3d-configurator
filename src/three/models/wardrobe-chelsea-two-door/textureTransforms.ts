@@ -876,10 +876,10 @@ export const textureTransforms = {
     },
     "v": {
       "dimension": "width",
-      "baseLength": 0.3956,
+      "baseLength": 0.7986,
       "stretchFactor": 0,
-      "translationFactor": -0.25,
-      "anchor": 0.3022,
+      "translationFactor": -0.5,
+      "anchor": 0.1007,
       "uvUnitsPerMeter": 1
     }
   },
@@ -894,8 +894,8 @@ export const textureTransforms = {
     },
     "v": {
       "dimension": "width",
-      "baseLength": 0.3956,
-      "stretchFactor": 0.5,
+      "baseLength": 0.7986,
+      "stretchFactor": 1,
       "translationFactor": 0,
       "anchor": 0.5,
       "uvUnitsPerMeter": 1
@@ -912,10 +912,10 @@ export const textureTransforms = {
     },
     "v": {
       "dimension": "width",
-      "baseLength": 0.3956,
+      "baseLength": 0.7986,
       "stretchFactor": 0,
-      "translationFactor": 0.25,
-      "anchor": 0.6978,
+      "translationFactor": 0.5,
+      "anchor": 0.8993,
       "uvUnitsPerMeter": 1
     }
   },
@@ -930,10 +930,10 @@ export const textureTransforms = {
     },
     "v": {
       "dimension": "width",
-      "baseLength": 0.3956,
+      "baseLength": 0.7986,
       "stretchFactor": 0,
-      "translationFactor": -0.25,
-      "anchor": 0.3022,
+      "translationFactor": -0.5,
+      "anchor": 0.1007,
       "uvUnitsPerMeter": 1
     }
   },
@@ -948,8 +948,8 @@ export const textureTransforms = {
     },
     "v": {
       "dimension": "width",
-      "baseLength": 0.3956,
-      "stretchFactor": 0.5,
+      "baseLength": 0.7986,
+      "stretchFactor": 1,
       "translationFactor": 0,
       "anchor": 0.5,
       "uvUnitsPerMeter": 1
@@ -966,20 +966,20 @@ export const textureTransforms = {
     },
     "v": {
       "dimension": "width",
-      "baseLength": 0.3956,
+      "baseLength": 0.7986,
       "stretchFactor": 0,
-      "translationFactor": 0.25,
-      "anchor": 0.6978,
+      "translationFactor": 0.5,
+      "anchor": 0.8993,
       "uvUnitsPerMeter": 1
     }
   },
   "Board_Back_mpc_Z": {
     "u": {
       "dimension": "width",
-      "baseLength": 0.3956,
+      "baseLength": 0.7986,
       "stretchFactor": 0,
-      "translationFactor": -0.25,
-      "anchor": 0.3022,
+      "translationFactor": -0.5,
+      "anchor": 0.1007,
       "uvUnitsPerMeter": 1
     },
     "v": {
@@ -994,8 +994,8 @@ export const textureTransforms = {
   "Board_Back_cpc_Z": {
     "u": {
       "dimension": "width",
-      "baseLength": 0.3956,
-      "stretchFactor": 0.5,
+      "baseLength": 0.7986,
+      "stretchFactor": 1,
       "translationFactor": 0,
       "anchor": 0.5,
       "uvUnitsPerMeter": 1
@@ -1012,10 +1012,10 @@ export const textureTransforms = {
   "Board_Back_ppc_Z": {
     "u": {
       "dimension": "width",
-      "baseLength": 0.3956,
+      "baseLength": 0.7986,
       "stretchFactor": 0,
-      "translationFactor": 0.25,
-      "anchor": 0.6978,
+      "translationFactor": 0.5,
+      "anchor": 0.8993,
       "uvUnitsPerMeter": 1
     },
     "v": {
@@ -1030,10 +1030,10 @@ export const textureTransforms = {
   "Board_Back_mcc_Z": {
     "u": {
       "dimension": "width",
-      "baseLength": 0.3956,
+      "baseLength": 0.7986,
       "stretchFactor": 0,
-      "translationFactor": -0.25,
-      "anchor": 0.3022,
+      "translationFactor": -0.5,
+      "anchor": 0.1007,
       "uvUnitsPerMeter": 1
     },
     "v": {
@@ -1048,8 +1048,8 @@ export const textureTransforms = {
   "Board_Back_ccc_Z": {
     "u": {
       "dimension": "width",
-      "baseLength": 0.3956,
-      "stretchFactor": 0.5,
+      "baseLength": 0.7986,
+      "stretchFactor": 1,
       "translationFactor": 0,
       "anchor": 0.5,
       "uvUnitsPerMeter": 1
@@ -1066,10 +1066,10 @@ export const textureTransforms = {
   "Board_Back_pcc_Z": {
     "u": {
       "dimension": "width",
-      "baseLength": 0.3956,
+      "baseLength": 0.7986,
       "stretchFactor": 0,
-      "translationFactor": 0.25,
-      "anchor": 0.6978,
+      "translationFactor": 0.5,
+      "anchor": 0.8993,
       "uvUnitsPerMeter": 1
     },
     "v": {
@@ -1084,10 +1084,10 @@ export const textureTransforms = {
   "Board_Back_mmc_Z": {
     "u": {
       "dimension": "width",
-      "baseLength": 0.3956,
+      "baseLength": 0.7986,
       "stretchFactor": 0,
-      "translationFactor": -0.25,
-      "anchor": 0.3022,
+      "translationFactor": -0.5,
+      "anchor": 0.1007,
       "uvUnitsPerMeter": 1
     },
     "v": {
@@ -1102,8 +1102,8 @@ export const textureTransforms = {
   "Board_Back_cmc_Z": {
     "u": {
       "dimension": "width",
-      "baseLength": 0.3956,
-      "stretchFactor": 0.5,
+      "baseLength": 0.7986,
+      "stretchFactor": 1,
       "translationFactor": 0,
       "anchor": 0.5,
       "uvUnitsPerMeter": 1
@@ -1120,10 +1120,10 @@ export const textureTransforms = {
   "Board_Back_pmc_Z": {
     "u": {
       "dimension": "width",
-      "baseLength": 0.3956,
+      "baseLength": 0.7986,
       "stretchFactor": 0,
-      "translationFactor": 0.25,
-      "anchor": 0.6978,
+      "translationFactor": 0.5,
+      "anchor": 0.8993,
       "uvUnitsPerMeter": 1
     },
     "v": {

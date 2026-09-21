@@ -1,12 +1,12 @@
 {
   "id": "wardrobe-09-chelsea-two-door",
-  "glbBytes": 1112312,
-  "nodes": 150,
-  "meshes": 132,
-  "primitives": 276,
-  "triangles": 6156,
+  "glbBytes": 1040992,
+  "nodes": 139,
+  "meshes": 122,
+  "primitives": 254,
+  "triangles": 5844,
   "materials": 170,
-  "physicalParts": 36,
-  "resizeRules": 71,
+  "physicalParts": 34,
+  "resizeRules": 64,
   "boardTextureResolution": "1×1 uniform PBR maps; physical UV for later finish replacement"
 }

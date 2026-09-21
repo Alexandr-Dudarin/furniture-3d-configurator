@@ -55,21 +55,24 @@ function shape(root: THREE.Object3D, d: Size) {
   close(top.max.y - box(root, 'Shelf_Upper').max.y, .350)
   close(top.max.y - box(root, 'ClothesRail_Oval').getCenter(new THREE.Vector3()).y, .440)
   for (const side of ['Left', 'Right']) {
-    const back = box(root, `Panel_Back_${side}`), door = box(root, `Door_${side}_Panel`)
-    close(back.max.z, left.min.z); close(back.max.y, top.min.y)
-    close(back.min.y, .058); close(door.min.y, .071); close(top.min.y - door.max.y, .002)
+    const door = box(root, `Door_${side}_Panel`)
+    close(door.min.y, .071); close(top.min.y - door.max.y, .002)
     close(door.min.z - left.max.z, .003); close(top.max.z - door.max.z, .002)
     closeSize(size(root, `Panel_Side_${side}`), [.016, d.height - .016, d.depth - .024])
   }
   close(box(root, 'Door_Right_Panel').min.x - box(root, 'Door_Left_Panel').max.x, .004)
-  close(box(root, 'Panel_Back_Right').min.x - box(root, 'Panel_Back_Left').max.x, .006)
+  const back = box(root, 'Panel_Back')
+  close(back.min.x, left.min.x); close(back.max.x, right.max.x)
+  close(back.max.z, left.min.z); close(back.max.y, top.min.y); close(back.min.y, .058)
+  closeSize(back.getSize(new THREE.Vector3()), [d.width - .002, d.height - .074, .003])
+  expect(nodes(root, 'board').filter(o => o.name.startsWith('Panel_Back')).map(o => o.name)).toEqual(['Panel_Back'])
+  for (const removed of ['Panel_Back_Left', 'Panel_Back_Right', 'Back_Join_Profile']) expect(root.getObjectByName(removed)).toBeUndefined()
   for (const name of ['Shelf_Lower', 'Shelf_Upper']) {
     const shelf = box(root, name)
     close(shelf.min.x, left.max.x); close(shelf.max.x, right.min.x)
     close(shelf.min.z, left.min.z); close(shelf.max.z, left.max.z)
   }
   closeSize(size(root, 'ClothesRail_Oval'), [d.width - .037, .030, .015])
-  closeSize(size(root, 'Back_Join_Profile'), [.006, d.height - .102, .003])
   const boards = nodes(root, 'board')
   for (const p of boards) close(bounds(p).getSize(new THREE.Vector3())[p.userData.thicknessAxis as Axis], p.userData.thickness as number)
   // Verify actual transformed panel volumes, allowing joints at their boundaries.
@@ -105,26 +108,25 @@ describe(config.id, () => {
         expect(cross.length()).toBeGreaterThan(1e-13); expect(cross.dot(normal)).toBeGreaterThan(0)
       }
     })
-    expect(nodes(root, 'board')).toHaveLength(12)
+    expect(nodes(root, 'board')).toHaveLength(11)
     expect(nodes(root, 'door-pivot')).toHaveLength(2)
     expect(nodes(root, 'push-latch')).toHaveLength(2)
     expect(nodes(root, 'hardware').filter(o => o.userData.fitting === 'hinge-cup')).toHaveLength(8)
     shape(root, base)
   }, 30000)
 
-  it('matches the independent manufacturer part list on PDF page 2 at base', async () => {
+  it('matches the manufacturer parts except the approved single-piece rear panel', async () => {
     const root = await load()
     closeSize(size(root, 'Panel_Top'), [.802, .016, .514])
     for (const side of ['Left', 'Right']) {
       closeSize(size(root, `Panel_Side_${side}`), [.016, 2.006, .490])
       closeSize(size(root, `Door_${side}_Panel`), [.397, 1.933, .016])
-      closeSize(size(root, `Panel_Back_${side}`), [.397, 1.948, .003])
     }
     for (const name of ['Panel_Bottom', 'Shelf_Lower', 'Shelf_Upper']) closeSize(size(root, name), [.768, .016, .490])
     closeSize(size(root, 'Rear_Brace'), [.768, .120, .016])
     closeSize(size(root, 'Plinth_Front'), [.768, .070, .016])
     close(size(root, 'ClothesRail_Oval').x, .765)
-    close(size(root, 'Back_Join_Profile').y, 1.920)
+    closeSize(size(root, 'Panel_Back'), [.800, 1.948, .003])
   })
 
   it('preserves dimensions, joints, fixed thicknesses and gaps through 34 boundary cases, 1 mm steps and return', async () => {
@@ -140,6 +142,22 @@ describe(config.id, () => {
     expect(controller.getDimensions()).toEqual(base); expect(snapshot(root)).toEqual(initial)
   }, 30000)
 
+  it('has no centre seam or opening in the back at base and both size limits', async () => {
+    const root = await load(), controller = createFurnitureController(root, config)
+    const back = required(root, 'Panel_Back')
+    const ray = new THREE.Raycaster()
+    for (const d of [base, { width: .6, height: 1.9, depth: .4 }, { width: 1, height: 2.4, depth: .65 }, base]) {
+      controller.setDimensions(d)
+      for (const fraction of [.01, .25, .5, .75, .99]) for (const x of [-.002, 0, .002]) {
+        const y = .058 + (d.height - .074) * fraction
+        ray.set(new THREE.Vector3(x, y, -d.depth / 2 - .1), new THREE.Vector3(0, 0, 1))
+        const hits = ray.intersectObject(back, true)
+        expect(hits.length).toBeGreaterThan(0)
+        close(hits[0].point.z, -d.depth / 2)
+      }
+    }
+  })
+
   it('preserves bevel regions, oval cross section and all fixed fitting sizes', async () => {
     const root = await load(), controller = createFurnitureController(root, config)
     const hardware = new Map(nodes(root, 'hardware').map(o => [o.name, bounds(o).getSize(new THREE.Vector3())]))
@@ -153,7 +171,6 @@ describe(config.id, () => {
         const s = bounds(fitting).getSize(new THREE.Vector3()), b = hardware.get(fitting.name)!
         for (const axis of ['x', 'y', 'z'] as const) {
           if (fitting.userData.fitting === 'clothes-rail' && axis === 'x') continue
-          if (fitting.userData.fitting === 'back-join-profile' && axis === 'y') continue
           close(s[axis], b[axis])
         }
       }

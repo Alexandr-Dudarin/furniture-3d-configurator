@@ -193,9 +193,10 @@ function metal(name,parent,size,pos,dSize=[0,0,0],dPos=zeros(),extras={},shape='
 board('Panel_Top',carcass,[W,t,D],[0,H-t/2,0],[1,0,1],motion(0,1,0),1,'carcass','Top',{pdfPart:3})
 for(const [side,sign,partNo] of [['Left',-1,1],['Right',1,2]]) {
   board(`Panel_Side_${side}`,carcass,[t,H-t,bodyDepth],[sign*(W/2-.001-t/2),(H-t)/2,bodyZ],[0,1,1],motion(sign*.5,.5,0),0,'carcass','Side',{pdfPart:partNo})
-  board(`Panel_Back_${side}`,carcass,[(W-.008)/2,H-.074,backT],[sign*(W/4+.001),(.058+H-t)/2,-D/2+backT/2],[.5,1,0],motion(sign*.25,.5,-.5),2,'carcass','Back',{pdfPart:9})
 }
-metal('Back_Join_Profile',carcass,[.006,H-.102,backT],[0,(.058+H-t)/2,-D/2+backT/2],[0,1,0],motion(0,.5,-.5),{fitting:'back-join-profile',pdfPart:10,shapeApproximation:'central web only; interlocking lips omitted'},'box','Hardware_Plastic')
+// User-approved variant: one 800 × 1948 × 3 mm back at base, spanning both sides.
+// Replaces manufacturer parts 9 (two panels) and 10 (join profile); the envelope is unchanged.
+board('Panel_Back',carcass,[W-.002,H-.074,backT],[0,(.058+H-t)/2,-D/2+backT/2],[1,1,0],motion(0,.5,-.5),2,'carcass','Back',{designVariant:'single-piece-back',replacesPdfParts:[9,10]})
 board('Panel_Bottom',carcass,[clearWidth,t,bodyDepth],[0,plinth+t/2,bodyZ],[1,0,1],motion(),1,'carcass','Bottom',{pdfPart:5})
 board('Plinth_Front',carcass,[clearWidth,plinth,t],[0,plinth/2,bodyFront-.020-t/2],[1,0,0],motion(0,0,.5),2,'carcass','Plinth',{pdfPart:6})
 board('Shelf_Lower',carcass,[clearWidth,t,bodyDepth],[0,shelfLowerTop-t/2,bodyZ],[1,0,1],motion(),1,'carcass','Shelf',{pdfPart:4,attachment:'fixed cam connectors',mountHeight:'estimated; floor anchored'})
@@ -237,7 +238,7 @@ for(const rule of resizeRules) {
 finalRules.push(...moves.values())
 const hardware={label:'Цвет фурнитуры',targets:materialTargets.hardware,defaultFinish:'metal-black-matte',allowedFinishes:['metal-black-matte','metal-white-matte','metal-anthracite']}
 const definition={id:spec.id,label:spec.label,modelUrl:`/models/${spec.id}.glb`,dimensions:Object.fromEntries(dimensions.map((key,i)=>[key,{label:['Ширина','Высота','Глубина'][i],base:spec.base[key],min:spec.limits[key][0],max:spec.limits[key][1],step:.001}])),dimensionOrder:dimensions,resizeRules:finalRules,textureAxes:{},materialSlots:{hardware}}
-const meta={modelId:spec.id,base:spec.base,constants:{boardThickness:t,backThickness:backT,plinth,bevelRadius:b,facadeGap:gap,doorBottom,shelfLowerTop,shelfUpperTop,railY,topSideOverhang:.001,topFrontOverhang:.002,doorOuterInsetFromTop:.002,frontCarcassClearance:.003,handleProjection:0},parts,doors,drawers,materialTargets,uvContract,legacyTextureAxes:textureAxes,reviewStatus:'material library and affine UV integration required'}
+const meta={modelId:spec.id,base:spec.base,constants:{boardThickness:t,backThickness:backT,plinth,bevelRadius:b,facadeGap:gap,doorBottom,shelfLowerTop,shelfUpperTop,railY,topSideOverhang:.001,topFrontOverhang:.002,doorOuterInsetFromTop:.002,frontCarcassClearance:.003,handleProjection:0,backConstruction:'single-piece',backSideInset:.001},parts,doors,drawers,materialTargets,uvContract,legacyTextureAxes:textureAxes,reviewStatus:'material library and affine UV integration required'}
 await fs.mkdir(path.join(projectRoot,'public/models'),{recursive:true})
 const glb=await new NodeIO().writeBinary(doc)
 await fs.writeFile(path.join(projectRoot,'public/models',spec.id+'.glb'),glb)

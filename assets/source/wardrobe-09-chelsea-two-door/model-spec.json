@@ -110,5 +110,21 @@
     "Shelf and fitting mount heights, rear-board thickness, oval rail section and hinge dimensions are estimates.",
     "Six unspecified heel pads and hidden fasteners are omitted at this LOD; catalogue envelope is preserved.",
     "Push-to-open bodies and hinges are simplified visible fittings. Technical door poses are not a mechanism simulation."
-  ]
+  ],
+  "customizations": {
+    "backPanel": {
+      "design": "single-piece",
+      "authorizedBy": "User requested a continuous rear panel on 2026-09-21.",
+      "baseWidthHeightDepthMm": [
+        800,
+        1948,
+        3
+      ],
+      "replacesOriginalParts": {
+        "9": "two 397 × 1948 mm rear panels",
+        "10": "central joining profile"
+      },
+      "preserves": "Outside envelope, 3 mm thickness, 1 mm side inset, lower and upper attachment heights."
+    }
+  }
 }
