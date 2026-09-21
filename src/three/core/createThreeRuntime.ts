@@ -38,12 +38,19 @@ export type ThreeRuntime = {
   dispose: () => void
 }
 
+// Preserve a 45° horizontal field on portrait viewports, where keeping only
+// the vertical field would crop long tabletops. Camera position stays intact.
+function cameraFieldOfView(aspect: number) {
+  const halfAngle = THREE.MathUtils.degToRad(45) / 2
+  return THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(halfAngle) / Math.min(1, Math.max(aspect, 0.5))))
+}
+
 export function createThreeRuntime(
   container: HTMLDivElement,
   options: ThreeRuntimeOptions = {},
 ): ThreeRuntime {
   const {
-    background = 0xdedede,
+    background = 0xeef0f3,
 
     cameraPosition = [
       1.8,
@@ -96,7 +103,7 @@ export function createThreeRuntime(
 
   const camera =
     new THREE.PerspectiveCamera(
-      45,
+      cameraFieldOfView(initialWidth / initialHeight),
 
       initialWidth /
         initialHeight,
@@ -119,6 +126,11 @@ export function createThreeRuntime(
     new THREE.WebGLRenderer({
       antialias: true,
     })
+
+  // Compress bright highlights while retaining the finish's base colour.
+  renderer.outputColorSpace = THREE.SRGBColorSpace
+  renderer.toneMapping = THREE.NeutralToneMapping
+  renderer.toneMappingExposure = 1
 
   renderer.setPixelRatio(
     Math.min(
@@ -157,6 +169,10 @@ export function createThreeRuntime(
   controls.enableDamping =
     true
 
+  // Keep navigation above the floor; panning follows the horizontal plane.
+  controls.maxPolarAngle = Math.PI / 2 - 0.04
+  controls.screenSpacePanning = false
+
   controls.target.set(
     ...controlsTarget,
   )
@@ -191,6 +207,7 @@ export function createThreeRuntime(
 
       camera.aspect =
         width / height
+      camera.fov = cameraFieldOfView(camera.aspect)
 
       camera.updateProjectionMatrix()
 

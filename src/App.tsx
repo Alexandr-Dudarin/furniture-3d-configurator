@@ -188,6 +188,7 @@ function App() {
     const environment =
       createSceneEnvironment(
         scene,
+        renderer,
       )
 
     return () => {

@@ -264,7 +264,7 @@
   .configuration-panel { top: auto; bottom: 8px; left: 8px; width: calc(100% - 16px); max-height: calc(46dvh - 16px); padding: 12px; }
   .viewer { height: 54% !important; }
 }
-.app { position: relative; width: 100vw; height: 100dvh; overflow: hidden; background: #dedede; }
+.app { position: relative; width: 100vw; height: 100dvh; overflow: hidden; background: #eef0f3; }
 .viewer { position: absolute; top: 0; bottom: 0; left: 376px; right: 0; width: auto; height: auto; }
 @media (max-width: 700px) {
   .viewer { left: 0; bottom: 46%; height: auto !important; }
