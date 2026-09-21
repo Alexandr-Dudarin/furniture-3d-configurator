@@ -236,6 +236,11 @@ export function createFurnitureMaterialController(
             material.name =
               target
 
+            const normalScale = slot.finishOverrides?.[finishId]?.normalScale
+            if (normalScale !== undefined && material.normalMap) {
+              material.normalScale.setScalar(normalScale)
+            }
+
             material.userData = {
               ...material.userData,
               materialSlot:
@@ -376,6 +381,12 @@ function validateMaterialSlots(
     definition.materialSlots ?? {},
   ).forEach(
     ([slotName, slot]) => {
+      for (const [finishId, override] of Object.entries(slot.finishOverrides ?? {})) {
+        if (!slot.allowedFinishes.includes(finishId) ||
+          (override.normalScale !== undefined && (!Number.isFinite(override.normalScale) || override.normalScale < 0))) {
+          throw new Error(`[${definition.id}] Invalid finish override "${finishId}" in slot "${slotName}".`)
+        }
+      }
       if (
         slot.targets.length ===
         0

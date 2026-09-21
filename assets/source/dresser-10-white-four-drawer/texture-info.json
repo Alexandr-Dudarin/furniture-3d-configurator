@@ -1,0 +1,22 @@
+{
+  "metallic-roughness.png": {
+    "width": 1,
+    "height": 1,
+    "bytes": 69
+  },
+  "normal-gl.png": {
+    "width": 1,
+    "height": 1,
+    "bytes": 69
+  },
+  "neutral-color.png": {
+    "width": 1,
+    "height": 1,
+    "bytes": 69
+  },
+  "roughness.png": {
+    "width": 1,
+    "height": 1,
+    "bytes": 69
+  }
+}

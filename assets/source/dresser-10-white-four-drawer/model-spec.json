@@ -1,0 +1,56 @@
+{
+  "number": 10,
+  "slug": "white-four-drawer",
+  "label": "Белый комод, 4 ящика",
+  "kind": "basic",
+  "base": {
+    "width": 0.7,
+    "height": 0.856,
+    "depth": 0.35
+  },
+  "limits": {
+    "width": [
+      0.5,
+      1
+    ],
+    "height": [
+      0.7,
+      1.05
+    ],
+    "depth": [
+      0.3,
+      0.5
+    ]
+  },
+  "rows": 4,
+  "columns": 1,
+  "doors": 0,
+  "shelves": 0,
+  "foot": 0,
+  "plinth": 0.06,
+  "overhang": 0.002,
+  "frontGap": 0.006,
+  "projection": 0,
+  "carcassColor": "#eeefed",
+  "frontColor": "#f4f4f2",
+  "roughness": 0.5,
+  "hardwareColor": "#b8b9bb",
+  "hardwareMetalness": 0.6,
+  "hardwareRoughness": 0.35,
+  "hardwareFinish": null,
+  "wood": false,
+  "references": [
+    "1.1",
+    "1.2"
+  ],
+  "id": "dresser-10-white-four-drawer",
+  "folder": "dresser-white-four-drawer",
+  "assumptions": [
+    "Overall dimensions and part counts are taken from user screenshots; hidden dimensions are estimates.",
+    "Main boards/front envelope 16 mm, drawer bottoms 6 mm, back panels 4 mm, ordinary facade joints 4 mm.",
+    "All configuration ranges are review choices; manufacturer offerings and load capacity are not established.",
+    "Depth is the CLOSED overall envelope including handle projection; handle-free corpus depths are derived.",
+    "Opening/sliding is a technical pose only, not an application interaction.",
+    "350 mm is taken as total depth; the 330 mm diagram is interpreted as body depth excluding 16 mm front plus 4 mm gap. This interpretation is unconfirmed."
+  ]
+}

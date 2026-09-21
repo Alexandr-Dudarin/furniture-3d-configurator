@@ -1,0 +1,8 @@
+{
+  "status": "PASS",
+  "byteIdentical": true,
+  "bytes": 2602952,
+  "sha256": "6d49cc53bf91a72cca7d9abd81fc2aec314eeb301a1fb713bccffadc640c4004",
+  "blenderPythonSyntax": "PASS",
+  "blenderExportReimport": "NOT RUN"
+}

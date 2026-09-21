@@ -1,0 +1,18 @@
+{
+  "id": "dresser-14-baikal-five-drawer",
+  "glbBytes": 2602952,
+  "nodes": 391,
+  "meshes": 344,
+  "primitives": 771,
+  "triangles": 12472,
+  "materials": 202,
+  "physicalParts": 60,
+  "decorativeParts": 4,
+  "resizeRules": 236,
+  "woodTexturesEmbedded": false,
+  "sharedTextureURIs": [
+    "../materials/wood/oak-natural/base-color.jpg",
+    "../materials/wood/oak-natural/normal-gl.jpg",
+    "../materials/wood/oak-natural/roughness.jpg"
+  ]
+}

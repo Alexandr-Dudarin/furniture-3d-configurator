@@ -1,0 +1,31 @@
+{
+  "status": "PASS",
+  "renderer": "native CPU; browser WebGL not run",
+  "comparisons": [
+    {
+      "model": "dresser-13-marvel-fluted",
+      "state": "base",
+      "pixels": 1152800,
+      "differentPixels": 0
+    },
+    {
+      "model": "dresser-13-marvel-fluted",
+      "state": "max",
+      "pixels": 1152800,
+      "differentPixels": 0
+    },
+    {
+      "model": "dresser-14-baikal-five-drawer",
+      "state": "base",
+      "pixels": 1152800,
+      "differentPixels": 0
+    },
+    {
+      "model": "dresser-14-baikal-five-drawer",
+      "state": "max",
+      "pixels": 1152800,
+      "differentPixels": 0
+    }
+  ],
+  "allFiveProductionPreviewStatesUnchanged": true
+}

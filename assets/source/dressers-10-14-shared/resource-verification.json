@@ -1,0 +1,57 @@
+{
+  "status": "PASS",
+  "models": [
+    {
+      "id": "dresser-10-white-four-drawer",
+      "status": "PASS",
+      "externalImages": 0,
+      "bytes": 2180512
+    },
+    {
+      "id": "dresser-11-nord-door-four-drawer",
+      "status": "PASS",
+      "externalImages": 0,
+      "bytes": 2684052
+    },
+    {
+      "id": "dresser-12-brooklyn-six-drawer",
+      "status": "PASS",
+      "externalImages": 0,
+      "bytes": 3137972
+    },
+    {
+      "id": "dresser-13-marvel-fluted",
+      "status": "PASS",
+      "externalImages": 3,
+      "bytes": 3450932
+    },
+    {
+      "id": "dresser-14-baikal-five-drawer",
+      "status": "PASS",
+      "externalImages": 3,
+      "bytes": 2602952
+    }
+  ],
+  "resources": [
+    {
+      "path": "materials/wood/oak-natural/base-color.jpg",
+      "bytes": 2831117,
+      "sha256": "0718c2e1a209afe6138ccb41d70e1a18cd825d1e73db33ad7cf80806fa9ce5a4",
+      "matchesValidatedVersion": true
+    },
+    {
+      "path": "materials/wood/oak-natural/normal-gl.jpg",
+      "bytes": 2429019,
+      "sha256": "e74a9d3ddcd86473a21815a28464f4dac4ceb8f86e7f170226dede8ed70d8eb9",
+      "matchesValidatedVersion": true
+    },
+    {
+      "path": "materials/wood/oak-natural/roughness.jpg",
+      "bytes": 3968436,
+      "sha256": "5c81718ee172299c44e0754fadbe652758b6feed05a8fd88be6efff5aa70ca1e",
+      "matchesValidatedVersion": true
+    }
+  ],
+  "warnings": [],
+  "errors": []
+}

@@ -170,6 +170,10 @@ export type FurnitureMaterialSlotConfig = {
 
   allowedFinishes:
     readonly MaterialFinishId[]
+
+  // The same shared maps can represent a smoother surface on a particular part.
+  // Applied to the owned material instance, never to the registry or cached maps.
+  finishOverrides?: Readonly<Record<MaterialFinishId, { normalScale?: number }>>
 }
 
 export type FurnitureMaterialSlots =

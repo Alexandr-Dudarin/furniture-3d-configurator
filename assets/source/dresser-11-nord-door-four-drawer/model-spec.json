@@ -1,0 +1,56 @@
+{
+  "number": 11,
+  "slug": "nord-door-four-drawer",
+  "label": "Комод «Норд»",
+  "kind": "nord",
+  "base": {
+    "width": 1.2,
+    "height": 0.9,
+    "depth": 0.45
+  },
+  "limits": {
+    "width": [
+      1,
+      1.6
+    ],
+    "height": [
+      0.75,
+      1.1
+    ],
+    "depth": [
+      0.35,
+      0.6
+    ]
+  },
+  "rows": 4,
+  "columns": 1,
+  "doors": 1,
+  "shelves": 1,
+  "foot": 0.01,
+  "plinth": 0,
+  "overhang": 0.001,
+  "frontGap": 0.018,
+  "projection": 0.018,
+  "carcassColor": "#d9d3c9",
+  "frontColor": "#e3ddd4",
+  "roughness": 0.46,
+  "hardwareColor": "#b99953",
+  "hardwareMetalness": 0.78,
+  "hardwareRoughness": 0.28,
+  "hardwareFinish": null,
+  "wood": false,
+  "references": [
+    "2.1",
+    "2.2"
+  ],
+  "id": "dresser-11-nord-door-four-drawer",
+  "folder": "dresser-nord-door-four-drawer",
+  "assumptions": [
+    "Overall dimensions and part counts are taken from user screenshots; hidden dimensions are estimates.",
+    "Main boards/front envelope 16 mm, drawer bottoms 6 mm, back panels 4 mm, ordinary facade joints 4 mm.",
+    "All configuration ranges are review choices; manufacturer offerings and load capacity are not established.",
+    "Depth is the CLOSED overall envelope including handle projection; handle-free corpus depths are derived.",
+    "Opening/sliding is a technical pose only, not an application interaction.",
+    "Left door section is one third of width; brass handle is 500 mm long. Finish colour and dimensions are estimated."
+  ]
+}

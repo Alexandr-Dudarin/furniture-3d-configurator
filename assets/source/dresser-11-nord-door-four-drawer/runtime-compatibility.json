@@ -1,0 +1,48 @@
+{
+  "modelId": "dresser-11-nord-door-four-drawer",
+  "status": "REQUIRES_ENGINE_EXTENSION",
+  "integrationReady": false,
+  "previewConfig": "Geometry with embedded base finishes and available hardware slots; board finish integration pending",
+  "boardFinishCatalogReady": false,
+  "registeredFinishIds": [
+    "oak-natural",
+    "walnut-natural",
+    "pine-coated",
+    "ash-natural",
+    "oak-grey",
+    "oak-silver",
+    "oak-black",
+    "concrete-light",
+    "marble-cream",
+    "marble-white-gold",
+    "marble-black-gold",
+    "marble-duo-gold",
+    "terrazzo-neutral",
+    "metal-black-matte",
+    "metal-white-matte",
+    "metal-anthracite"
+  ],
+  "affineUvReady": false,
+  "probe": {
+    "productionGlb": true,
+    "semanticMaterial": "Front_Facade_plain_Drawer_ccc_Z",
+    "dimension": "height",
+    "base": 0.9,
+    "max": 1.1,
+    "expectedRepeat": 1.2523977788995457,
+    "actualLegacyRepeat": 1.2222222222222223,
+    "featureSizeErrorPercent": 2.4689091826900933
+  },
+  "fixedBevelUv": "Moving edge/corner UV phases also need translationFactor; mere repeat correction is insufficient",
+  "required": [
+    "generic affine UV mapping with repeat and offset per surface",
+    "registered nonmetallic board finishes",
+    "UI precision for 1 mm step",
+    "nonmetallic gloss white and cashmere finishes, brass hardware finish",
+    "normalize texture grain axes for wood finish swaps"
+  ],
+  "manualQa": {
+    "webglBrowser": "NOT RUN",
+    "blenderExportReimport": "NOT RUN"
+  }
+}

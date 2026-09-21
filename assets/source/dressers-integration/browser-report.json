@@ -1,0 +1,878 @@
+{
+  "checks": [
+    "Five dresser catalogue options; only selected dresser GLB loaded; no empty handle or interior controls",
+    "dresser-10-white-four-drawer: base/min/max, independent finishes, reset, 1 mm input, reload and shared URL",
+    "dresser-11-nord-door-four-drawer: base/min/max, independent finishes, reset, 1 mm input, reload and shared URL",
+    "dresser-12-brooklyn-six-drawer: base/min/max, independent finishes, reset, 1 mm input, reload and shared URL",
+    "dresser-13-marvel-fluted: base/min/max, independent finishes, reset, 1 mm input, reload and shared URL",
+    "dresser-14-baikal-five-drawer: base/min/max, independent finishes, reset, 1 mm input, reload and shared URL",
+    "Repeated Marvel/Baikal switching: stable live GPU geometry/texture counts after rendered frames",
+    "390 × 844: three categories fit, exact size input and reset accessible",
+    "Wardrobe interior view retained after dresser switching",
+    "Existing tables and table builder retained",
+    "No JavaScript, shader or HTTP errors"
+  ],
+  "models": [
+    {
+      "id": "dresser-10-white-four-drawer",
+      "base": {
+        "size": [
+          0.6999999880757183,
+          0.8559999997147358,
+          0.3500000069324859
+        ],
+        "floor": 6.652437142817824e-10,
+        "doors": 0,
+        "drawers": 4,
+        "materials": {
+          "carcass": {
+            "finish": "board-white-alaska-body",
+            "colour": "eeefed",
+            "roughness": 0.52,
+            "normal": [
+              1,
+              1
+            ]
+          },
+          "fixed": {
+            "colour": "969ba1",
+            "roughness": 0.27,
+            "normal": [
+              1,
+              -1
+            ]
+          },
+          "fronts": {
+            "finish": "board-white-alaska-front",
+            "colour": "f4f4f2",
+            "roughness": 0.5,
+            "normal": [
+              1,
+              1
+            ]
+          }
+        },
+        "camera": [
+          0.8596653398830829,
+          0.9548326699415414,
+          1.8626082364133463
+        ],
+        "target": [
+          0,
+          0.525,
+          0
+        ],
+        "memory": {
+          "geometries": 647,
+          "textures": 4
+        },
+        "calls": 1293,
+        "triangles": 18386,
+        "cache": {
+          "ready": 1,
+          "pending": 0,
+          "bytes": 2180512
+        },
+        "textures": {
+          "ready": 0,
+          "pending": 0,
+          "bytes": 0
+        }
+      },
+      "max": {
+        "size": [
+          0.9999999880757183,
+          1.049999999714736,
+          0.5000000069324859
+        ],
+        "floor": 6.652437142817824e-10,
+        "doors": 0,
+        "drawers": 4,
+        "materials": {
+          "carcass": {
+            "finish": "oak-natural",
+            "colour": "ffffff",
+            "roughness": 1,
+            "normal": [
+              0.65,
+              0.65
+            ]
+          },
+          "fixed": {
+            "colour": "969ba1",
+            "roughness": 0.27,
+            "normal": [
+              1,
+              -1
+            ]
+          },
+          "fronts": {
+            "finish": "oak-grey",
+            "colour": "ffffff",
+            "roughness": 1,
+            "normal": [
+              0.48,
+              0.48
+            ]
+          }
+        },
+        "camera": [
+          0.8596653398830829,
+          0.9548326699415414,
+          1.8626082364133463
+        ],
+        "target": [
+          0,
+          0.525,
+          0
+        ],
+        "memory": {
+          "geometries": 647,
+          "textures": 10
+        },
+        "calls": 1293,
+        "triangles": 18386,
+        "cache": {
+          "ready": 1,
+          "pending": 0,
+          "bytes": 2180512
+        },
+        "textures": {
+          "ready": 6,
+          "pending": 0,
+          "bytes": 100663296
+        }
+      }
+    },
+    {
+      "id": "dresser-11-nord-door-four-drawer",
+      "base": {
+        "size": [
+          1.2000000476803632,
+          0.9000000002682209,
+          0.450000005509425
+        ],
+        "floor": 1.1175870905794083e-10,
+        "doors": 1,
+        "drawers": 4,
+        "materials": {
+          "carcass": {
+            "finish": "board-cashmere-body",
+            "colour": "d9d3c9",
+            "roughness": 0.52,
+            "normal": [
+              1,
+              1
+            ]
+          },
+          "fixed": {
+            "colour": "969ba1",
+            "roughness": 0.27,
+            "normal": [
+              1,
+              -1
+            ]
+          },
+          "fronts": {
+            "finish": "board-cashmere-front",
+            "colour": "e3ddd4",
+            "roughness": 0.46,
+            "normal": [
+              1,
+              1
+            ]
+          },
+          "hardware": {
+            "finish": "metal-brass-satin",
+            "colour": "b99953",
+            "roughness": 0.28,
+            "normal": [
+              1,
+              1
+            ]
+          }
+        },
+        "camera": [
+          1.0385420751787382,
+          1.069271037589369,
+          2.2501744962205996
+        ],
+        "target": [
+          0,
+          0.55,
+          0
+        ],
+        "memory": {
+          "geometries": 765,
+          "textures": 4
+        },
+        "calls": 1529,
+        "triangles": 24194,
+        "cache": {
+          "ready": 2,
+          "pending": 0,
+          "bytes": 4864564
+        },
+        "textures": {
+          "ready": 0,
+          "pending": 0,
+          "bytes": 0
+        }
+      },
+      "max": {
+        "size": [
+          1.6000000476803633,
+          1.100000000268221,
+          0.600000005509425
+        ],
+        "floor": 1.1175870905794083e-10,
+        "doors": 1,
+        "drawers": 4,
+        "materials": {
+          "carcass": {
+            "finish": "oak-natural",
+            "colour": "ffffff",
+            "roughness": 1,
+            "normal": [
+              0.65,
+              0.65
+            ]
+          },
+          "fixed": {
+            "colour": "969ba1",
+            "roughness": 0.27,
+            "normal": [
+              1,
+              -1
+            ]
+          },
+          "fronts": {
+            "finish": "oak-grey",
+            "colour": "ffffff",
+            "roughness": 1,
+            "normal": [
+              0.48,
+              0.48
+            ]
+          },
+          "hardware": {
+            "finish": "metal-brass-satin",
+            "colour": "b99953",
+            "roughness": 0.28,
+            "normal": [
+              1,
+              1
+            ]
+          }
+        },
+        "camera": [
+          1.0385420751787382,
+          1.069271037589369,
+          2.2501744962205996
+        ],
+        "target": [
+          0,
+          0.55,
+          0
+        ],
+        "memory": {
+          "geometries": 765,
+          "textures": 10
+        },
+        "calls": 1529,
+        "triangles": 24194,
+        "cache": {
+          "ready": 2,
+          "pending": 0,
+          "bytes": 4864564
+        },
+        "textures": {
+          "ready": 6,
+          "pending": 0,
+          "bytes": 100663296
+        }
+      }
+    },
+    {
+      "id": "dresser-12-brooklyn-six-drawer",
+      "base": {
+        "size": [
+          1.600000023815222,
+          0.6800000002682209,
+          0.4500000000951683
+        ],
+        "floor": 1.1175870905794083e-10,
+        "doors": 0,
+        "drawers": 6,
+        "materials": {
+          "carcass": {
+            "finish": "board-white-brooklyn-body",
+            "colour": "eeeeec",
+            "roughness": 0.52,
+            "normal": [
+              1,
+              1
+            ]
+          },
+          "fixed": {
+            "colour": "969ba1",
+            "roughness": 0.27,
+            "normal": [
+              1,
+              -1
+            ]
+          },
+          "fronts": {
+            "finish": "board-white-gloss",
+            "colour": "f4f4f1",
+            "roughness": 0.14,
+            "normal": [
+              1,
+              1
+            ]
+          },
+          "hardware": {
+            "finish": "metal-white-matte",
+            "colour": "e8e7e2",
+            "roughness": 0.32,
+            "normal": [
+              1,
+              1
+            ]
+          }
+        },
+        "camera": [
+          1.2698676499563726,
+          1.0849338249781864,
+          2.7513799082388077
+        ],
+        "target": [
+          0,
+          0.45,
+          0
+        ],
+        "memory": {
+          "geometries": 919,
+          "textures": 4
+        },
+        "calls": 1837,
+        "triangles": 28178,
+        "cache": {
+          "ready": 2,
+          "pending": 0,
+          "bytes": 5822024
+        },
+        "textures": {
+          "ready": 0,
+          "pending": 0,
+          "bytes": 0
+        }
+      },
+      "max": {
+        "size": [
+          2.000000023815222,
+          0.9000000002682209,
+          0.6000000000951682
+        ],
+        "floor": 1.1175870905794083e-10,
+        "doors": 0,
+        "drawers": 6,
+        "materials": {
+          "carcass": {
+            "finish": "oak-natural",
+            "colour": "ffffff",
+            "roughness": 1,
+            "normal": [
+              0.65,
+              0.65
+            ]
+          },
+          "fixed": {
+            "colour": "969ba1",
+            "roughness": 0.27,
+            "normal": [
+              1,
+              -1
+            ]
+          },
+          "fronts": {
+            "finish": "oak-grey",
+            "colour": "ffffff",
+            "roughness": 1,
+            "normal": [
+              0.48,
+              0.48
+            ]
+          },
+          "hardware": {
+            "finish": "metal-brass-satin",
+            "colour": "b99953",
+            "roughness": 0.28,
+            "normal": [
+              1,
+              1
+            ]
+          }
+        },
+        "camera": [
+          1.2698676499563726,
+          1.0849338249781864,
+          2.7513799082388077
+        ],
+        "target": [
+          0,
+          0.45,
+          0
+        ],
+        "memory": {
+          "geometries": 919,
+          "textures": 10
+        },
+        "calls": 1837,
+        "triangles": 28178,
+        "cache": {
+          "ready": 2,
+          "pending": 0,
+          "bytes": 5822024
+        },
+        "textures": {
+          "ready": 6,
+          "pending": 0,
+          "bytes": 100663296
+        }
+      }
+    },
+    {
+      "id": "dresser-13-marvel-fluted",
+      "base": {
+        "size": [
+          1.600000023815222,
+          0.9000000002682209,
+          0.45000000080997127
+        ],
+        "floor": 1.1175870905794083e-10,
+        "doors": 2,
+        "drawers": 4,
+        "materials": {
+          "carcass": {
+            "finish": "oak-natural",
+            "colour": "ffffff",
+            "roughness": 1,
+            "normal": [
+              0.2,
+              0.2
+            ]
+          },
+          "fixed": {
+            "colour": "969ba1",
+            "roughness": 0.27,
+            "normal": [
+              1,
+              -1
+            ]
+          },
+          "fronts": {
+            "finish": "board-white-brush",
+            "colour": "f2f2ef",
+            "roughness": 0.44,
+            "normal": [
+              1,
+              1
+            ]
+          },
+          "hardware": {
+            "finish": "metal-black-matte",
+            "colour": "111317",
+            "roughness": 0.29,
+            "normal": [
+              1,
+              1
+            ]
+          }
+        },
+        "camera": [
+          1.2782788649096444,
+          1.1891394324548221,
+          2.76960420730423
+        ],
+        "target": [
+          0,
+          0.55,
+          0
+        ],
+        "memory": {
+          "geometries": 935,
+          "textures": 7
+        },
+        "calls": 1869,
+        "triangles": 32402,
+        "cache": {
+          "ready": 2,
+          "pending": 0,
+          "bytes": 6588904
+        },
+        "textures": {
+          "ready": 3,
+          "pending": 0,
+          "bytes": 50331648
+        }
+      },
+      "max": {
+        "size": [
+          2.000000023815222,
+          1.100000000268221,
+          0.6000000008099712
+        ],
+        "floor": 1.1175870905794083e-10,
+        "doors": 2,
+        "drawers": 4,
+        "materials": {
+          "carcass": {
+            "finish": "oak-natural",
+            "colour": "ffffff",
+            "roughness": 1,
+            "normal": [
+              0.2,
+              0.2
+            ]
+          },
+          "fixed": {
+            "colour": "969ba1",
+            "roughness": 0.27,
+            "normal": [
+              1,
+              -1
+            ]
+          },
+          "fronts": {
+            "finish": "oak-grey",
+            "colour": "ffffff",
+            "roughness": 1,
+            "normal": [
+              0.48,
+              0.48
+            ]
+          },
+          "hardware": {
+            "finish": "metal-brass-satin",
+            "colour": "b99953",
+            "roughness": 0.28,
+            "normal": [
+              1,
+              1
+            ]
+          }
+        },
+        "camera": [
+          1.2782788649096444,
+          1.1891394324548221,
+          2.76960420730423
+        ],
+        "target": [
+          0,
+          0.55,
+          0
+        ],
+        "memory": {
+          "geometries": 935,
+          "textures": 10
+        },
+        "calls": 1869,
+        "triangles": 32402,
+        "cache": {
+          "ready": 2,
+          "pending": 0,
+          "bytes": 6588904
+        },
+        "textures": {
+          "ready": 6,
+          "pending": 0,
+          "bytes": 100663296
+        }
+      }
+    },
+    {
+      "id": "dresser-14-baikal-five-drawer",
+      "base": {
+        "size": [
+          0.4020000099617988,
+          1.0300000294588507,
+          0.33100000428216547
+        ],
+        "floor": -2.9078870977805593e-8,
+        "doors": 0,
+        "drawers": 5,
+        "materials": {
+          "carcass": {
+            "finish": "oak-natural",
+            "colour": "ffffff",
+            "roughness": 1,
+            "normal": [
+              0.2,
+              0.2
+            ]
+          },
+          "fixed": {
+            "colour": "969ba1",
+            "roughness": 0.27,
+            "normal": [
+              1,
+              -1
+            ]
+          },
+          "fronts": {
+            "finish": "board-white-baikal",
+            "colour": "f3f3ef",
+            "roughness": 0.47,
+            "normal": [
+              1,
+              1
+            ]
+          },
+          "hardware": {
+            "finish": "metal-black-matte",
+            "colour": "111317",
+            "roughness": 0.29,
+            "normal": [
+              1,
+              1
+            ]
+          }
+        },
+        "camera": [
+          0.8875985495932571,
+          1.0437992747966285,
+          1.9231301907853906
+        ],
+        "target": [
+          0,
+          0.6,
+          0
+        ],
+        "memory": {
+          "geometries": 772,
+          "textures": 7
+        },
+        "calls": 1543,
+        "triangles": 24946,
+        "cache": {
+          "ready": 2,
+          "pending": 0,
+          "bytes": 6053884
+        },
+        "textures": {
+          "ready": 3,
+          "pending": 0,
+          "bytes": 50331648
+        }
+      },
+      "max": {
+        "size": [
+          0.6000000099617988,
+          1.2000000294588506,
+          0.5000000042821655
+        ],
+        "floor": -2.9078870977805593e-8,
+        "doors": 0,
+        "drawers": 5,
+        "materials": {
+          "carcass": {
+            "finish": "oak-natural",
+            "colour": "ffffff",
+            "roughness": 1,
+            "normal": [
+              0.2,
+              0.2
+            ]
+          },
+          "fixed": {
+            "colour": "969ba1",
+            "roughness": 0.27,
+            "normal": [
+              1,
+              -1
+            ]
+          },
+          "fronts": {
+            "finish": "oak-grey",
+            "colour": "ffffff",
+            "roughness": 1,
+            "normal": [
+              0.48,
+              0.48
+            ]
+          },
+          "hardware": {
+            "finish": "metal-brass-satin",
+            "colour": "b99953",
+            "roughness": 0.28,
+            "normal": [
+              1,
+              1
+            ]
+          }
+        },
+        "camera": [
+          0.8875985495932571,
+          1.0437992747966285,
+          1.9231301907853906
+        ],
+        "target": [
+          0,
+          0.6,
+          0
+        ],
+        "memory": {
+          "geometries": 772,
+          "textures": 10
+        },
+        "calls": 1543,
+        "triangles": 24946,
+        "cache": {
+          "ready": 2,
+          "pending": 0,
+          "bytes": 6053884
+        },
+        "textures": {
+          "ready": 6,
+          "pending": 0,
+          "bytes": 100663296
+        }
+      }
+    }
+  ],
+  "errors": [],
+  "httpErrors": [],
+  "modelRequests": [
+    "/models/first-table.glb",
+    "/models/dresser-10-white-four-drawer.glb",
+    "/models/dresser-10-white-four-drawer.glb",
+    "/models/dresser-10-white-four-drawer.glb",
+    "/models/dresser-11-nord-door-four-drawer.glb",
+    "/models/dresser-11-nord-door-four-drawer.glb",
+    "/models/dresser-11-nord-door-four-drawer.glb",
+    "/models/dresser-12-brooklyn-six-drawer.glb",
+    "/models/dresser-12-brooklyn-six-drawer.glb",
+    "/models/dresser-12-brooklyn-six-drawer.glb",
+    "/models/dresser-13-marvel-fluted.glb",
+    "/models/dresser-13-marvel-fluted.glb",
+    "/models/dresser-13-marvel-fluted.glb",
+    "/models/dresser-14-baikal-five-drawer.glb",
+    "/models/dresser-14-baikal-five-drawer.glb",
+    "/models/dresser-14-baikal-five-drawer.glb",
+    "/models/dresser-13-marvel-fluted.glb",
+    "/models/wardrobe-07-center-drawers.glb",
+    "/models/first-table.glb",
+    "/modules/bases/slat-pedestal.glb"
+  ],
+  "resourceCycles": [
+    {
+      "round": 0,
+      "id": "dresser-13-marvel-fluted",
+      "memory": {
+        "geometries": 935,
+        "textures": 7
+      },
+      "cache": {
+        "ready": 2,
+        "pending": 0,
+        "bytes": 6053884
+      },
+      "textures": {
+        "ready": 3,
+        "pending": 0,
+        "bytes": 50331648
+      }
+    },
+    {
+      "round": 0,
+      "id": "dresser-14-baikal-five-drawer",
+      "memory": {
+        "geometries": 772,
+        "textures": 7
+      },
+      "cache": {
+        "ready": 2,
+        "pending": 0,
+        "bytes": 6053884
+      },
+      "textures": {
+        "ready": 3,
+        "pending": 0,
+        "bytes": 50331648
+      }
+    },
+    {
+      "round": 1,
+      "id": "dresser-13-marvel-fluted",
+      "memory": {
+        "geometries": 935,
+        "textures": 7
+      },
+      "cache": {
+        "ready": 2,
+        "pending": 0,
+        "bytes": 6053884
+      },
+      "textures": {
+        "ready": 3,
+        "pending": 0,
+        "bytes": 50331648
+      }
+    },
+    {
+      "round": 1,
+      "id": "dresser-14-baikal-five-drawer",
+      "memory": {
+        "geometries": 772,
+        "textures": 7
+      },
+      "cache": {
+        "ready": 2,
+        "pending": 0,
+        "bytes": 6053884
+      },
+      "textures": {
+        "ready": 3,
+        "pending": 0,
+        "bytes": 50331648
+      }
+    },
+    {
+      "round": 2,
+      "id": "dresser-13-marvel-fluted",
+      "memory": {
+        "geometries": 935,
+        "textures": 7
+      },
+      "cache": {
+        "ready": 2,
+        "pending": 0,
+        "bytes": 6053884
+      },
+      "textures": {
+        "ready": 3,
+        "pending": 0,
+        "bytes": 50331648
+      }
+    },
+    {
+      "round": 2,
+      "id": "dresser-14-baikal-five-drawer",
+      "memory": {
+        "geometries": 772,
+        "textures": 7
+      },
+      "cache": {
+        "ready": 2,
+        "pending": 0,
+        "bytes": 6053884
+      },
+      "textures": {
+        "ready": 3,
+        "pending": 0,
+        "bytes": 50331648
+      }
+    }
+  ]
+}

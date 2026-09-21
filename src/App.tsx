@@ -11,7 +11,7 @@ import { FurnitureViewControl } from './components/FurnitureViewControl'
 import type { FurnitureView } from './three/furniture/furniturePresentation'
 import './App.css'
 
-const categories = [{ id: 'tables', label: 'Столы' }, { id: 'wardrobes', label: 'Шкафы' }] as const
+const categories = [{ id: 'tables', label: 'Столы' }, { id: 'wardrobes', label: 'Шкафы' }, { id: 'dressers', label: 'Комоды' }] as const
 
 function App() {
   const { store, session, persistence, notice } = useConfigurator()

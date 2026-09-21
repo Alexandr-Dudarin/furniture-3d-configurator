@@ -1,0 +1,6 @@
+{
+  "status": "PASS",
+  "comparedPixels": 1056000,
+  "differentPixels": 0,
+  "scope": "Actual CPU GLB raster: model, floor and size caption; header excluded"
+}

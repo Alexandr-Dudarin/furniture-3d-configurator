@@ -1,0 +1,61 @@
+{
+  "status": "PASS",
+  "models": [
+    {
+      "id": "dresser-10-white-four-drawer",
+      "geometryAccessorBufferViewsByteIdentical": true,
+      "nodesMeshesMaterialsSamplersUnchanged": true,
+      "configAndResizeContractByteIdentical": true,
+      "beforeBytes": 2180512,
+      "afterBytes": 2180512,
+      "beforeSHA256": "ea63cd908f3d3a7704282a1e5ec5b09f1a64d3d487fcaec4cf07f54d68459ee5",
+      "afterSHA256": "ea63cd908f3d3a7704282a1e5ec5b09f1a64d3d487fcaec4cf07f54d68459ee5",
+      "deterministicRebuild": true
+    },
+    {
+      "id": "dresser-11-nord-door-four-drawer",
+      "geometryAccessorBufferViewsByteIdentical": true,
+      "nodesMeshesMaterialsSamplersUnchanged": true,
+      "configAndResizeContractByteIdentical": true,
+      "beforeBytes": 2684052,
+      "afterBytes": 2684052,
+      "beforeSHA256": "2764f73c5e9a584ca27a63ae9ca92c872797b6797a5ac9a47b293cb9733f4b51",
+      "afterSHA256": "2764f73c5e9a584ca27a63ae9ca92c872797b6797a5ac9a47b293cb9733f4b51",
+      "deterministicRebuild": true
+    },
+    {
+      "id": "dresser-12-brooklyn-six-drawer",
+      "geometryAccessorBufferViewsByteIdentical": true,
+      "nodesMeshesMaterialsSamplersUnchanged": true,
+      "configAndResizeContractByteIdentical": true,
+      "beforeBytes": 3137972,
+      "afterBytes": 3137972,
+      "beforeSHA256": "0f11032c44cedc877acdd944bc86161787dfc9c1de91437ba39e8ed3cbf42e16",
+      "afterSHA256": "0f11032c44cedc877acdd944bc86161787dfc9c1de91437ba39e8ed3cbf42e16",
+      "deterministicRebuild": true
+    },
+    {
+      "id": "dresser-13-marvel-fluted",
+      "geometryAccessorBufferViewsByteIdentical": true,
+      "nodesMeshesMaterialsSamplersUnchanged": true,
+      "configAndResizeContractByteIdentical": true,
+      "beforeBytes": 13123304,
+      "afterBytes": 3450932,
+      "beforeSHA256": "2e28b85f16a98a524ea99dc24a902ba56c45f665c1238450e327254c19dc583c",
+      "afterSHA256": "4b74cb411561e5960af1c825ff209a33954f70f2f93cea46cacc7a45ebc814f9",
+      "deterministicRebuild": true
+    },
+    {
+      "id": "dresser-14-baikal-five-drawer",
+      "geometryAccessorBufferViewsByteIdentical": true,
+      "nodesMeshesMaterialsSamplersUnchanged": true,
+      "configAndResizeContractByteIdentical": true,
+      "beforeBytes": 12275320,
+      "afterBytes": 2602952,
+      "beforeSHA256": "b7261b0bbf8093b47f7aa10d9c2f1e16b804b71fe60a07371f5858fbaaab4ddf",
+      "afterSHA256": "6d49cc53bf91a72cca7d9abd81fc2aec314eeb301a1fb713bccffadc640c4004",
+      "deterministicRebuild": true
+    }
+  ],
+  "missingSharedImagesRejected": true
+}

@@ -1,0 +1,37 @@
+{
+  "version": 2,
+  "purpose": "Existing shared oak-natural maps; these files are NOT included in this package.",
+  "consumers": [
+    "dresser-13-marvel-fluted",
+    "dresser-14-baikal-five-drawer"
+  ],
+  "files": [
+    {
+      "publicPath": "materials/wood/oak-natural/base-color.jpg",
+      "glbURI": "../materials/wood/oak-natural/base-color.jpg",
+      "role": "sRGB base color",
+      "bytes": 2831117,
+      "sha256": "0718c2e1a209afe6138ccb41d70e1a18cd825d1e73db33ad7cf80806fa9ce5a4",
+      "width": 2048,
+      "height": 2048
+    },
+    {
+      "publicPath": "materials/wood/oak-natural/normal-gl.jpg",
+      "glbURI": "../materials/wood/oak-natural/normal-gl.jpg",
+      "role": "linear OpenGL normal",
+      "bytes": 2429019,
+      "sha256": "e74a9d3ddcd86473a21815a28464f4dac4ceb8f86e7f170226dede8ed70d8eb9",
+      "width": 2048,
+      "height": 2048
+    },
+    {
+      "publicPath": "materials/wood/oak-natural/roughness.jpg",
+      "glbURI": "../materials/wood/oak-natural/roughness.jpg",
+      "role": "linear roughness; G channel in GLB, metallicFactor=0",
+      "bytes": 3968436,
+      "sha256": "5c81718ee172299c44e0754fadbe652758b6feed05a8fd88be6efff5aa70ca1e",
+      "width": 2048,
+      "height": 2048
+    }
+  ]
+}

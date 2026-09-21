@@ -1,0 +1,55 @@
+{
+  "number": 14,
+  "slug": "baikal-five-drawer",
+  "label": "Комод «Байкал»",
+  "kind": "baikal",
+  "base": {
+    "width": 0.402,
+    "height": 1.03,
+    "depth": 0.331
+  },
+  "limits": {
+    "width": [
+      0.35,
+      0.6
+    ],
+    "height": [
+      0.9,
+      1.2
+    ],
+    "depth": [
+      0.3,
+      0.5
+    ]
+  },
+  "rows": 5,
+  "columns": 1,
+  "doors": 0,
+  "shelves": 0,
+  "foot": 0,
+  "plinth": 0,
+  "overhang": 0,
+  "frontGap": 0.004,
+  "projection": 0.02,
+  "carcassColor": "#ffffff",
+  "frontColor": "#f3f3ef",
+  "roughness": 0.47,
+  "hardwareColor": "#242422",
+  "hardwareMetalness": 0.04,
+  "hardwareRoughness": 0.3,
+  "hardwareFinish": "metal-black-matte",
+  "wood": true,
+  "references": [
+    "5.1"
+  ],
+  "id": "dresser-14-baikal-five-drawer",
+  "folder": "dresser-baikal-five-drawer",
+  "assumptions": [
+    "Overall dimensions and part counts are taken from user screenshots; hidden dimensions are estimates.",
+    "Main boards/front envelope 16 mm, drawer bottoms 6 mm, back panels 4 mm, ordinary facade joints 4 mm.",
+    "All configuration ranges are review choices; manufacturer offerings and load capacity are not established.",
+    "Depth is the CLOSED overall envelope including handle projection; handle-free corpus depths are derived.",
+    "Opening/sliding is a technical pose only, not an application interaction.",
+    "Three 45-degree grooves in each lower corner of the top front. Fixed 144 mm corner motifs move apart with width; groove width 2.4 mm, depth 0.8 mm. Pattern is geometric and estimated."
+  ]
+}

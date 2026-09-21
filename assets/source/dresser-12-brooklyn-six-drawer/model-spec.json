@@ -1,0 +1,58 @@
+{
+  "number": 12,
+  "slug": "brooklyn-six-drawer",
+  "label": "Комод «Бруклин»",
+  "kind": "brooklyn",
+  "base": {
+    "width": 1.6,
+    "height": 0.68,
+    "depth": 0.45
+  },
+  "limits": {
+    "width": [
+      1.2,
+      2
+    ],
+    "height": [
+      0.55,
+      0.9
+    ],
+    "depth": [
+      0.35,
+      0.6
+    ]
+  },
+  "rows": 3,
+  "columns": 2,
+  "doors": 0,
+  "shelves": 0,
+  "foot": 0.01,
+  "plinth": 0,
+  "overhang": 0.001,
+  "frontGap": 0.004,
+  "projection": 0.024,
+  "carcassColor": "#eeeeec",
+  "frontColor": "#f4f4f1",
+  "roughness": 0.14,
+  "hardwareColor": "#e8e7e2",
+  "hardwareMetalness": 0.04,
+  "hardwareRoughness": 0.24,
+  "hardwareFinish": "metal-white-matte",
+  "wood": false,
+  "references": [
+    "3.1",
+    "3.2",
+    "3.3",
+    "3.4"
+  ],
+  "id": "dresser-12-brooklyn-six-drawer",
+  "folder": "dresser-brooklyn-six-drawer",
+  "assumptions": [
+    "Overall dimensions and part counts are taken from user screenshots; hidden dimensions are estimates.",
+    "Main boards/front envelope 16 mm, drawer bottoms 6 mm, back panels 4 mm, ordinary facade joints 4 mm.",
+    "All configuration ranges are review choices; manufacturer offerings and load capacity are not established.",
+    "Depth is the CLOSED overall envelope including handle projection; handle-free corpus depths are derived.",
+    "Opening/sliding is a technical pose only, not an application interaction.",
+    "Six fixed rounded lip handles are 120 mm wide, with 24 mm projection; gloss uses roughness 0.14 as a visual estimate."
+  ]
+}

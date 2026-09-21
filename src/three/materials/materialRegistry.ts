@@ -7,6 +7,96 @@ const MATERIAL_ROOT =
 
 const materialFinishes = [
 {
+  "id": "board-white-alaska-body",
+  "label": "Белый «Аляска» — корпус",
+  "category": "board",
+  "kind": "procedural",
+  "previewColor": "#eeefed",
+  "color": "#eeefed",
+  "metalness": 0,
+  "roughness": 0.52
+},
+{
+  "id": "board-white-alaska-front",
+  "label": "Белый «Аляска» — фасад",
+  "category": "board",
+  "kind": "procedural",
+  "previewColor": "#f4f4f2",
+  "color": "#f4f4f2",
+  "metalness": 0,
+  "roughness": 0.5
+},
+{
+  "id": "board-cashmere-body",
+  "label": "Кашемир — корпус",
+  "category": "board",
+  "kind": "procedural",
+  "previewColor": "#d9d3c9",
+  "color": "#d9d3c9",
+  "metalness": 0,
+  "roughness": 0.52
+},
+{
+  "id": "board-cashmere-front",
+  "label": "Кашемир — фасад",
+  "category": "board",
+  "kind": "procedural",
+  "previewColor": "#e3ddd4",
+  "color": "#e3ddd4",
+  "metalness": 0,
+  "roughness": 0.46
+},
+{
+  "id": "board-white-brooklyn-body",
+  "label": "Белый «Бруклин» — корпус",
+  "category": "board",
+  "kind": "procedural",
+  "previewColor": "#eeeeec",
+  "color": "#eeeeec",
+  "metalness": 0,
+  "roughness": 0.52
+},
+{
+  "id": "board-white-gloss",
+  "label": "Белый глянцевый",
+  "category": "board",
+  "kind": "procedural",
+  "previewColor": "#f4f4f1",
+  "color": "#f4f4f1",
+  "metalness": 0,
+  "roughness": 0.14
+},
+{
+  "id": "board-white-brush",
+  "label": "Белый «Марвэл»",
+  "category": "board",
+  "kind": "procedural",
+  "previewColor": "#f2f2ef",
+  "color": "#f2f2ef",
+  "metalness": 0,
+  "roughness": 0.44
+},
+{
+  "id": "board-white-baikal",
+  "label": "Белый «Байкал»",
+  "category": "board",
+  "kind": "procedural",
+  "previewColor": "#f3f3ef",
+  "color": "#f3f3ef",
+  "metalness": 0,
+  "roughness": 0.47
+},
+{
+  "id": "metal-brass-satin",
+  "label": "Латунь сатиновая",
+  "category": "metal",
+  "kind": "procedural",
+  "previewColor": "#b99953",
+  "color": "#b99953",
+  "metalness": 0.78,
+  "roughness": 0.28
+},
+{
   "id": "board-grey-neutral",
   "label": "Серый нейтральный",
   "category": "board",

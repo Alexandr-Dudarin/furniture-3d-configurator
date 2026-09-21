@@ -1,0 +1,18 @@
+{
+  "id": "dresser-13-marvel-fluted",
+  "glbBytes": 3450932,
+  "nodes": 478,
+  "meshes": 426,
+  "primitives": 934,
+  "triangles": 16200,
+  "materials": 307,
+  "physicalParts": 70,
+  "decorativeParts": 52,
+  "resizeRules": 290,
+  "woodTexturesEmbedded": false,
+  "sharedTextureURIs": [
+    "../materials/wood/oak-natural/base-color.jpg",
+    "../materials/wood/oak-natural/normal-gl.jpg",
+    "../materials/wood/oak-natural/roughness.jpg"
+  ]
+}
