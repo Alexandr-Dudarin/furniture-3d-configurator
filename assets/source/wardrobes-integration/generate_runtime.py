@@ -22,7 +22,8 @@ for number, folder, model_id, finish in MODELS:
  contract = json.loads((ROOT / 'assets/source' / model_id / 'model-contract.json').read_text(encoding='utf-8'))
  for dimension in config['dimensions'].values(): dimension['displayUnit'] = 'mm'
  metadata = {key: config[key] for key in ['id', 'label', 'modelUrl', 'dimensions', 'dimensionOrder']}
- metadata.update(category='wardrobes', description='Размеры корпуса меняются с сохранением толщины панелей. Двери и ящики показаны закрытыми.',
+ metadata.update(category='wardrobes', description='Размеры корпуса меняются с сохранением толщины панелей.',
+  interiorView={'hiddenNodes': [door['name'] for door in contract['doors']]},
   framing={axis: config['dimensions'][dimension]['max'] for axis, dimension in [('width','width'),('height','height'),('depth','depth')]},
   resizeRules=[], textureAxes={}, materialSlots={
    'carcass': dict(label='Корпус и полки', targets=[], defaultFinish=finish, allowedFinishes=FINISHES),

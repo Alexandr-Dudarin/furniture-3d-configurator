@@ -199,6 +199,8 @@ export type FurnitureDefinition = {
   category?: 'tables' | 'wardrobes' | 'dressers'
   framing?: { width: number; height: number; depth: number }
   description?: string
+  // Presentation only: these assemblies are hidden to inspect the interior.
+  interiorView?: { hiddenNodes: readonly string[] }
   // Lightweight catalogue entries defer geometry rules and UV contracts.
   loadRuntime?: () => Promise<FurnitureDefinition>
   textureTransforms?: Readonly<Record<string, AffineTextureBindings>>

@@ -1,0 +1,255 @@
+{
+  "checks": [
+    "wardrobe-07-center-drawers: contents visible, hidden door resize/materials restored, camera/resources/model request unchanged",
+    "wardrobe-08-four-door: contents visible, hidden door resize/materials restored, camera/resources/model request unchanged",
+    "wardrobe-09-chelsea-two-door: contents visible, hidden door resize/materials restored, camera/resources/model request unchanged",
+    "Reload restores saved dimensions/finishes and starts in exterior presentation",
+    "Table builder has no wardrobe presentation controls",
+    "390 × 844 mobile: interior/exterior controls usable, no horizontal overflow",
+    "Switching to interior while GLB loads applies the latest view",
+    "No browser JavaScript errors"
+  ],
+  "models": [
+    {
+      "id": "wardrobe-07-center-drawers",
+      "base": {
+        "uuid": "2ccaf4c2-f593-4598-9980-5eee692f5c5b",
+        "doors": [
+          {
+            "name": "Door_Outer_Left_Hinge",
+            "visible": false
+          },
+          {
+            "name": "Door_Center_Left_Hinge",
+            "visible": false
+          },
+          {
+            "name": "Door_Center_Right_Hinge",
+            "visible": false
+          },
+          {
+            "name": "Door_Outer_Right_Hinge",
+            "visible": false
+          }
+        ],
+        "hiddenContents": [],
+        "shelves": 4,
+        "rails": 2,
+        "drawers": 3,
+        "visibleDoorMeshes": 0,
+        "camera": [
+          1.7808637619161372,
+          2.0904318809580693,
+          3.858538150818298
+        ],
+        "target": [
+          0,
+          1.2,
+          0
+        ],
+        "memory": {
+          "geometries": 910,
+          "textures": 4
+        }
+      },
+      "max": {
+        "uuid": "2ccaf4c2-f593-4598-9980-5eee692f5c5b",
+        "doors": [
+          {
+            "name": "Door_Outer_Left_Hinge",
+            "visible": false
+          },
+          {
+            "name": "Door_Center_Left_Hinge",
+            "visible": false
+          },
+          {
+            "name": "Door_Center_Right_Hinge",
+            "visible": false
+          },
+          {
+            "name": "Door_Outer_Right_Hinge",
+            "visible": false
+          }
+        ],
+        "hiddenContents": [],
+        "shelves": 4,
+        "rails": 2,
+        "drawers": 3,
+        "visibleDoorMeshes": 0,
+        "camera": [
+          1.7808637619161372,
+          2.0904318809580693,
+          3.858538150818298
+        ],
+        "target": [
+          0,
+          1.2,
+          0
+        ],
+        "memory": {
+          "geometries": 910,
+          "textures": 7
+        }
+      }
+    },
+    {
+      "id": "wardrobe-08-four-door",
+      "base": {
+        "uuid": "a47aae11-6a70-430b-9412-aace09af2030",
+        "doors": [
+          {
+            "name": "Door_Outer_Left_Hinge",
+            "visible": false
+          },
+          {
+            "name": "Door_Center_Left_Hinge",
+            "visible": false
+          },
+          {
+            "name": "Door_Center_Right_Hinge",
+            "visible": false
+          },
+          {
+            "name": "Door_Outer_Right_Hinge",
+            "visible": false
+          }
+        ],
+        "hiddenContents": [],
+        "shelves": 9,
+        "rails": 1,
+        "drawers": 0,
+        "visibleDoorMeshes": 0,
+        "camera": [
+          1.7808637619161372,
+          2.0904318809580693,
+          3.858538150818298
+        ],
+        "target": [
+          0,
+          1.2,
+          0
+        ],
+        "memory": {
+          "geometries": 580,
+          "textures": 4
+        }
+      },
+      "max": {
+        "uuid": "a47aae11-6a70-430b-9412-aace09af2030",
+        "doors": [
+          {
+            "name": "Door_Outer_Left_Hinge",
+            "visible": false
+          },
+          {
+            "name": "Door_Center_Left_Hinge",
+            "visible": false
+          },
+          {
+            "name": "Door_Center_Right_Hinge",
+            "visible": false
+          },
+          {
+            "name": "Door_Outer_Right_Hinge",
+            "visible": false
+          }
+        ],
+        "hiddenContents": [],
+        "shelves": 9,
+        "rails": 1,
+        "drawers": 0,
+        "visibleDoorMeshes": 0,
+        "camera": [
+          1.7808637619161372,
+          2.0904318809580693,
+          3.858538150818298
+        ],
+        "target": [
+          0,
+          1.2,
+          0
+        ],
+        "memory": {
+          "geometries": 580,
+          "textures": 7
+        }
+      }
+    },
+    {
+      "id": "wardrobe-09-chelsea-two-door",
+      "base": {
+        "uuid": "dd4ae413-17f2-4e29-b6e6-e684b0f96f67",
+        "doors": [
+          {
+            "name": "Door_Left_Hinge",
+            "visible": false
+          },
+          {
+            "name": "Door_Right_Hinge",
+            "visible": false
+          }
+        ],
+        "hiddenContents": [],
+        "shelves": 2,
+        "rails": 1,
+        "drawers": 0,
+        "visibleDoorMeshes": 0,
+        "camera": [
+          1.644863856405176,
+          2.0224319282025887,
+          3.5638716888778816
+        ],
+        "target": [
+          0,
+          1.2,
+          0
+        ],
+        "memory": {
+          "geometries": 255,
+          "textures": 4
+        }
+      },
+      "max": {
+        "uuid": "dd4ae413-17f2-4e29-b6e6-e684b0f96f67",
+        "doors": [
+          {
+            "name": "Door_Left_Hinge",
+            "visible": false
+          },
+          {
+            "name": "Door_Right_Hinge",
+            "visible": false
+          }
+        ],
+        "hiddenContents": [],
+        "shelves": 2,
+        "rails": 1,
+        "drawers": 0,
+        "visibleDoorMeshes": 0,
+        "camera": [
+          1.644863856405176,
+          2.0224319282025887,
+          3.5638716888778816
+        ],
+        "target": [
+          0,
+          1.2,
+          0
+        ],
+        "memory": {
+          "geometries": 255,
+          "textures": 7
+        }
+      }
+    }
+  ],
+  "errors": [],
+  "modelRequests": [
+    "/models/wardrobe-07-center-drawers.glb",
+    "/models/wardrobe-08-four-door.glb",
+    "/models/wardrobe-09-chelsea-two-door.glb",
+    "/models/wardrobe-09-chelsea-two-door.glb",
+    "/modules/bases/slat-pedestal.glb"
+  ]
+}

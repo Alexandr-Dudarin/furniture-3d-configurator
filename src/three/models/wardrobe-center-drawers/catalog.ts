@@ -38,7 +38,15 @@ export const catalogue: FurnitureDefinition = {
     "depth"
   ],
   "category": "wardrobes",
-  "description": "Размеры корпуса меняются с сохранением толщины панелей. Двери и ящики показаны закрытыми.",
+  "description": "Размеры корпуса меняются с сохранением толщины панелей.",
+  "interiorView": {
+    "hiddenNodes": [
+      "Door_Outer_Left_Hinge",
+      "Door_Center_Left_Hinge",
+      "Door_Center_Right_Hinge",
+      "Door_Outer_Right_Hinge"
+    ]
+  },
   "framing": {
     "width": 2,
     "height": 2.4,

@@ -8,9 +8,10 @@ import { createSceneEnvironment } from './core/createSceneEnvironment'
 import { disposeMaterialFinishCache } from './materials/createMaterial'
 import { disposeFurnitureSourceCache } from './furniture/model'
 import { useCatalogScene } from './furniture/useCatalogScene'
+import type { FurnitureView } from './furniture/furniturePresentation'
 import { useTableAssemblyScene } from './tableAssembly/useTableAssemblyScene'
 
-export default function SceneView({ store }: { store: ConfiguratorStore }) {
+export default function SceneView({ store, furnitureView }: { store: ConfiguratorStore; furnitureView: FurnitureView }) {
   const { session } = useSyncExternalStore(store.subscribe, store.getSnapshot)
   const containerRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<Scene | null>(null)
@@ -46,7 +47,7 @@ export default function SceneView({ store }: { store: ConfiguratorStore }) {
       session.mode === 'catalog' ? definition.framing : undefined)
   }, [session.mode, session.selectedModelId])
 
-  const catalog = useCatalogScene(sceneRef, anisotropyRef, store, session)
+  const catalog = useCatalogScene(sceneRef, anisotropyRef, store, session, furnitureView)
   const assembly = useTableAssemblyScene(sceneRef, anisotropyRef, store, session.mode === 'builder', session.assembly)
   const preview = session.mode === 'builder' ? assembly : catalog
   return <>

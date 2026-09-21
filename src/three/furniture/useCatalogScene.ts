@@ -6,10 +6,11 @@ import { getFurnitureDefinition } from '../../configurator/furnitureRegistry'
 import { createFurnitureController } from './furnitureController'
 import { disposeFurnitureModel, loadFurnitureModel } from './model'
 import { createFurnitureMaterialController, type FurnitureMaterialController } from '../materials/materialController'
+import { createFurniturePresentation, type FurnitureView } from './furniturePresentation'
 
 export function useCatalogScene(
   sceneRef: RefObject<Scene | null>, anisotropyRef: RefObject<number>,
-  store: ConfiguratorStore, session: ConfiguratorSession,
+  store: ConfiguratorStore, session: ConfiguratorSession, furnitureView: FurnitureView,
 ) {
   const enabled = session.mode === 'catalog'
   const id = session.selectedModelId
@@ -20,8 +21,17 @@ export function useCatalogScene(
     token: object; id: string
     controller: ReturnType<typeof createFurnitureController>
     materials: FurnitureMaterialController
+    presentation: ReturnType<typeof createFurniturePresentation>
   } | null>(null)
   const token = useMemo(() => ({ id, enabled, attempt }), [id, enabled, attempt])
+  const viewRef = useRef(furnitureView)
+
+  // Read the latest view when a pending model finishes loading. Switching views
+  // does not reload its geometry, reapply finishes or move the camera.
+  useEffect(() => {
+    viewRef.current = furnitureView
+    active.current?.presentation.setView(furnitureView)
+  }, [furnitureView])
 
   useEffect(() => {
     const scene = sceneRef.current
@@ -29,7 +39,9 @@ export function useCatalogScene(
     let cancelled = false
     let model: Group | null = null
     let materials: FurnitureMaterialController | null = null
+    let presentation: ReturnType<typeof createFurniturePresentation> | null = null
     const dispose = () => {
+      presentation?.dispose()
       materials?.dispose()
       if (model) { scene.remove(model); disposeFurnitureModel(model); model = null }
     }
@@ -45,6 +57,7 @@ export function useCatalogScene(
         if (cancelled) { disposeFurnitureModel(loaded); return }
         model = loaded
         const controller = createFurnitureController(loaded, definition)
+        presentation = createFurniturePresentation(loaded, definition)
         materials = createFurnitureMaterialController(loaded, definition, {
           maxAnisotropy: anisotropyRef.current, onMaterialsChanged: controller.refreshTextures,
         })
@@ -55,7 +68,8 @@ export function useCatalogScene(
         } while (!cancelled && applied !== store.getSnapshot().session.models[id].materials)
         if (cancelled) return
         controller.setDimensions(store.getSnapshot().session.models[id].dimensions)
-        active.current = { token, id, controller, materials }
+        presentation.setView(viewRef.current)
+        active.current = { token, id, controller, materials, presentation }
         scene.add(loaded)
         setStatus({ token, error: null })
       } catch (error) {

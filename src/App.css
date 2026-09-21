@@ -285,3 +285,13 @@
 .furniture-categories button[aria-pressed="true"] { background: #edf4ff; border-color: #1769d1; color: #0757bf; }
 .furniture-categories button:focus-visible { outline: 2px solid #1769d1; outline-offset: 3px; }
 .catalog-description { margin: 12px 0 20px; color: #586a84; font-size: 13px; line-height: 1.55; }
+
+.furniture-view-control { margin: 0 0 22px; }
+.furniture-view-label { margin-bottom: 8px; font-size: 14px; font-weight: 600; }
+.furniture-view-options { display: flex; gap: 4px; padding: 4px; border-radius: 12px; background: #f0f4f8; }
+.furniture-view-options button { flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px; min-width: 0; min-height: 44px; padding: 8px 6px; border: 1px solid transparent; border-radius: 9px; background: transparent; color: #53667e; font: inherit; font-size: 13px; cursor: pointer; transition: background-color .18s ease, color .18s ease, box-shadow .18s ease; }
+.furniture-view-options button[aria-pressed="true"] { border-color: #d9e6f8; background: white; color: #0757bf; box-shadow: 0 1px 4px #20334b16; }
+.furniture-view-options button:focus-visible { outline: 2px solid #1769d1; outline-offset: 2px; }
+.furniture-view-options svg { flex: 0 0 20px; width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.furniture-view-hint { margin: 9px 0 0; color: #586a84; font-size: 12px; line-height: 1.5; }
+@media (prefers-reduced-motion: reduce) { .furniture-view-options button { transition: none; } }

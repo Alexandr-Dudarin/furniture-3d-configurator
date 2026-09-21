@@ -1,20 +1,21 @@
 import { Component, useEffect, useState, type ComponentType, type ReactNode } from 'react'
 import type { ConfiguratorStore } from '../configurator/configuratorStore'
 import { ViewerStatus } from './ViewerStatus'
+import type { FurnitureView } from '../three/furniture/furniturePresentation'
 
-type SceneProps = { store: ConfiguratorStore }
+type SceneProps = { store: ConfiguratorStore; furnitureView: FurnitureView }
 
 // The UI has no runtime Three.js imports. Import after its first painted frame.
-export function FurnitureViewer({ store }: SceneProps) {
+export function FurnitureViewer({ store, furnitureView }: SceneProps) {
   const [attempt, setAttempt] = useState(0)
   return <div className="viewer">
     <SceneBoundary key={attempt} onRetry={() => setAttempt((value) => value + 1)}>
-      <DeferredScene store={store} />
+      <DeferredScene store={store} furnitureView={furnitureView} />
     </SceneBoundary>
   </div>
 }
 
-function DeferredScene({ store }: SceneProps) {
+function DeferredScene({ store, furnitureView }: SceneProps) {
   const [loaded, setLoaded] = useState<{ View: ComponentType<SceneProps> } | null>(null)
   const [failed, setFailed] = useState(false)
   useEffect(() => {
@@ -43,7 +44,7 @@ function DeferredScene({ store }: SceneProps) {
     retryLabel="Перезагрузить страницу"
     onRetry={() => window.location.replace(store.getShareUrl())} />
   if (!loaded) return <ViewerStatus message="Загружаем 3D-просмотр…" />
-  return <loaded.View store={store} />
+  return <loaded.View store={store} furnitureView={furnitureView} />
 }
 
 class SceneBoundary extends Component<{ children: ReactNode; onRetry: () => void }, { failed: boolean }> {

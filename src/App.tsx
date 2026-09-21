@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { CustomSelect, type CustomSelectOption } from './components/ui/CustomSelect/CustomSelect'
 import { useConfigurator } from './configurator/useConfigurator'
 import { ConfigurationActions } from './components/ConfigurationActions'
@@ -6,12 +7,15 @@ import { SizeControl } from './components/assembly/SizeControl'
 import { FinishPicker } from './components/assembly/FinishPicker'
 import { TableAssemblyControls } from './components/TableAssemblyControls'
 import { FurnitureViewer } from './components/FurnitureViewer'
+import { FurnitureViewControl } from './components/FurnitureViewControl'
+import type { FurnitureView } from './three/furniture/furniturePresentation'
 import './App.css'
 
 const categories = [{ id: 'tables', label: 'Столы' }, { id: 'wardrobes', label: 'Шкафы' }] as const
 
 function App() {
   const { store, session, persistence, notice } = useConfigurator()
+  const [furnitureView, setFurnitureView] = useState<FurnitureView>('exterior')
   const selectedModelId = session.selectedModelId
   const furnitureDefinition = getFurnitureDefinition(selectedModelId)
   const category = furnitureDefinition.category ?? 'tables'
@@ -38,7 +42,7 @@ function App() {
 
   return (
     <div className="app">
-      <FurnitureViewer store={store} />
+      <FurnitureViewer store={store} furnitureView={furnitureView} />
 
       <div
         className="configuration-panel"
@@ -103,6 +107,7 @@ function App() {
         </div>
 
         {furnitureDefinition.description && <p className="catalog-description">{furnitureDefinition.description}</p>}
+        {furnitureDefinition.interiorView && <FurnitureViewControl value={furnitureView} onChange={setFurnitureView} />}
         {furnitureDefinition.dimensionOrder.map((dimension) => {
           const config = furnitureDefinition.dimensions[dimension]
           return <SizeControl key={`${selectedModelId}-${dimension}`} name={config.label}
