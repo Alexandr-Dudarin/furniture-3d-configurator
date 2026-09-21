@@ -38,6 +38,8 @@ export type ThreeRuntime = {
 
   framing: ReturnType<typeof createFurnitureFraming>
 
+  addFrameListener: (listener: (deltaSeconds: number) => void) => () => void
+
   dispose: () => void
 }
 
@@ -245,6 +247,12 @@ export function createThreeRuntime(
    * --------------------------------
    */
 
+  const frameListeners = new Set<(deltaSeconds: number) => void>()
+  const addFrameListener = (listener: (deltaSeconds: number) => void) => {
+    frameListeners.add(listener)
+    return () => { frameListeners.delete(listener) }
+  }
+  let lastFrameTime = performance.now()
   let animationFrameId = 0
 
   let disposed = false
@@ -255,6 +263,10 @@ export function createThreeRuntime(
         return
       }
 
+      const now = performance.now()
+      const deltaSeconds = Math.min(0.1, (now - lastFrameTime) / 1000)
+      lastFrameTime = now
+      frameListeners.forEach(listener => listener(deltaSeconds))
       controls.update()
 
       renderer.render(
@@ -283,6 +295,7 @@ export function createThreeRuntime(
       }
 
       disposed = true
+      frameListeners.clear()
 
       cancelAnimationFrame(
         animationFrameId,
@@ -311,6 +324,7 @@ export function createThreeRuntime(
     renderer,
     controls,
     framing,
+    addFrameListener,
     dispose,
   }
 }

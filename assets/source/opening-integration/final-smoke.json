@@ -1,0 +1,31 @@
+{
+  "passed": true,
+  "errors": [],
+  "checks": [
+    "Final build: direct raycast click, updated wardrobe hint, three model cycles remove all window pointer/blur listeners and frame callback",
+    "Final build: real touch opens door at 390 × 844; open furniture and controls fit"
+  ],
+  "listeners": [
+    {
+      "pointerup": 2,
+      "pointermove": 1,
+      "pointercancel": 1,
+      "blur": 1
+    },
+    {
+      "pointerup": 2,
+      "pointermove": 1,
+      "pointercancel": 1,
+      "blur": 1
+    },
+    {
+      "pointerup": 2,
+      "pointermove": 1,
+      "pointercancel": 1,
+      "blur": 1
+    }
+  ],
+  "baselineListeners": {
+    "pointerup": 1
+  }
+}

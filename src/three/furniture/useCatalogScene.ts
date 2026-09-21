@@ -1,5 +1,9 @@
 import { useEffect, useMemo, useRef, useState, type RefObject } from 'react'
-import type { Group, Scene } from 'three'
+import type { Group } from 'three'
+import type { ThreeRuntime } from '../core/createThreeRuntime'
+import type { FurnitureMotionStore } from '../../configurator/furnitureMotionStore'
+import { createFurnitureMotion, type FurnitureMotion } from './furnitureMotion'
+import { bindFurnitureInteraction } from './furnitureInteraction'
 import type { ConfiguratorStore } from '../../configurator/configuratorStore'
 import type { ConfiguratorSession } from '../../configurator/savedConfiguration'
 import { getFurnitureDefinition } from '../../configurator/furnitureRegistry'
@@ -9,8 +13,8 @@ import { createFurnitureMaterialController, type FurnitureMaterialController } f
 import { createFurniturePresentation, type FurnitureView } from './furniturePresentation'
 
 export function useCatalogScene(
-  sceneRef: RefObject<Scene | null>, anisotropyRef: RefObject<number>,
-  store: ConfiguratorStore, session: ConfiguratorSession, furnitureView: FurnitureView,
+  runtimeRef: RefObject<ThreeRuntime | null>, anisotropyRef: RefObject<number>,
+  store: ConfiguratorStore, session: ConfiguratorSession, furnitureView: FurnitureView, motionStore: FurnitureMotionStore,
 ) {
   const enabled = session.mode === 'catalog'
   const id = session.selectedModelId
@@ -21,6 +25,7 @@ export function useCatalogScene(
     token: object; id: string
     controller: ReturnType<typeof createFurnitureController>
     materials: FurnitureMaterialController
+    motion: FurnitureMotion
     presentation: ReturnType<typeof createFurniturePresentation>
   } | null>(null)
   const token = useMemo(() => ({ id, enabled, attempt }), [id, enabled, attempt])
@@ -30,17 +35,30 @@ export function useCatalogScene(
   // does not reload its geometry, reapply finishes or move the camera.
   useEffect(() => {
     viewRef.current = furnitureView
-    active.current?.presentation.setView(furnitureView)
+    const current = active.current
+    if (current) {
+      current.motion.setAll(false, true)
+      current.presentation.setView(furnitureView)
+      current.motion.syncVisibility()
+    }
   }, [furnitureView])
 
   useEffect(() => {
-    const scene = sceneRef.current
-    if (!enabled || !scene) return
+    const runtime = runtimeRef.current
+    if (!enabled || !runtime) return
+    const { scene } = runtime
     let cancelled = false
     let model: Group | null = null
     let materials: FurnitureMaterialController | null = null
     let presentation: ReturnType<typeof createFurniturePresentation> | null = null
+    let motion: FurnitureMotion | null = null
+    let binding: ReturnType<FurnitureMotionStore['attach']> | null = null
+    let stopFrames: (() => void) | undefined
+    let stopInteraction: (() => void) | undefined
+    let stopPreference: (() => void) | undefined
     const dispose = () => {
+      stopInteraction?.(); stopFrames?.(); stopPreference?.(); binding?.detach()
+      motion?.dispose()
       presentation?.dispose()
       materials?.dispose()
       if (model) { scene.remove(model); disposeFurnitureModel(model); model = null }
@@ -59,7 +77,10 @@ export function useCatalogScene(
         const controller = createFurnitureController(loaded, definition)
         presentation = createFurniturePresentation(loaded, definition)
         materials = createFurnitureMaterialController(loaded, definition, {
-          maxAnisotropy: anisotropyRef.current, onMaterialsChanged: controller.refreshTextures,
+          maxAnisotropy: anisotropyRef.current, onMaterialsChanged: () => {
+            if (motion) motion.withClosedPose(controller.refreshTextures)
+            else controller.refreshTextures()
+          },
         })
         let applied
         do {
@@ -69,7 +90,18 @@ export function useCatalogScene(
         if (cancelled) return
         controller.setDimensions(store.getSnapshot().session.models[id].dimensions)
         presentation.setView(viewRef.current)
-        active.current = { token, id, controller, materials, presentation }
+        motion = createFurnitureMotion(loaded, definition, controller.getDimensions, states => binding?.publish(states))
+        if (definition.articulations?.length) {
+          const preference = window.matchMedia('(prefers-reduced-motion: reduce)')
+          const updatePreference = () => motion?.setReducedMotion(preference.matches)
+          updatePreference()
+          preference.addEventListener('change', updatePreference)
+          stopPreference = () => preference.removeEventListener('change', updatePreference)
+          binding = motionStore.attach(id, motion, motion.getStates())
+          stopFrames = runtime.addFrameListener(motion.update)
+          stopInteraction = bindFurnitureInteraction(runtime.renderer.domElement, runtime.camera, loaded, motion)
+        }
+        active.current = { token, id, controller, materials, presentation, motion }
         scene.add(loaded)
         setStatus({ token, error: null })
       } catch (error) {
@@ -87,12 +119,12 @@ export function useCatalogScene(
       if (active.current?.token === token) active.current = null
       dispose()
     }
-  }, [id, enabled, token, store, sceneRef, anisotropyRef])
+  }, [id, enabled, token, store, runtimeRef, anisotropyRef, motionStore])
 
   useEffect(() => {
     const current = active.current
     if (!enabled || !current || current.id !== id) return
-    current.controller.setDimensions(configuration.dimensions)
+    current.motion.withClosedPose(() => current.controller.setDimensions(configuration.dimensions))
     void current.materials.setFinishes(configuration.materials).then(() => {
       if (active.current === current) setStatus({ token: current.token, error: null })
     }).catch((error) => {

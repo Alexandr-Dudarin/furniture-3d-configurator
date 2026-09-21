@@ -37,6 +37,36 @@ export const catalogue: FurnitureDefinition = {
     "height",
     "depth"
   ],
+  "articulations": [
+    {
+      "id": "Door_Outer_Left_Hinge",
+      "target": "Door_Outer_Left_Hinge",
+      "label": "Левая крайняя дверь",
+      "kind": "door",
+      "angle": -105
+    },
+    {
+      "id": "Door_Center_Left_Hinge",
+      "target": "Door_Center_Left_Hinge",
+      "label": "Левая центральная дверь",
+      "kind": "door",
+      "angle": -105
+    },
+    {
+      "id": "Door_Center_Right_Hinge",
+      "target": "Door_Center_Right_Hinge",
+      "label": "Правая центральная дверь",
+      "kind": "door",
+      "angle": 105
+    },
+    {
+      "id": "Door_Outer_Right_Hinge",
+      "target": "Door_Outer_Right_Hinge",
+      "label": "Правая крайняя дверь",
+      "kind": "door",
+      "angle": 105
+    }
+  ],
   "category": "wardrobes",
   "description": "Размеры корпуса меняются с сохранением толщины панелей.",
   "interiorView": {

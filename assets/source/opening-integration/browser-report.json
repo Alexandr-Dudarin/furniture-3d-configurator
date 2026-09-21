@@ -1,0 +1,55 @@
+{
+  "checks": [
+    "dresser-10-white-four-drawer: all/open/close, exact closed pose, click, orbit drag, resize open, finish refresh, reset, unchanged saved state and URL",
+    "dresser-11-nord-door-four-drawer: all/open/close, exact closed pose, click, orbit drag, resize open, finish refresh, reset, unchanged saved state and URL",
+    "dresser-12-brooklyn-six-drawer: all/open/close, exact closed pose, click, orbit drag, resize open, finish refresh, reset, unchanged saved state and URL",
+    "dresser-13-marvel-fluted: all/open/close, exact closed pose, click, orbit drag, resize open, finish refresh, reset, unchanged saved state and URL",
+    "dresser-14-baikal-five-drawer: all/open/close, exact closed pose, click, orbit drag, resize open, finish refresh, reset, unchanged saved state and URL",
+    "wardrobe-07-center-drawers: all/open/close, exact closed pose, click, orbit drag, resize open, finish refresh, reset, unchanged saved state and URL",
+    "wardrobe-08-four-door: all/open/close, exact closed pose, click, orbit drag, resize open, finish refresh, reset, unchanged saved state and URL",
+    "wardrobe-09-chelsea-two-door: all/open/close, exact closed pose, click, orbit drag, resize open, finish refresh, reset, unchanged saved state and URL",
+    "Interior mode closes and hides doors; hidden doors cannot reopen; drawers remain accessible",
+    "Individual controls work from keyboard",
+    "Reduced motion opens/closes without intermediate pose",
+    "390 × 844: touch opens facade; pinch does not open anything; panel fits viewport",
+    "Reload retains configuration but returns furniture to closed pose",
+    "Repeated model changes dispose motion listeners; tables and builder have no motion overhead",
+    "No JavaScript, shader or HTTP errors"
+  ],
+  "errors": [],
+  "httpErrors": [],
+  "models": [
+    {
+      "id": "dresser-10-white-four-drawer",
+      "parts": 4
+    },
+    {
+      "id": "dresser-11-nord-door-four-drawer",
+      "parts": 5
+    },
+    {
+      "id": "dresser-12-brooklyn-six-drawer",
+      "parts": 6
+    },
+    {
+      "id": "dresser-13-marvel-fluted",
+      "parts": 6
+    },
+    {
+      "id": "dresser-14-baikal-five-drawer",
+      "parts": 5
+    },
+    {
+      "id": "wardrobe-07-center-drawers",
+      "parts": 7
+    },
+    {
+      "id": "wardrobe-08-four-door",
+      "parts": 4
+    },
+    {
+      "id": "wardrobe-09-chelsea-two-door",
+      "parts": 2
+    }
+  ]
+}

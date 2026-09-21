@@ -37,6 +37,86 @@ export const catalogue: FurnitureDefinition = {
     "height",
     "depth"
   ],
+  "articulations": [
+    {
+      "id": "Drawer_03_Assembly",
+      "target": "Drawer_03_Assembly",
+      "label": "Левый ящик 1 сверху",
+      "kind": "drawer",
+      "travel": {
+        "dimension": "depth",
+        "baseLength": 0.38,
+        "factor": 1,
+        "ratio": 0.55,
+        "max": 0.18
+      }
+    },
+    {
+      "id": "Drawer_02_Assembly",
+      "target": "Drawer_02_Assembly",
+      "label": "Левый ящик 2 сверху",
+      "kind": "drawer",
+      "travel": {
+        "dimension": "depth",
+        "baseLength": 0.38,
+        "factor": 1,
+        "ratio": 0.55,
+        "max": 0.18
+      }
+    },
+    {
+      "id": "Drawer_01_Assembly",
+      "target": "Drawer_01_Assembly",
+      "label": "Левый ящик 3 сверху",
+      "kind": "drawer",
+      "travel": {
+        "dimension": "depth",
+        "baseLength": 0.38,
+        "factor": 1,
+        "ratio": 0.55,
+        "max": 0.18
+      }
+    },
+    {
+      "id": "Drawer_06_Assembly",
+      "target": "Drawer_06_Assembly",
+      "label": "Правый ящик 1 сверху",
+      "kind": "drawer",
+      "travel": {
+        "dimension": "depth",
+        "baseLength": 0.38,
+        "factor": 1,
+        "ratio": 0.55,
+        "max": 0.18
+      }
+    },
+    {
+      "id": "Drawer_05_Assembly",
+      "target": "Drawer_05_Assembly",
+      "label": "Правый ящик 2 сверху",
+      "kind": "drawer",
+      "travel": {
+        "dimension": "depth",
+        "baseLength": 0.38,
+        "factor": 1,
+        "ratio": 0.55,
+        "max": 0.18
+      }
+    },
+    {
+      "id": "Drawer_04_Assembly",
+      "target": "Drawer_04_Assembly",
+      "label": "Правый ящик 3 сверху",
+      "kind": "drawer",
+      "travel": {
+        "dimension": "depth",
+        "baseLength": 0.38,
+        "factor": 1,
+        "ratio": 0.55,
+        "max": 0.18
+      }
+    }
+  ],
   "category": "dressers",
   "description": "Размеры комода меняются с сохранением толщины панелей и зазоров ящиков.",
   "framing": {

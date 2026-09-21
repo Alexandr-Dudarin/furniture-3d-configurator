@@ -6,6 +6,10 @@ import json
 import re
 
 ROOT = Path(__file__).resolve().parents[3]
+import sys
+sys.path.insert(0, str(ROOT / 'assets/source'))
+from furniture_motion import articulations
+
 MODELS = [
     ('10', 'dresser-white-four-drawer', 'dresser-10-white-four-drawer', 'board-white-alaska-body', 'board-white-alaska-front', None),
     ('11', 'dresser-nord-door-four-drawer', 'dresser-11-nord-door-four-drawer', 'board-cashmere-body', 'board-cashmere-front', 'metal-brass-satin'),
@@ -41,6 +45,7 @@ for number, folder, model_id, body, front, hardware in MODELS:
         slots['hardware'] = slot('Ручки', hardware, HARDWARE)
     metadata = {key: config[key] for key in ['id', 'label', 'modelUrl', 'dimensions', 'dimensionOrder']}
     metadata.update(
+        articulations=articulations(contract),
         category='dressers', description='Размеры комода меняются с сохранением толщины панелей и зазоров ящиков.',
         framing={axis: config['dimensions'][axis]['max'] for axis in ['width', 'height', 'depth']},
         resizeRules=[], textureAxes={}, materialSlots=slots,

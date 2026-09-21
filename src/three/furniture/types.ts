@@ -199,7 +199,17 @@ export type AffineTextureBindings = Readonly<{
   v?: AffineTextureBinding
 }>
 
+export type FurnitureArticulation = {
+  id: string
+  label: string
+  target: string
+} & (
+  | { kind: 'door'; angle: number }
+  | { kind: 'drawer'; travel: { dimension: string; baseLength: number; factor: number; ratio: number; max: number } }
+)
+
 export type FurnitureDefinition = {
+  articulations?: readonly FurnitureArticulation[]
   category?: 'tables' | 'wardrobes' | 'dressers'
   framing?: { width: number; height: number; depth: number }
   description?: string

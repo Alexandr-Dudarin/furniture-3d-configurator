@@ -37,6 +37,74 @@ export const catalogue: FurnitureDefinition = {
     "height",
     "depth"
   ],
+  "articulations": [
+    {
+      "id": "Door_Left_Hinge",
+      "target": "Door_Left_Hinge",
+      "label": "Левая дверь",
+      "kind": "door",
+      "angle": -105
+    },
+    {
+      "id": "Door_Right_Hinge",
+      "target": "Door_Right_Hinge",
+      "label": "Правая дверь",
+      "kind": "door",
+      "angle": 105
+    },
+    {
+      "id": "Drawer_04_Assembly",
+      "target": "Drawer_04_Assembly",
+      "label": "Ящик 1 сверху",
+      "kind": "drawer",
+      "travel": {
+        "dimension": "depth",
+        "baseLength": 0.389,
+        "factor": 1,
+        "ratio": 0.55,
+        "max": 0.18
+      }
+    },
+    {
+      "id": "Drawer_03_Assembly",
+      "target": "Drawer_03_Assembly",
+      "label": "Ящик 2 сверху",
+      "kind": "drawer",
+      "travel": {
+        "dimension": "depth",
+        "baseLength": 0.389,
+        "factor": 1,
+        "ratio": 0.55,
+        "max": 0.18
+      }
+    },
+    {
+      "id": "Drawer_02_Assembly",
+      "target": "Drawer_02_Assembly",
+      "label": "Ящик 3 сверху",
+      "kind": "drawer",
+      "travel": {
+        "dimension": "depth",
+        "baseLength": 0.389,
+        "factor": 1,
+        "ratio": 0.55,
+        "max": 0.18
+      }
+    },
+    {
+      "id": "Drawer_01_Assembly",
+      "target": "Drawer_01_Assembly",
+      "label": "Ящик 4 сверху",
+      "kind": "drawer",
+      "travel": {
+        "dimension": "depth",
+        "baseLength": 0.389,
+        "factor": 1,
+        "ratio": 0.55,
+        "max": 0.18
+      }
+    }
+  ],
   "category": "dressers",
   "description": "Размеры комода меняются с сохранением толщины панелей и зазоров ящиков.",
   "framing": {

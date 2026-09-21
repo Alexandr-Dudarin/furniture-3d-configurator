@@ -1,6 +1,7 @@
 import { useEffect, useRef, useSyncExternalStore } from 'react'
 import type { Scene } from 'three'
 import { getFurnitureDefinition } from '../configurator/furnitureRegistry'
+import type { FurnitureMotionStore } from '../configurator/furnitureMotionStore'
 import type { ConfiguratorStore } from '../configurator/configuratorStore'
 import { ViewerStatus } from '../components/ViewerStatus'
 import { createThreeRuntime } from './core/createThreeRuntime'
@@ -11,7 +12,7 @@ import { useCatalogScene } from './furniture/useCatalogScene'
 import type { FurnitureView } from './furniture/furniturePresentation'
 import { useTableAssemblyScene } from './tableAssembly/useTableAssemblyScene'
 
-export default function SceneView({ store, furnitureView }: { store: ConfiguratorStore; furnitureView: FurnitureView }) {
+export default function SceneView({ store, furnitureView, motionStore }: { store: ConfiguratorStore; furnitureView: FurnitureView; motionStore: FurnitureMotionStore }) {
   const { session } = useSyncExternalStore(store.subscribe, store.getSnapshot)
   const containerRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<Scene | null>(null)
@@ -47,7 +48,7 @@ export default function SceneView({ store, furnitureView }: { store: Configurato
       session.mode === 'catalog' ? definition.framing : undefined)
   }, [session.mode, session.selectedModelId])
 
-  const catalog = useCatalogScene(sceneRef, anisotropyRef, store, session, furnitureView)
+  const catalog = useCatalogScene(runtimeRef, anisotropyRef, store, session, furnitureView, motionStore)
   const assembly = useTableAssemblyScene(sceneRef, anisotropyRef, store, session.mode === 'builder', session.assembly)
   const preview = session.mode === 'builder' ? assembly : catalog
   return <>

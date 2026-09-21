@@ -37,6 +37,22 @@ export const catalogue: FurnitureDefinition = {
     "height",
     "depth"
   ],
+  "articulations": [
+    {
+      "id": "Door_Left_Hinge",
+      "target": "Door_Left_Hinge",
+      "label": "Левая дверь",
+      "kind": "door",
+      "angle": -105
+    },
+    {
+      "id": "Door_Right_Hinge",
+      "target": "Door_Right_Hinge",
+      "label": "Правая дверь",
+      "kind": "door",
+      "angle": 105
+    }
+  ],
   "category": "wardrobes",
   "description": "Размеры корпуса меняются с сохранением толщины панелей.",
   "interiorView": {

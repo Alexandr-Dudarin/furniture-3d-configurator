@@ -295,3 +295,18 @@
 .furniture-view-options svg { flex: 0 0 20px; width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 .furniture-view-hint { margin: 9px 0 0; color: #586a84; font-size: 12px; line-height: 1.5; }
 @media (prefers-reduced-motion: reduce) { .furniture-view-options button { transition: none; } }
+
+.furniture-motion { margin: 18px 0 24px; }
+.motion-hint { margin: 0 0 12px; color: #586b88; font-size: 13px; line-height: 1.55; }
+.motion-actions { display: flex; gap: 8px; }
+.motion-actions button, .motion-part { border: 1px solid #cfdaeb; border-radius: 10px; background: #fff; color: #294364; font: inherit; cursor: pointer; }
+.motion-actions button { flex: 1; min-height: 44px; padding: 10px 8px; font-size: 13px; }
+.motion-actions button:hover:enabled, .motion-part:hover:enabled { background: #edf5ff; border-color: #679ff0; }
+.motion-actions button:disabled, .motion-part:disabled { opacity: .48; cursor: default; }
+.motion-actions button:focus-visible, .motion-part:focus-visible { outline: 3px solid #9cc7ff; outline-offset: 2px; }
+.motion-details { margin-top: 12px; }
+.motion-parts { display: grid; gap: 8px; }
+.motion-part { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; padding: 10px 12px; text-align: left; font-size: 13px; }
+.motion-part span:last-child { color: #647692; font-size: 12px; }
+.motion-part[aria-pressed="true"] { background: #edf5ff; border-color: #196ddd; }
+.motion-part[aria-pressed="true"] span:last-child { color: #1262cc; }

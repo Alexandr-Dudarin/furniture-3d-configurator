@@ -37,6 +37,75 @@ export const catalogue: FurnitureDefinition = {
     "height",
     "depth"
   ],
+  "articulations": [
+    {
+      "id": "Door_Outer_Left_Hinge",
+      "target": "Door_Outer_Left_Hinge",
+      "label": "Левая крайняя дверь",
+      "kind": "door",
+      "angle": -105
+    },
+    {
+      "id": "Door_Center_Left_Hinge",
+      "target": "Door_Center_Left_Hinge",
+      "label": "Левая центральная дверь",
+      "kind": "door",
+      "angle": -105
+    },
+    {
+      "id": "Door_Center_Right_Hinge",
+      "target": "Door_Center_Right_Hinge",
+      "label": "Правая центральная дверь",
+      "kind": "door",
+      "angle": 105
+    },
+    {
+      "id": "Door_Outer_Right_Hinge",
+      "target": "Door_Outer_Right_Hinge",
+      "label": "Правая крайняя дверь",
+      "kind": "door",
+      "angle": 105
+    },
+    {
+      "id": "Drawer_03_Assembly",
+      "target": "Drawer_03_Assembly",
+      "label": "Ящик 1 сверху",
+      "kind": "drawer",
+      "travel": {
+        "dimension": "depth",
+        "baseLength": 0.425,
+        "factor": 1,
+        "ratio": 0.55,
+        "max": 0.18
+      }
+    },
+    {
+      "id": "Drawer_02_Assembly",
+      "target": "Drawer_02_Assembly",
+      "label": "Ящик 2 сверху",
+      "kind": "drawer",
+      "travel": {
+        "dimension": "depth",
+        "baseLength": 0.425,
+        "factor": 1,
+        "ratio": 0.55,
+        "max": 0.18
+      }
+    },
+    {
+      "id": "Drawer_01_Assembly",
+      "target": "Drawer_01_Assembly",
+      "label": "Ящик 3 сверху",
+      "kind": "drawer",
+      "travel": {
+        "dimension": "depth",
+        "baseLength": 0.425,
+        "factor": 1,
+        "ratio": 0.55,
+        "max": 0.18
+      }
+    }
+  ],
   "category": "wardrobes",
   "description": "Размеры корпуса меняются с сохранением толщины панелей.",
   "interiorView": {
