@@ -13,7 +13,7 @@ from furniture_motion import articulations
 MODELS = [
     ('10', 'dresser-white-four-drawer', 'dresser-10-white-four-drawer', 'board-white-alaska-body', 'board-white-alaska-front', None),
     ('11', 'dresser-nord-door-four-drawer', 'dresser-11-nord-door-four-drawer', 'board-cashmere-body', 'board-cashmere-front', 'metal-brass-satin'),
-    ('12', 'dresser-brooklyn-six-drawer', 'dresser-12-brooklyn-six-drawer', 'board-white-brooklyn-body', 'board-white-gloss', 'metal-white-matte'),
+    ('12', 'dresser-brooklyn-six-drawer', 'dresser-12-brooklyn-six-drawer', 'board-white-brooklyn-body', 'board-white-gloss', 'metal-brass-satin'),
     ('13', 'dresser-marvel-fluted', 'dresser-13-marvel-fluted', 'oak-natural', 'board-white-brush', 'metal-black-matte'),
     ('14', 'dresser-baikal-five-drawer', 'dresser-14-baikal-five-drawer', 'oak-natural', 'board-white-baikal', 'metal-black-matte'),
 ]

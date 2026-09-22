@@ -50,6 +50,26 @@ describe('browser configuration lifecycle', () => {
     disconnect()
   })
 
+  it('uses brass for a fresh Brooklyn and reset, while preserving saved and shared handle finishes', () => {
+    const id = 'dresser-12-brooklyn-six-drawer'
+    const fresh = createConfiguratorStore(environment())
+    fresh.dispatch({ type: 'select-model', modelId: id })
+    expect(fresh.getSnapshot().session.models[id].materials.hardware).toBe('metal-brass-satin')
+
+    // White was the previous default and may also be a deliberate user choice.
+    for (const finish of ['metal-white-matte', 'metal-black-matte']) {
+      const saved = updateSession(fresh.getSnapshot().session, {
+        type: 'set-material', slot: 'hardware', finishId: finish,
+      })
+      const restored = createConfiguratorStore(environment(origin, JSON.stringify(saved)))
+      expect(restored.getSnapshot().session.models[id].materials.hardware).toBe(finish)
+      const shared = createConfiguratorStore(environment(createConfigurationUrl(origin, saved)))
+      expect(shared.getSnapshot().session.models[id].materials.hardware).toBe(finish)
+      restored.dispatch({ type: 'reset-model' })
+      expect(restored.getSnapshot().session.models[id].materials.hardware).toBe('metal-brass-satin')
+    }
+  })
+
   it('gives a shared configuration priority, keeping other saved models intact', () => {
     let local = updateSession(createDefaultSession(), { type: 'set-dimension', name: 'length', value: 1.8 })
     local = updateSession(local, { type: 'select-model', modelId: roundId })

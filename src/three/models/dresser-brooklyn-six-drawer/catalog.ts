@@ -162,12 +162,12 @@ export const catalogue: FurnitureDefinition = {
     "hardware": {
       "label": "Ручки",
       "targets": [],
-      "defaultFinish": "metal-white-matte",
+      "defaultFinish": "metal-brass-satin",
       "allowedFinishes": [
-        "metal-white-matte",
+        "metal-brass-satin",
         "metal-black-matte",
-        "metal-anthracite",
-        "metal-brass-satin"
+        "metal-white-matte",
+        "metal-anthracite"
       ]
     }
   }

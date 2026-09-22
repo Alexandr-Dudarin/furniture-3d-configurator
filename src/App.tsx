@@ -10,7 +10,7 @@ import { FurnitureViewer } from './components/FurnitureViewer'
 import { FurnitureViewControl } from './components/FurnitureViewControl'
 import type { FurnitureView } from './three/furniture/furniturePresentation'
 import { createFurnitureMotionStore } from './configurator/furnitureMotionStore'
-import { FurnitureMotionControls } from './components/FurnitureMotionControls'
+import { CabinetControls } from './components/CabinetControls'
 import './App.css'
 
 const categories = [{ id: 'tables', label: 'Столы' }, { id: 'wardrobes', label: 'Шкафы' }, { id: 'dressers', label: 'Комоды' }] as const
@@ -109,10 +109,10 @@ function App() {
           />
         </div>
 
-        {furnitureDefinition.description && <p className="catalog-description">{furnitureDefinition.description}</p>}
+        {category === 'tables' && furnitureDefinition.description && <p className="catalog-description">{furnitureDefinition.description}</p>}
         {furnitureDefinition.interiorView && <FurnitureViewControl value={furnitureView} onChange={setFurnitureView} />}
-        {furnitureDefinition.articulations?.length && <FurnitureMotionControls key={selectedModelId}
-          definition={furnitureDefinition} store={motionStore} />}
+        {category !== 'tables' ? <CabinetControls key={selectedModelId} definition={furnitureDefinition}
+          configuration={session.models[selectedModelId]} dispatch={store.dispatch} motionStore={motionStore} /> : <>
         {furnitureDefinition.dimensionOrder.map((dimension) => {
           const config = furnitureDefinition.dimensions[dimension]
           return <SizeControl key={`${selectedModelId}-${dimension}`} name={config.label}
@@ -124,6 +124,7 @@ function App() {
             value={materialSelections[slotName] ?? slot.defaultFinish} ids={slot.allowedFinishes}
             onChange={(finishId) => store.dispatch({ type: 'set-material', slot: slotName, finishId })} />
         ))}
+        </>}
         </>}
         <ConfigurationActions
           resetLabel={session.mode === 'builder' ? 'Сбросить сборку' : 'Сбросить эту модель'}

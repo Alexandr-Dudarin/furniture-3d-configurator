@@ -193,7 +193,9 @@
 }
 .assembly-section summary::-webkit-details-marker { display: none; }
 .assembly-section summary strong { font-size: 14px; }
+.section-heading { min-width: 0; }
 .section-value { display: block; margin-top: 4px; font-size: 12px; line-height: 1.45; color: #58677b; }
+.catalog-material-summary { display: block; overflow-wrap: anywhere; }
 .section-chevron {
   display: grid; place-items: center; flex: 0 0 28px; height: 28px;
   border-radius: 9px; background: #f2f5f8; color: #64748b;
@@ -296,17 +298,28 @@
 .furniture-view-hint { margin: 9px 0 0; color: #586a84; font-size: 12px; line-height: 1.5; }
 @media (prefers-reduced-motion: reduce) { .furniture-view-options button { transition: none; } }
 
-.furniture-motion { margin: 18px 0 24px; }
 .motion-hint { margin: 0 0 12px; color: #586b88; font-size: 13px; line-height: 1.55; }
+.motion-hidden-hint { margin: 12px 0 0; color: #586b88; font-size: 12px; line-height: 1.5; }
 .motion-actions { display: flex; gap: 8px; }
 .motion-actions button, .motion-part { border: 1px solid #cfdaeb; border-radius: 10px; background: #fff; color: #294364; font: inherit; cursor: pointer; }
 .motion-actions button { flex: 1; min-height: 44px; padding: 10px 8px; font-size: 13px; }
 .motion-actions button:hover:enabled, .motion-part:hover:enabled { background: #edf5ff; border-color: #679ff0; }
 .motion-actions button:disabled, .motion-part:disabled { opacity: .48; cursor: default; }
 .motion-actions button:focus-visible, .motion-part:focus-visible { outline: 3px solid #9cc7ff; outline-offset: 2px; }
-.motion-details { margin-top: 12px; }
-.motion-parts { display: grid; gap: 8px; }
+.motion-parts { display: grid; gap: 8px; margin-top: 12px; }
 .motion-part { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; padding: 10px 12px; text-align: left; font-size: 13px; }
 .motion-part span:last-child { color: #647692; font-size: 12px; }
 .motion-part[aria-pressed="true"] { background: #edf5ff; border-color: #196ddd; }
 .motion-part[aria-pressed="true"] span:last-child { color: #1262cc; }
+
+@media (max-width: 700px) {
+  .furniture-categories { gap: 6px; margin: 12px 0; }
+  .furniture-categories button { min-width: 0; min-height: 44px; padding: 8px 6px; font-size: 13px; }
+  .furniture-view-control { margin-bottom: 10px; }
+  .cabinet-controls .assembly-section > summary { padding: 12px 0; }
+  .cabinet-controls .assembly-section-content { padding-bottom: 12px; }
+  .cabinet-controls .dimension-control { margin-top: 12px; }
+  .cabinet-controls .dimension-control:first-child { margin-top: 0; }
+  .cabinet-controls .dimension-value input { min-height: 44px; font-size: 16px; }
+  .cabinet-controls .dimension-control input[type="range"] { min-height: 28px; margin: 4px 0 2px; }
+}

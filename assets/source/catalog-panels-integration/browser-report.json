@@ -1,0 +1,103 @@
+{
+  "status": "PASS",
+  "checks": [
+    "Brooklyn fresh brass renders on handles; dimension edits update summaries; finish edits, reload, shared URL and reset preserve intended defaults",
+    "Shared section supports Enter, Space, visible keyboard focus and reduced motion",
+    "All eight models show three sections; no handles for handleless dresser; wardrobe interior disables hidden doors but keeps drawers available",
+    "Touch, dimensions, materials and opening at 390 and 320 px; no horizontal overflow; 3D scene remains above panel",
+    "Table builder shared sections and ready-made table controls still work"
+  ],
+  "models": [
+    {
+      "id": "wardrobe-07-center-drawers",
+      "metric": {
+        "panel": true,
+        "page": true,
+        "sceneHeight": 1000,
+        "panelTop": 16,
+        "sceneBottom": 1000
+      }
+    },
+    {
+      "id": "wardrobe-08-four-door",
+      "metric": {
+        "panel": true,
+        "page": true,
+        "sceneHeight": 1000,
+        "panelTop": 16,
+        "sceneBottom": 1000
+      }
+    },
+    {
+      "id": "wardrobe-09-chelsea-two-door",
+      "metric": {
+        "panel": true,
+        "page": true,
+        "sceneHeight": 1000,
+        "panelTop": 16,
+        "sceneBottom": 1000
+      }
+    },
+    {
+      "id": "dresser-10-white-four-drawer",
+      "metric": {
+        "panel": true,
+        "page": true,
+        "sceneHeight": 1000,
+        "panelTop": 16,
+        "sceneBottom": 1000
+      }
+    },
+    {
+      "id": "dresser-11-nord-door-four-drawer",
+      "metric": {
+        "panel": true,
+        "page": true,
+        "sceneHeight": 1000,
+        "panelTop": 16,
+        "sceneBottom": 1000
+      }
+    },
+    {
+      "id": "dresser-13-marvel-fluted",
+      "metric": {
+        "panel": true,
+        "page": true,
+        "sceneHeight": 1000,
+        "panelTop": 16,
+        "sceneBottom": 1000
+      }
+    },
+    {
+      "id": "dresser-14-baikal-five-drawer",
+      "metric": {
+        "panel": true,
+        "page": true,
+        "sceneHeight": 1000,
+        "panelTop": 16,
+        "sceneBottom": 1000
+      }
+    },
+    {
+      "viewport": 390,
+      "metric": {
+        "panel": true,
+        "page": true,
+        "sceneHeight": 455.765625,
+        "panelTop": 463.765625,
+        "sceneBottom": 455.765625
+      }
+    },
+    {
+      "viewport": 320,
+      "metric": {
+        "panel": true,
+        "page": true,
+        "sceneHeight": 455.765625,
+        "panelTop": 463.765625,
+        "sceneBottom": 455.765625
+      }
+    }
+  ],
+  "errors": []
+}
