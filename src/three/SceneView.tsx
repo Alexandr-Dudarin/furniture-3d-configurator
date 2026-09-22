@@ -1,3 +1,4 @@
+import type { PngExportStore } from '../configurator/pngExportStore'
 import { useEffect, useRef, useSyncExternalStore } from 'react'
 import type { Scene } from 'three'
 import { getFurnitureDefinition } from '../configurator/furnitureRegistry'
@@ -12,7 +13,7 @@ import { useCatalogScene } from './furniture/useCatalogScene'
 import type { FurnitureView } from './furniture/furniturePresentation'
 import { useTableAssemblyScene } from './tableAssembly/useTableAssemblyScene'
 
-export default function SceneView({ store, furnitureView, motionStore }: { store: ConfiguratorStore; furnitureView: FurnitureView; motionStore: FurnitureMotionStore }) {
+export default function SceneView({ store, furnitureView, motionStore, pngExport }: { pngExport: PngExportStore; store: ConfiguratorStore; furnitureView: FurnitureView; motionStore: FurnitureMotionStore }) {
   const { session } = useSyncExternalStore(store.subscribe, store.getSnapshot)
   const containerRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<Scene | null>(null)
@@ -51,6 +52,14 @@ export default function SceneView({ store, furnitureView, motionStore }: { store
   const catalog = useCatalogScene(runtimeRef, anisotropyRef, store, session, furnitureView, motionStore)
   const assembly = useTableAssemblyScene(sceneRef, anisotropyRef, store, session.mode === 'builder', session.assembly)
   const preview = session.mode === 'builder' ? assembly : catalog
+  useEffect(() => {
+    const runtime = runtimeRef.current
+    if (!runtime || !preview.ready) return
+    return pngExport.attach({ session, capture: () => {
+      if (store.getSnapshot().session !== session) return Promise.reject(new Error('Configuration changed'))
+      return runtime.capturePng()
+    } })
+  }, [pngExport, preview.ready, session, store, furnitureView])
   return <>
     <div className="scene-canvas" ref={containerRef} aria-label="3D-просмотр мебели" aria-busy={preview.loading} />
     {preview.error

@@ -40,6 +40,8 @@ export type ThreeRuntime = {
 
   addFrameListener: (listener: (deltaSeconds: number) => void) => () => void
 
+  capturePng: () => Promise<Blob>
+
   dispose: () => void
 }
 
@@ -318,7 +320,24 @@ export function createThreeRuntime(
       }
     }
 
+  const capturePng = () => new Promise<Blob>((resolve, reject) => {
+    if (disposed || renderer.getContext().isContextLost()) {
+      reject(new Error('3D preview unavailable'))
+      return
+    }
+    // Render and request the snapshot in the same task. No permanent
+    // preserveDrawingBuffer cost, camera changes or UI layers in the image.
+    try {
+      renderer.render(scene, camera)
+      renderer.domElement.toBlob(blob => {
+        if (blob && blob.size > 0) resolve(blob)
+        else reject(new Error('PNG encoding failed'))
+      }, 'image/png')
+    } catch (error) { reject(error) }
+  })
+
   return {
+    capturePng,
     scene,
     camera,
     renderer,

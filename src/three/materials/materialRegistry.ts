@@ -6,6 +6,15 @@ const MATERIAL_ROOT =
   '/materials'
 
 const materialFinishes = [
+  // Photo-inspired painted boards; see assets/materials/reference-colors/README.md.
+  {
+    id: 'board-muted-green', label: 'Тёмно-зелёный матовый', category: 'board',
+    kind: 'procedural', previewColor: '#4b5748', color: '#4b5748', metalness: 0, roughness: 0.58,
+  },
+  {
+    id: 'board-powder-beige', label: 'Пудрово-бежевый матовый', category: 'board',
+    kind: 'procedural', previewColor: '#bda99b', color: '#bda99b', metalness: 0, roughness: 0.55,
+  },
 {
   "id": "board-white-alaska-body",
   "label": "Белый «Аляска» — корпус",

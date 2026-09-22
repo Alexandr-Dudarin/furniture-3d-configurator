@@ -52,7 +52,8 @@
   color: #216747;
 }
 
-.configuration-actions button {
+.configuration-actions button,
+.configuration-result button {
   width: 100%;
   min-height: 38px;
   padding: 8px 10px;
@@ -87,6 +88,7 @@
   background: #f3f6fa;
 }
 
+.configuration-result button:focus-visible,
 .configuration-actions button:focus-visible,
 .configuration-manual-link textarea:focus-visible {
   outline: 2px solid #1767ca;
@@ -323,3 +325,15 @@
   .cabinet-controls .dimension-value input { min-height: 44px; font-size: 16px; }
   .cabinet-controls .dimension-control input[type="range"] { min-height: 28px; margin: 4px 0 2px; }
 }
+
+.configuration-result { margin-top: 24px; }
+.configuration-summary { margin: 0 0 18px; font-size: 14px; }
+.configuration-summary > div { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 12px; padding: 8px 0; border-bottom: 1px solid #edf0f5; }
+.configuration-summary dt { color: #60718c; }
+.configuration-summary dd { margin: 0; text-align: right; overflow-wrap: anywhere; color: #243047; }
+.configuration-result > button { width: 100%; margin-top: 16px; }
+.configuration-result .assembly-section-content > button { width: 100%; }
+.configuration-export-hint { font-size: 13px; line-height: 1.5; color: #60718c; margin: 10px 0 0; }
+.configuration-result button:disabled { opacity: .55; cursor: default; }
+
+.configuration-result button { min-height: 44px; }

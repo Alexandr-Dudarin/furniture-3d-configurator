@@ -11,12 +11,15 @@ import { FurnitureViewControl } from './components/FurnitureViewControl'
 import type { FurnitureView } from './three/furniture/furniturePresentation'
 import { createFurnitureMotionStore } from './configurator/furnitureMotionStore'
 import { CabinetControls } from './components/CabinetControls'
+import { createPngExportStore } from './configurator/pngExportStore'
+import { ConfigurationSummary } from './components/ConfigurationSummary'
 import './App.css'
 
 const categories = [{ id: 'tables', label: 'Столы' }, { id: 'wardrobes', label: 'Шкафы' }, { id: 'dressers', label: 'Комоды' }] as const
 
 function App() {
   const { store, session, persistence, notice } = useConfigurator()
+  const [pngExport] = useState(createPngExportStore)
   const [motionStore] = useState(createFurnitureMotionStore)
   const [furnitureView, setFurnitureView] = useState<FurnitureView>('exterior')
   const selectedModelId = session.selectedModelId
@@ -45,7 +48,7 @@ function App() {
 
   return (
     <div className="app">
-      <FurnitureViewer store={store} furnitureView={furnitureView} motionStore={motionStore} />
+      <FurnitureViewer pngExport={pngExport} store={store} furnitureView={furnitureView} motionStore={motionStore} />
 
       <div
         className="configuration-panel"
@@ -126,6 +129,7 @@ function App() {
         ))}
         </>}
         </>}
+        <ConfigurationSummary session={session} store={store} pngExport={pngExport} />
         <ConfigurationActions
           resetLabel={session.mode === 'builder' ? 'Сбросить сборку' : 'Сбросить эту модель'}
           key={JSON.stringify(session)}

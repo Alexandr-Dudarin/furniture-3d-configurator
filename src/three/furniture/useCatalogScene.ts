@@ -20,7 +20,7 @@ export function useCatalogScene(
   const id = session.selectedModelId
   const configuration = session.models[id]
   const [attempt, setAttempt] = useState(0)
-  const [status, setStatus] = useState<{ token: object; error: string | null; reload?: boolean } | null>(null)
+  const [status, setStatus] = useState<{ token: object; error: string | null; configuration?: typeof configuration; reload?: boolean } | null>(null)
   const active = useRef<{
     token: object; id: string
     controller: ReturnType<typeof createFurnitureController>
@@ -103,7 +103,7 @@ export function useCatalogScene(
         }
         active.current = { token, id, controller, materials, presentation, motion }
         scene.add(loaded)
-        setStatus({ token, error: null })
+        setStatus({ token, configuration: store.getSnapshot().session.models[id], error: null })
       } catch (error) {
         if (cancelled) return
         dispose()
@@ -124,18 +124,21 @@ export function useCatalogScene(
   useEffect(() => {
     const current = active.current
     if (!enabled || !current || current.id !== id) return
+    let cancelled = false
     current.motion.withClosedPose(() => current.controller.setDimensions(configuration.dimensions))
     void current.materials.setFinishes(configuration.materials).then(() => {
-      if (active.current === current) setStatus({ token: current.token, error: null })
+      if (!cancelled && active.current === current) setStatus({ token: current.token, configuration, error: null })
     }).catch((error) => {
-      if (active.current !== current) return
+      if (cancelled || active.current !== current) return
       console.error('Ошибка смены материала:', error)
       setStatus({ token: current.token, error: 'Не удалось загрузить покрытие. Повторите загрузку модели.' })
     })
+    return () => { cancelled = true }
   }, [id, enabled, configuration])
 
   // Readiness uses a request key, not an old model's completion state.
   return {
+    ready: enabled && status?.token === token && status.configuration === configuration && !status.error,
     loading: enabled && status?.token !== token,
     error: enabled && status?.token === token ? status?.error ?? null : null,
     retry: () => {

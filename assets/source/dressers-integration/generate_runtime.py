@@ -18,7 +18,7 @@ MODELS = [
     ('14', 'dresser-baikal-five-drawer', 'dresser-14-baikal-five-drawer', 'oak-natural', 'board-white-baikal', 'metal-black-matte'),
 ]
 COMMON = ['board-white-matte', 'board-grey-neutral', 'board-graphite-matte',
-          'oak-natural', 'oak-grey', 'oak-silver', 'oak-black']
+          'oak-natural', 'oak-grey', 'oak-silver', 'oak-black', 'board-muted-green', 'board-powder-beige']
 HARDWARE = ['metal-black-matte', 'metal-white-matte', 'metal-anthracite', 'metal-brass-satin']
 
 

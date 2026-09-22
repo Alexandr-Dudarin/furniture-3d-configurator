@@ -127,7 +127,9 @@ export const catalogue: FurnitureDefinition = {
         "board-graphite-matte",
         "oak-grey",
         "oak-silver",
-        "oak-black"
+        "oak-black",
+        "board-muted-green",
+        "board-powder-beige"
       ],
       "finishOverrides": {
         "oak-natural": {
@@ -149,7 +151,9 @@ export const catalogue: FurnitureDefinition = {
         "oak-natural",
         "oak-grey",
         "oak-silver",
-        "oak-black"
+        "oak-black",
+        "board-muted-green",
+        "board-powder-beige"
       ]
     },
     "hardware": {

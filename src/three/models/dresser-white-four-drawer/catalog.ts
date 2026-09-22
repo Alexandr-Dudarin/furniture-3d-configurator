@@ -114,7 +114,9 @@ export const catalogue: FurnitureDefinition = {
         "oak-natural",
         "oak-grey",
         "oak-silver",
-        "oak-black"
+        "oak-black",
+        "board-muted-green",
+        "board-powder-beige"
       ]
     },
     "fronts": {
@@ -131,7 +133,9 @@ export const catalogue: FurnitureDefinition = {
         "oak-natural",
         "oak-grey",
         "oak-silver",
-        "oak-black"
+        "oak-black",
+        "board-muted-green",
+        "board-powder-beige"
       ]
     }
   }

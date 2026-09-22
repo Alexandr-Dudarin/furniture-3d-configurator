@@ -4,19 +4,21 @@ import type { ConfiguratorStore } from '../configurator/configuratorStore'
 import { ViewerStatus } from './ViewerStatus'
 import type { FurnitureView } from '../three/furniture/furniturePresentation'
 
-type SceneProps = { store: ConfiguratorStore; furnitureView: FurnitureView; motionStore: FurnitureMotionStore }
+import type { PngExportStore } from '../configurator/pngExportStore'
+
+type SceneProps = { pngExport: PngExportStore; store: ConfiguratorStore; furnitureView: FurnitureView; motionStore: FurnitureMotionStore }
 
 // The UI has no runtime Three.js imports. Import after its first painted frame.
-export function FurnitureViewer({ store, furnitureView, motionStore }: SceneProps) {
+export function FurnitureViewer({ store, furnitureView, motionStore, pngExport }: SceneProps) {
   const [attempt, setAttempt] = useState(0)
   return <div className="viewer">
     <SceneBoundary key={attempt} onRetry={() => setAttempt((value) => value + 1)}>
-      <DeferredScene store={store} furnitureView={furnitureView} motionStore={motionStore} />
+      <DeferredScene pngExport={pngExport} store={store} furnitureView={furnitureView} motionStore={motionStore} />
     </SceneBoundary>
   </div>
 }
 
-function DeferredScene({ store, furnitureView, motionStore }: SceneProps) {
+function DeferredScene({ store, furnitureView, motionStore, pngExport }: SceneProps) {
   const [loaded, setLoaded] = useState<{ View: ComponentType<SceneProps> } | null>(null)
   const [failed, setFailed] = useState(false)
   useEffect(() => {
@@ -45,7 +47,7 @@ function DeferredScene({ store, furnitureView, motionStore }: SceneProps) {
     retryLabel="Перезагрузить страницу"
     onRetry={() => window.location.replace(store.getShareUrl())} />
   if (!loaded) return <ViewerStatus message="Загружаем 3D-просмотр…" />
-  return <loaded.View store={store} furnitureView={furnitureView} motionStore={motionStore} />
+  return <loaded.View pngExport={pngExport} store={store} furnitureView={furnitureView} motionStore={motionStore} />
 }
 
 class SceneBoundary extends Component<{ children: ReactNode; onRetry: () => void }, { failed: boolean }> {

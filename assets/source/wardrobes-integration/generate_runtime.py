@@ -15,7 +15,7 @@ MODELS = [
  ('09', 'wardrobe-chelsea-two-door', 'wardrobe-09-chelsea-two-door', 'board-grey-chelsea'),
 ]
 FINISHES = ['board-grey-neutral', 'board-grey-cool', 'board-grey-chelsea', 'board-white-matte',
- 'board-graphite-matte', 'oak-natural', 'oak-grey', 'oak-silver', 'oak-black']
+ 'board-graphite-matte', 'oak-natural', 'oak-grey', 'oak-silver', 'oak-black', 'board-muted-green', 'board-powder-beige']
 def write(path, content):
  path.write_text(content, encoding='utf-8')
 

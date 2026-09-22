@@ -16,7 +16,7 @@ export function useTableAssemblyScene(
 ) {
   const activeRef = useRef<{ baseId: string; assembly: TableAssembly; materials: FurnitureMaterialController } | null>(null)
   const [attempt, setAttempt] = useState(0)
-  const [status, setStatus] = useState<{ token: object; error: string | null } | null>(null)
+  const [status, setStatus] = useState<{ token: object; error: string | null; configuration?: TableAssemblyConfiguration } | null>(null)
   const baseId = configuration.baseId
   const token = useMemo(() => ({ baseId, enabled, attempt }), [baseId, enabled, attempt])
 
@@ -48,7 +48,7 @@ export function useTableAssemblyScene(
         assembly.update(store.getSnapshot().session.assembly)
         activeRef.current = { baseId, assembly, materials }
         scene.add(assembly.group)
-        setStatus({ token, error: null })
+        setStatus({ token, configuration: store.getSnapshot().session.assembly, error: null })
       } catch (error) {
         if (cancelled) return
         materials?.dispose()
@@ -69,17 +69,20 @@ export function useTableAssemblyScene(
   useEffect(() => {
     const active = activeRef.current
     if (!enabled || !active || active.baseId !== configuration.baseId) return
+    let cancelled = false
     active.assembly.update(configuration)
     void active.materials.setFinishes({ primaryTop: configuration.topFinish, baseFinish: configuration.baseFinish }).then(() => {
-      if (activeRef.current === active) setStatus({ token, error: null })
+      if (!cancelled && activeRef.current === active) setStatus({ token, configuration, error: null })
     }).catch((error) => {
-      if (activeRef.current !== active) return
+      if (cancelled || activeRef.current !== active) return
       console.error('Ошибка материала сборки:', error)
       setStatus({ token, error: 'Не удалось загрузить покрытие. Повторите загрузку стола.' })
     })
+    return () => { cancelled = true }
   }, [configuration, enabled, token])
 
   return {
+    ready: enabled && status?.token === token && status.configuration === configuration && !status.error,
     loading: enabled && status?.token !== token,
     error: enabled && status?.token === token ? status.error : null,
     retry: () => setAttempt((value) => value + 1),
