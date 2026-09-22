@@ -1,0 +1,14 @@
+{
+  "generator": "PASS: 7 generated files unchanged on repeat",
+  "publicBaselineFilesUnchanged": 78,
+  "modelSha256": "447f014aef21914fdd61a0ae3f846425588d3b5b7f24bb41e9a3baf4660ed8d8",
+  "generatedHashes": {
+    "public/models/wardrobe-15-katania-four-door.glb": "447f014aef21914fdd61a0ae3f846425588d3b5b7f24bb41e9a3baf4660ed8d8",
+    "src/three/models/wardrobe-katania-four-door/catalog.ts": "c88298b8e4988728e7c687613d14197c022636608a48b0cd3b61a16d3b5675b8",
+    "src/three/models/wardrobe-katania-four-door/config.ts": "b03fc062d3cea1e0caa2813fe67859a57d0b8dfccb22559cf348767fdd366e6a",
+    "src/three/models/wardrobe-katania-four-door/runtime.ts": "d11290f97534031ab53d295a9e65347a5cde48916516f0e1d2ef4dab73125c9e",
+    "assets/source/wardrobe-15-katania-four-door/mesh-source.json": "82d6e55b0721513f1dd01cd8097d0904b927e7429bdd2d5ab66146c0f5577e52",
+    "assets/source/wardrobe-15-katania-four-door/model-contract.json": "0e611b463b39df2b302df5e7cb9c4367bc92e9e303613a21ba9949926b701a38",
+    "assets/source/wardrobe-15-katania-four-door/performance.json": "52ccda39ff198cf06f7b09da510f4644495a2c40ba38505798c411fbf3692dd0"
+  }
+}

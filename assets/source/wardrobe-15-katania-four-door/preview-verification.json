@@ -1,0 +1,15 @@
+{
+  "baseReturnRenderPixels": "identical excluding heading",
+  "productionGLBSha256": "447f014aef21914fdd61a0ae3f846425588d3b5b7f24bb41e9a3baf4660ed8d8",
+  "previewStates": 15,
+  "renderedStates": 10,
+  "overviewPanels": [
+    "base",
+    "max",
+    "materials-open-max",
+    "profile-detail"
+  ],
+  "renderer": "native CPU raster from real GLB and production controller states",
+  "webglMeasured": false,
+  "blenderExecuted": false
+}

@@ -1,0 +1,41 @@
+{
+  "status": "PASS",
+  "images": [
+    {
+      "file": "base-png.png",
+      "width": 1064,
+      "height": 1000,
+      "bytes": 194884
+    },
+    {
+      "file": "open-all-png.png",
+      "width": 1064,
+      "height": 1000,
+      "bytes": 120052
+    },
+    {
+      "file": "colors-open-png.png",
+      "width": 1064,
+      "height": 1000,
+      "bytes": 158380
+    },
+    {
+      "file": "interior-png.png",
+      "width": 1064,
+      "height": 1000,
+      "bytes": 141888
+    },
+    {
+      "file": "oak-png.png",
+      "width": 1064,
+      "height": 1000,
+      "bytes": 826471
+    },
+    {
+      "file": "mobile-open-png.png",
+      "width": 390,
+      "height": 456,
+      "bytes": 49401
+    }
+  ]
+}

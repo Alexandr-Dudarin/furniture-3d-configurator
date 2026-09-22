@@ -1,0 +1,602 @@
+{
+  "status": "PASS",
+  "checks": [
+    "Katania loads only after selection, default graphite body/fronts and black handles, actual base bounds",
+    "Exact 1 mm numeric input; base, middle, maximum dimensions and exact return in the real viewer",
+    "Direct 3D click opens only selected door; all four animate to correct 105 degree positions; open pose survives resizing and three independent finish changes",
+    "Interior hides exactly four door groups; four end brackets remain at both depth limits; external view restores closed doors; oak texture visible on fluting",
+    "Persistence after reload, shared URL, summary, return from existing wardrobe with Katania configuration intact",
+    "Mobile 390 and 320px without overflow; touch on a real door opens it; PNG download works"
+  ],
+  "measures": [
+    {
+      "label": "base",
+      "dimensions": [
+        1.600000023815222,
+        1.8999999994819052,
+        0.400000000147149
+      ],
+      "parts": [
+        {
+          "name": "Door_01_Hinge",
+          "visible": true,
+          "angle": 0
+        },
+        {
+          "name": "Door_02_Hinge",
+          "visible": true,
+          "angle": 0
+        },
+        {
+          "name": "Door_03_Hinge",
+          "visible": true,
+          "angle": 0
+        },
+        {
+          "name": "Door_04_Hinge",
+          "visible": true,
+          "angle": 0
+        }
+      ],
+      "calls": 3203,
+      "triangles": 37306,
+      "memory": {
+        "geometries": 1602,
+        "textures": 4
+      },
+      "brackets": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "camera": [
+        1.9851967448526195,
+        2.3425983724263095,
+        4.301259613847343
+      ]
+    },
+    {
+      "label": "middle",
+      "dimensions": [
+        2.000000023815222,
+        2.299999999481905,
+        0.500000000147149
+      ],
+      "parts": [
+        {
+          "name": "Door_01_Hinge",
+          "visible": true,
+          "angle": 0
+        },
+        {
+          "name": "Door_02_Hinge",
+          "visible": true,
+          "angle": 0
+        },
+        {
+          "name": "Door_03_Hinge",
+          "visible": true,
+          "angle": 0
+        },
+        {
+          "name": "Door_04_Hinge",
+          "visible": true,
+          "angle": 0
+        }
+      ],
+      "calls": 3203,
+      "triangles": 37306,
+      "memory": {
+        "geometries": 1602,
+        "textures": 4
+      },
+      "brackets": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "camera": [
+        1.9851967448526195,
+        2.3425983724263095,
+        4.301259613847343
+      ]
+    },
+    {
+      "label": "maximum",
+      "dimensions": [
+        2.400000023815222,
+        2.6999999994819053,
+        0.600000000147149
+      ],
+      "parts": [
+        {
+          "name": "Door_01_Hinge",
+          "visible": true,
+          "angle": 0
+        },
+        {
+          "name": "Door_02_Hinge",
+          "visible": true,
+          "angle": 0
+        },
+        {
+          "name": "Door_03_Hinge",
+          "visible": true,
+          "angle": 0
+        },
+        {
+          "name": "Door_04_Hinge",
+          "visible": true,
+          "angle": 0
+        }
+      ],
+      "calls": 3203,
+      "triangles": 37306,
+      "memory": {
+        "geometries": 1602,
+        "textures": 4
+      },
+      "brackets": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "camera": [
+        1.9851967448526195,
+        2.3425983724263095,
+        4.301259613847343
+      ]
+    },
+    {
+      "label": "return-base",
+      "dimensions": [
+        1.600000023815222,
+        1.8999999994819052,
+        0.400000000147149
+      ],
+      "parts": [
+        {
+          "name": "Door_01_Hinge",
+          "visible": true,
+          "angle": 0
+        },
+        {
+          "name": "Door_02_Hinge",
+          "visible": true,
+          "angle": 0
+        },
+        {
+          "name": "Door_03_Hinge",
+          "visible": true,
+          "angle": 0
+        },
+        {
+          "name": "Door_04_Hinge",
+          "visible": true,
+          "angle": 0
+        }
+      ],
+      "calls": 3203,
+      "triangles": 37306,
+      "memory": {
+        "geometries": 1602,
+        "textures": 4
+      },
+      "brackets": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "camera": [
+        1.9851967448526195,
+        2.3425983724263095,
+        4.301259613847343
+      ]
+    },
+    {
+      "label": "open-all",
+      "dimensions": [
+        1.8816359018422224,
+        1.8999999994819052,
+        0.7374725601706154
+      ],
+      "parts": [
+        {
+          "name": "Door_01_Hinge",
+          "visible": true,
+          "angle": -105
+        },
+        {
+          "name": "Door_02_Hinge",
+          "visible": true,
+          "angle": -105
+        },
+        {
+          "name": "Door_03_Hinge",
+          "visible": true,
+          "angle": 105
+        },
+        {
+          "name": "Door_04_Hinge",
+          "visible": true,
+          "angle": 105
+        }
+      ],
+      "calls": 3203,
+      "triangles": 37306,
+      "memory": {
+        "geometries": 1602,
+        "textures": 4
+      },
+      "brackets": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "camera": [
+        1.9851967448526195,
+        2.3425983724263095,
+        4.301259613847343
+      ]
+    },
+    {
+      "label": "resized-open",
+      "dimensions": [
+        2.785163519883231,
+        2.6999999994819053,
+        1.1306577290249702
+      ],
+      "parts": [
+        {
+          "name": "Door_01_Hinge",
+          "visible": true,
+          "angle": -105
+        },
+        {
+          "name": "Door_02_Hinge",
+          "visible": true,
+          "angle": -105
+        },
+        {
+          "name": "Door_03_Hinge",
+          "visible": true,
+          "angle": 105
+        },
+        {
+          "name": "Door_04_Hinge",
+          "visible": true,
+          "angle": 105
+        }
+      ],
+      "calls": 3203,
+      "triangles": 37306,
+      "memory": {
+        "geometries": 1602,
+        "textures": 4
+      },
+      "brackets": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "camera": [
+        1.9851967448526195,
+        2.3425983724263095,
+        4.301259613847343
+      ]
+    },
+    {
+      "label": "interior-maximum",
+      "dimensions": [
+        2.400000023815222,
+        2.6999999994819053,
+        0.600000000147149
+      ],
+      "parts": [
+        {
+          "name": "Door_01_Hinge",
+          "visible": false,
+          "angle": 0
+        },
+        {
+          "name": "Door_02_Hinge",
+          "visible": false,
+          "angle": 0
+        },
+        {
+          "name": "Door_03_Hinge",
+          "visible": false,
+          "angle": 0
+        },
+        {
+          "name": "Door_04_Hinge",
+          "visible": false,
+          "angle": 0
+        }
+      ],
+      "calls": 803,
+      "triangles": 18202,
+      "memory": {
+        "geometries": 1602,
+        "textures": 4
+      },
+      "brackets": [
+        true,
+        true,
+        true,
+        true
+      ],
+      "camera": [
+        1.9851967448526195,
+        2.3425983724263095,
+        4.301259613847343
+      ]
+    },
+    {
+      "label": "existing-wardrobe-08",
+      "calls": 1159,
+      "triangles": 29666
+    }
+  ],
+  "downloads": [
+    {
+      "name": "base-png",
+      "filename": "wardrobe-15-katania-four-door-2026-09-22T12-04-06-870Z.png",
+      "bytes": 194884,
+      "camera": [
+        1.9851967448526195,
+        2.3425983724263095,
+        4.301259613847343
+      ],
+      "target": [
+        0,
+        1.35,
+        0
+      ],
+      "width": 1064,
+      "height": 1000,
+      "pose": {
+        "modelId": "wardrobe-15-katania-four-door",
+        "parts": [
+          {
+            "id": "Door_01_Hinge",
+            "open": false,
+            "enabled": true
+          },
+          {
+            "id": "Door_02_Hinge",
+            "open": false,
+            "enabled": true
+          },
+          {
+            "id": "Door_03_Hinge",
+            "open": false,
+            "enabled": true
+          },
+          {
+            "id": "Door_04_Hinge",
+            "open": false,
+            "enabled": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "open-all-png",
+      "filename": "wardrobe-15-katania-four-door-2026-09-22T12-07-39-583Z.png",
+      "bytes": 120052,
+      "camera": [
+        1.9851967448526195,
+        2.3425983724263095,
+        4.301259613847343
+      ],
+      "target": [
+        0,
+        1.35,
+        0
+      ],
+      "width": 1064,
+      "height": 1000,
+      "pose": {
+        "modelId": "wardrobe-15-katania-four-door",
+        "parts": [
+          {
+            "id": "Door_01_Hinge",
+            "open": true,
+            "enabled": true
+          },
+          {
+            "id": "Door_02_Hinge",
+            "open": true,
+            "enabled": true
+          },
+          {
+            "id": "Door_03_Hinge",
+            "open": true,
+            "enabled": true
+          },
+          {
+            "id": "Door_04_Hinge",
+            "open": true,
+            "enabled": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "colors-open-png",
+      "filename": "wardrobe-15-katania-four-door-2026-09-22T12-08-12-454Z.png",
+      "bytes": 158380,
+      "camera": [
+        1.9851967448526195,
+        2.3425983724263095,
+        4.301259613847343
+      ],
+      "target": [
+        0,
+        1.35,
+        0
+      ],
+      "width": 1064,
+      "height": 1000,
+      "pose": {
+        "modelId": "wardrobe-15-katania-four-door",
+        "parts": [
+          {
+            "id": "Door_01_Hinge",
+            "open": true,
+            "enabled": true
+          },
+          {
+            "id": "Door_02_Hinge",
+            "open": true,
+            "enabled": true
+          },
+          {
+            "id": "Door_03_Hinge",
+            "open": true,
+            "enabled": true
+          },
+          {
+            "id": "Door_04_Hinge",
+            "open": true,
+            "enabled": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "interior-png",
+      "filename": "wardrobe-15-katania-four-door-2026-09-22T12-08-45-196Z.png",
+      "bytes": 141888,
+      "camera": [
+        1.9851967448526195,
+        2.3425983724263095,
+        4.301259613847343
+      ],
+      "target": [
+        0,
+        1.35,
+        0
+      ],
+      "width": 1064,
+      "height": 1000,
+      "pose": {
+        "modelId": "wardrobe-15-katania-four-door",
+        "parts": [
+          {
+            "id": "Door_01_Hinge",
+            "open": false,
+            "enabled": false
+          },
+          {
+            "id": "Door_02_Hinge",
+            "open": false,
+            "enabled": false
+          },
+          {
+            "id": "Door_03_Hinge",
+            "open": false,
+            "enabled": false
+          },
+          {
+            "id": "Door_04_Hinge",
+            "open": false,
+            "enabled": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "oak-png",
+      "filename": "wardrobe-15-katania-four-door-2026-09-22T12-09-23-929Z.png",
+      "bytes": 826471,
+      "camera": [
+        1.9851967448526195,
+        2.3425983724263095,
+        4.301259613847343
+      ],
+      "target": [
+        0,
+        1.35,
+        0
+      ],
+      "width": 1064,
+      "height": 1000,
+      "pose": {
+        "modelId": "wardrobe-15-katania-four-door",
+        "parts": [
+          {
+            "id": "Door_01_Hinge",
+            "open": false,
+            "enabled": true
+          },
+          {
+            "id": "Door_02_Hinge",
+            "open": false,
+            "enabled": true
+          },
+          {
+            "id": "Door_03_Hinge",
+            "open": false,
+            "enabled": true
+          },
+          {
+            "id": "Door_04_Hinge",
+            "open": false,
+            "enabled": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "mobile-open-png",
+      "filename": "wardrobe-15-katania-four-door-2026-09-22T12-13-00-150Z.png",
+      "bytes": 49401,
+      "camera": [
+        1.7264748352742212,
+        2.2132374176371115,
+        3.7406954764274802
+      ],
+      "target": [
+        0,
+        1.35,
+        0
+      ],
+      "width": 390,
+      "height": 456,
+      "pose": {
+        "modelId": "wardrobe-15-katania-four-door",
+        "parts": [
+          {
+            "id": "Door_01_Hinge",
+            "open": false,
+            "enabled": true
+          },
+          {
+            "id": "Door_02_Hinge",
+            "open": false,
+            "enabled": true
+          },
+          {
+            "id": "Door_03_Hinge",
+            "open": true,
+            "enabled": true
+          },
+          {
+            "id": "Door_04_Hinge",
+            "open": false,
+            "enabled": true
+          }
+        ]
+      }
+    }
+  ],
+  "errors": []
+}

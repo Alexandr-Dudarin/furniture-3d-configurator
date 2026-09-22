@@ -1,0 +1,57 @@
+{
+  "id": "wardrobe-15-katania-four-door",
+  "number": 15,
+  "kind": "katania-four-door",
+  "folder": "wardrobe-katania-four-door",
+  "label": "Шкаф «Катания-4.2»",
+  "boardColor": "#333639",
+  "frontColor": "#333639",
+  "base": {
+    "width": 1.6,
+    "height": 1.9,
+    "depth": 0.4
+  },
+  "limits": {
+    "width": [
+      1.6,
+      2.4
+    ],
+    "height": [
+      1.9,
+      2.7
+    ],
+    "depth": [
+      0.4,
+      0.6
+    ]
+  },
+  "step": 0.001,
+  "boardThickness": 0.016,
+  "frontThickness": 0.018,
+  "backThickness": 0.004,
+  "plinthHeight": 0.08,
+  "plinthOverlap": 0.03,
+  "facadeGap": 0.003,
+  "closedCarcassGap": 0.004,
+  "handleLength": 0.8,
+  "handleProjection": 0.028,
+  "grooveCountPerDoor": 48,
+  "grooveWidth": 0.003,
+  "grooveDepth": 0.0018,
+  "grooveChamfer": 0.00025,
+  "hangingLayout": "four fixed front-to-back end brackets across full depth range",
+  "assumptions": [
+    "Base and dimension ranges, four overlay doors, 80 mm plinth and 30 mm overlap are transcribed from supplied screenshots.",
+    "The configurator uses fixed front-to-back clothing brackets over depth 400–600 mm; the supplier switches to transverse rods at 500 mm. Automatic layout switching is outside this model contract.",
+    "Four equal hanging bays with one upper shelf each; exact internal dimensions, board/front/back thicknesses and fittings are visual engineering estimates.",
+    "Groove count 48 per door, 3 mm mouth, 1.8 mm depth and 0.25 mm chamfers are visual estimates. Groove section/count stay fixed; flat land widths grow with door width.",
+    "Facade top/bottom cuts expose the fluted section, as in the panel reference. Case panel bevel is 0.7 mm; the grooves have fixed cross-section chamfers.",
+    "Handles are 800 mm long with 28 mm projection, estimated from photographs. Overall depth includes their closed projection.",
+    "Default graphite finish is the existing shared board-graphite-matte, an approximation of the main photo.",
+    "Door motion is the existing visual Y-axis hinge approximation, not manufacturing hinge kinematics. Bracket extension is not an interactive articulation.",
+    "Perforation pitch 128 mm is recorded from the card; unused adjustment holes and concealed fasteners are omitted from render geometry."
+  ],
+  "defaults": {
+    "depth": 0.45
+  }
+}

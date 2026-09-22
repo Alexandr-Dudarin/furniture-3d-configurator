@@ -28,6 +28,7 @@ import {
 
 import { catalogue as wardrobe07 } from '../three/models/wardrobe-center-drawers/catalog'
 import { catalogue as wardrobe08 } from '../three/models/wardrobe-four-door/catalog'
+import { catalogue as wardrobe15 } from '../three/models/wardrobe-katania-four-door/catalog'
 import { catalogue as wardrobe09 } from '../three/models/wardrobe-chelsea-two-door/catalog'
 import { catalogue as dresser10 } from '../three/models/dresser-white-four-drawer/catalog'
 import { catalogue as dresser11 } from '../three/models/dresser-nord-door-four-drawer/catalog'
@@ -79,6 +80,7 @@ const furnitureRegistry =
     [wardrobe07.id, wardrobe07],
     [wardrobe08.id, wardrobe08],
     [wardrobe09.id, wardrobe09],
+    [wardrobe15.id, wardrobe15],
     [dresser10.id, dresser10],
     [dresser11.id, dresser11],
     [dresser12.id, dresser12],

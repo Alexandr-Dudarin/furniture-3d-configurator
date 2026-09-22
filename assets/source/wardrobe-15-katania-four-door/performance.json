@@ -1,0 +1,15 @@
+{
+  "id": "wardrobe-15-katania-four-door",
+  "glbBytes": 4350804,
+  "nodes": 1432,
+  "meshes": 1397,
+  "primitives": 1601,
+  "triangles": 18652,
+  "materials": 366,
+  "physicalParts": 89,
+  "groovesPerDoor": 48,
+  "grooveCount": 192,
+  "resizeRules": 1090,
+  "embeddedTextures": "3 neutral 1×1 maps, 207 bytes total; no large PBR images",
+  "runtimeCompatibility": "existing geometry, affine UV, material and articulation controllers"
+}
