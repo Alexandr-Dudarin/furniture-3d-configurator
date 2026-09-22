@@ -185,11 +185,14 @@ describe(config.id, () => {
       for (const [side, sign] of [['Left', -1], ['Right', 1]] as const) {
         const hinge = required(root, `Door_${side}_Hinge`), origin = hinge.getWorldPosition(new THREE.Vector3())
         expect(hinge.userData.interactiveAnimation).toBe(false)
+        const closed = box(root, `Door_${side}_Panel`)
+        close(origin.z, closed.min.z)
         for (const degrees of [0, 15, 45, 90, 105]) {
           hinge.rotation.y = THREE.MathUtils.degToRad(sign * degrees); root.updateMatrixWorld(true)
           expect(hinge.getWorldPosition(new THREE.Vector3()).distanceTo(origin)).toBeLessThan(EPS)
           const door = box(root, `Door_${side}_Panel`)
-          expect(door.min.z + EPS).toBeGreaterThanOrEqual(box(root, 'Panel_Side_Left').max.z + .003)
+          // The door centre moves outward; furnitureJoints.test.ts checks swept volumes.
+          expect(door.getCenter(new THREE.Vector3()).z + EPS).toBeGreaterThanOrEqual(closed.getCenter(new THREE.Vector3()).z)
           close(door.max.y, d.height - .018); close(door.min.y, .071)
         }
         hinge.rotation.y = 0

@@ -1,5 +1,9 @@
 # Проверки: wardrobe-07-center-drawers
 
+> Текущая ревизия: **opening-joints v1**. Исправления соединений, актуальные
+> проверки и превью — в [общем отчёте](../opening-joints-integration/validation-report.md).
+> Старые отчёты/хеши/превью ниже относятся к предыдущему авторингу.
+
 ## PASS
 
 - GLTFLoader загрузил реальный `public/models/wardrobe-07-center-drawers.glb`; все config targets найдены, имена уникальны.

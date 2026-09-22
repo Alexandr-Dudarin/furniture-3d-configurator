@@ -66,7 +66,7 @@ Uses shared configurator scene/environment. В GLB нет собственных
 
 | Метрика | Значение |
 |---|---:|
-| GLB bytes | 2602952 |
+| GLB bytes | 2603320 |
 | Triangles | 12472 |
 | Nodes glTF | 391 |
 | Mesh records glTF | 344 |
@@ -82,4 +82,10 @@ Uses shared configurator scene/environment. В GLB нет собственных
 
 mesh-source.json — полная редактируемая геометрия и иерархия; build_model.mjs побайтно воспроизводит GLB. create_model.py восстанавливает сцену в Blender, сохраняет .blend и проверочный GLB с реимпортом; здесь Blender отсутствует, выполнен только ast.parse. Фиктивного .blend нет.
 
-При подключении не добавлять modelId/node-specific условия в общий controller. Зарегистрировать модель декларативно, добавить реальные покрытия ЛДСП/глянец/кашемир и латунь, выполнить affine UV, затем WebGL/Blender-проверки на актуальном main. SHA256 GLB: `6d49cc53bf91a72cca7d9abd81fc2aec314eeb301a1fb713bccffadc640c4004`.
+При подключении не добавлять modelId/node-specific условия в общий controller. Зарегистрировать модель декларативно, добавить реальные покрытия ЛДСП/глянец/кашемир и латунь, выполнить affine UV, затем WebGL/Blender-проверки на актуальном main. SHA256 GLB: `e89d62439e271cf4aa36e11a74e4eb78ba0d5d839db9b719fe0af95ac9b5384d`.
+
+## Соединения фасадов — opening-joints v1, 21 сентября 2026
+
+Короб ящика доходит до задней поверхности фасада: номинальный зазор 0 мм. Боковины и дно удлинены вперёд, внутренняя передняя стенка перенесена к фасаду; задний отступ сохранён.
+
+Пересобраны GLB, mesh-source, контракт, resize и affine UV. Актуальная проверка: [отчёт по соединениям](../opening-joints-integration/validation-report.md). Прежние превью и отчёты авторинга сохраняются как история и не подтверждают эту ревизию.

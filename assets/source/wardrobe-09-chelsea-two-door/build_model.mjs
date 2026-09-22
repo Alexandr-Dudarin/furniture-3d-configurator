@@ -211,9 +211,9 @@ const doors=[],drawers=[]
 const doorBottom=.071,doorTop=H-.018,doorWidth=W/2-.004
 for(const [index,key,sign] of [[0,'Left',-1],[1,'Right',1]]) {
   const outer=sign*(W/2-.002), x=sign*(W/4)
-  // Single virtual hinge axis at the outer/front corner gives a useful future
-  // pose without cutting through the side. Not an exact four-bar hinge mechanism.
-  const hinge=group(`Door_${key}_Hinge`,root,[outer,doorBottom,F],motion(sign*.5,0,.5),{kind:'door-pivot',axis:'Y',openAngleDegrees:sign*105,interactiveAnimation:false,axisStatus:'approximate virtual swing axis'})
+  // The rear-face virtual axis keeps the open leaf beside the carcass.
+  // This remains a visual swing model, not an exact four-bar hinge mechanism.
+  const hinge=group(`Door_${key}_Hinge`,root,[outer,doorBottom,F-t],motion(sign*.5,0,.5),{kind:'door-pivot',axisPlane:'facade-back',axis:'Y',openAngleDegrees:sign*105,interactiveAnimation:false,axisStatus:'approximate virtual swing axis'})
   board(`Door_${key}_Panel`,hinge,[doorWidth,doorTop-doorBottom,t],[x,(doorTop+doorBottom)/2,F-t/2],[.5,1,0],motion(sign*.25,.5,.5),2,'fronts','Door_Tall',{pdfPart:8,doorIndex:index,doorBottom})
   doors.push({name:hinge.getName(),key,sign,angle:sign*105,bottom:doorBottom,hingeX:outer})
   for(let i=0;i<4;i++) {

@@ -1,0 +1,72 @@
+[
+  {
+    "model": "wardrobe-07-center-drawers",
+    "rebuildByteIdentical": true,
+    "files": {
+      "public/models/wardrobe-07-center-drawers.glb": "121de61467339f95a6ccb6b1194c278abc12f1b3897d99b094d55817e95d1662",
+      "assets/source/wardrobe-07-center-drawers/mesh-source.json": "7dfe222cc6465f00820cc4aedf7e0ef77e076b4836fe9b6173c01f1826bfa774",
+      "assets/source/wardrobe-07-center-drawers/model-contract.json": "317fd563d2dc2888e0a77760c5b17d4d83acab24a0fa1c46237629ceccf54f1f",
+      "assets/source/wardrobe-07-center-drawers/performance.json": "8a4394a0a1d95dc1e94a8524ac3ec001480474bd37ce40e67fb99a471cfe066b"
+    }
+  },
+  {
+    "model": "wardrobe-09-chelsea-two-door",
+    "rebuildByteIdentical": true,
+    "files": {
+      "public/models/wardrobe-09-chelsea-two-door.glb": "037ee1ee498a2feb2315c78f84ffa733ff7f27a8db4354f030f8610e131ad0ec",
+      "assets/source/wardrobe-09-chelsea-two-door/mesh-source.json": "24770dc746009a6196219b3848b745bb26622e5a486009407f78365f3559602c",
+      "assets/source/wardrobe-09-chelsea-two-door/model-contract.json": "a100dafc415be245c9a93790839cae194ee67d862cae9dac8f02263d604b56de",
+      "assets/source/wardrobe-09-chelsea-two-door/performance.json": "5a4d03b77749dab76682b0e150927e7c6380d22ab714eb6ead1b92019188e2a5"
+    }
+  },
+  {
+    "model": "dresser-10-white-four-drawer",
+    "rebuildByteIdentical": true,
+    "files": {
+      "public/models/dresser-10-white-four-drawer.glb": "083acac6134517236e137d1a70f80b6e9f47043928c9be0c462ded31471a22d7",
+      "assets/source/dresser-10-white-four-drawer/mesh-source.json": "e3a2cd5a7db552616a8d58c4ffeba39878e76b6fa3747b7b0073d24fc2010216",
+      "assets/source/dresser-10-white-four-drawer/model-contract.json": "51be245b53e3fea43bc1895d5c8b89ebfc287fb5807fd4650588c388ce66cad4",
+      "assets/source/dresser-10-white-four-drawer/performance.json": "fb2c673d1acab915863fc0c065cd35792625e2093e31bfe35ac5cb5c881efc79"
+    }
+  },
+  {
+    "model": "dresser-11-nord-door-four-drawer",
+    "rebuildByteIdentical": true,
+    "files": {
+      "public/models/dresser-11-nord-door-four-drawer.glb": "d59eb5249e53c45f5ee05d603e68e3557c6a3437af9056e96553e5fa7c9403ca",
+      "assets/source/dresser-11-nord-door-four-drawer/mesh-source.json": "18af5748f7c1274e026faa86447a389defbe67bab72aee0be08ba83333535f35",
+      "assets/source/dresser-11-nord-door-four-drawer/model-contract.json": "762054ad8d376fcb81f06d338359cbfc4eb625c65e08bda6b2acceb8e1e39eb4",
+      "assets/source/dresser-11-nord-door-four-drawer/performance.json": "27c4e0654d3317559470c9c99b951a0edc735914a04a4470db8d497900da6158"
+    }
+  },
+  {
+    "model": "dresser-12-brooklyn-six-drawer",
+    "rebuildByteIdentical": true,
+    "files": {
+      "public/models/dresser-12-brooklyn-six-drawer.glb": "75a8364a32d8e01b86a85ab0aeda4ad119e449c819038fe50e44c70928f5b497",
+      "assets/source/dresser-12-brooklyn-six-drawer/mesh-source.json": "2fba2efea830859232d84685ac9cef273350445af6a103c6ec6cb046c2a163b3",
+      "assets/source/dresser-12-brooklyn-six-drawer/model-contract.json": "ea3d941d8ab849e630c5d0de786272ae5131d4b419e50fc5e3269305182f96a5",
+      "assets/source/dresser-12-brooklyn-six-drawer/performance.json": "ed04cc248cf95ba0d107808d386d057b6bdaf88b98b8afee7c544baa8c4ab851"
+    }
+  },
+  {
+    "model": "dresser-13-marvel-fluted",
+    "rebuildByteIdentical": true,
+    "files": {
+      "public/models/dresser-13-marvel-fluted.glb": "b28f1aa1a856c115c719629e2a39a40be4a5a01f219fc7bffb1328b82861f794",
+      "assets/source/dresser-13-marvel-fluted/mesh-source.json": "5e77e82102b6028c96c62aeb49da7b83c3169a227c3b16750b13ffa83f73938a",
+      "assets/source/dresser-13-marvel-fluted/model-contract.json": "58607988635a109c006f7e86942d1e934197e64b37ffce05744ceef60cb5b1fa",
+      "assets/source/dresser-13-marvel-fluted/performance.json": "29440c13750f959507867b085f926aca0dd69816ebaccc73be5f7870f9f78319"
+    }
+  },
+  {
+    "model": "dresser-14-baikal-five-drawer",
+    "rebuildByteIdentical": true,
+    "files": {
+      "public/models/dresser-14-baikal-five-drawer.glb": "e89d62439e271cf4aa36e11a74e4eb78ba0d5d839db9b719fe0af95ac9b5384d",
+      "assets/source/dresser-14-baikal-five-drawer/mesh-source.json": "890a00e2f512976327f7d0a5a6d4d9ba0069b2ed3347af037b5edd5092a9d7cd",
+      "assets/source/dresser-14-baikal-five-drawer/model-contract.json": "ef3b98bd69e3489177245e89d12a9d72d5f1b970336f9ba6c2e6baa33e3676cf",
+      "assets/source/dresser-14-baikal-five-drawer/performance.json": "48172c0ad734b0ed3de46836ffb7ddd5361beb52f94b6c5da0afdeada1ff4ffc"
+    }
+  }
+]

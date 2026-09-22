@@ -2454,12 +2454,12 @@
       "size": [
         0.7585,
         0.006,
-        0.425
+        0.435
       ],
       "position": [
         0,
         0.086,
-        0.0015
+        0.0065
       ],
       "sizeFactors": [
         0.5,
@@ -2494,12 +2494,12 @@
       "size": [
         0.016,
         0.171333333333,
-        0.425
+        0.435
       ],
       "position": [
         -0.37125,
         0.174666666667,
-        0.0015
+        0.0065
       ],
       "sizeFactors": [
         0,
@@ -2533,12 +2533,12 @@
       "size": [
         0.01,
         0.012,
-        0.405
+        0.415
       ],
       "position": [
         -0.38575,
         0.149,
-        0.0015
+        0.0065
       ],
       "sizeFactors": [
         0,
@@ -2572,12 +2572,12 @@
       "size": [
         0.016,
         0.171333333333,
-        0.425
+        0.435
       ],
       "position": [
         0.37125,
         0.174666666667,
-        0.0015
+        0.0065
       ],
       "sizeFactors": [
         0,
@@ -2611,12 +2611,12 @@
       "size": [
         0.01,
         0.012,
-        0.405
+        0.415
       ],
       "position": [
         0.38575,
         0.149,
-        0.0015
+        0.0065
       ],
       "sizeFactors": [
         0,
@@ -2695,7 +2695,7 @@
       "position": [
         0,
         0.174666666667,
-        0.206
+        0.216
       ],
       "sizeFactors": [
         0.5,
@@ -2810,12 +2810,12 @@
       "size": [
         0.7585,
         0.006,
-        0.425
+        0.435
       ],
       "position": [
         0,
         0.318333333333,
-        0.0015
+        0.0065
       ],
       "sizeFactors": [
         0.5,
@@ -2850,12 +2850,12 @@
       "size": [
         0.016,
         0.171333333333,
-        0.425
+        0.435
       ],
       "position": [
         -0.37125,
         0.407,
-        0.0015
+        0.0065
       ],
       "sizeFactors": [
         0,
@@ -2889,12 +2889,12 @@
       "size": [
         0.01,
         0.012,
-        0.405
+        0.415
       ],
       "position": [
         -0.38575,
         0.381333333333,
-        0.0015
+        0.0065
       ],
       "sizeFactors": [
         0,
@@ -2928,12 +2928,12 @@
       "size": [
         0.016,
         0.171333333333,
-        0.425
+        0.435
       ],
       "position": [
         0.37125,
         0.407,
-        0.0015
+        0.0065
       ],
       "sizeFactors": [
         0,
@@ -2967,12 +2967,12 @@
       "size": [
         0.01,
         0.012,
-        0.405
+        0.415
       ],
       "position": [
         0.38575,
         0.381333333333,
-        0.0015
+        0.0065
       ],
       "sizeFactors": [
         0,
@@ -3051,7 +3051,7 @@
       "position": [
         0,
         0.407,
-        0.206
+        0.216
       ],
       "sizeFactors": [
         0.5,
@@ -3166,12 +3166,12 @@
       "size": [
         0.7585,
         0.006,
-        0.425
+        0.435
       ],
       "position": [
         0,
         0.550666666667,
-        0.0015
+        0.0065
       ],
       "sizeFactors": [
         0.5,
@@ -3206,12 +3206,12 @@
       "size": [
         0.016,
         0.171333333333,
-        0.425
+        0.435
       ],
       "position": [
         -0.37125,
         0.639333333333,
-        0.0015
+        0.0065
       ],
       "sizeFactors": [
         0,
@@ -3245,12 +3245,12 @@
       "size": [
         0.01,
         0.012,
-        0.405
+        0.415
       ],
       "position": [
         -0.38575,
         0.613666666667,
-        0.0015
+        0.0065
       ],
       "sizeFactors": [
         0,
@@ -3284,12 +3284,12 @@
       "size": [
         0.016,
         0.171333333333,
-        0.425
+        0.435
       ],
       "position": [
         0.37125,
         0.639333333333,
-        0.0015
+        0.0065
       ],
       "sizeFactors": [
         0,
@@ -3323,12 +3323,12 @@
       "size": [
         0.01,
         0.012,
-        0.405
+        0.415
       ],
       "position": [
         0.38575,
         0.613666666667,
-        0.0015
+        0.0065
       ],
       "sizeFactors": [
         0,
@@ -3407,7 +3407,7 @@
       "position": [
         0,
         0.639333333333,
-        0.206
+        0.216
       ],
       "sizeFactors": [
         0.5,
@@ -3475,19 +3475,22 @@
       "name": "Drawer_01_Assembly",
       "index": 0,
       "closedY": 0.063,
-      "previewTravel": 0.18
+      "previewTravel": 0.18,
+      "frontContactGap": 0
     },
     {
       "name": "Drawer_02_Assembly",
       "index": 1,
       "closedY": 0.2953333333333333,
-      "previewTravel": 0.18
+      "previewTravel": 0.18,
+      "frontContactGap": 0
     },
     {
       "name": "Drawer_03_Assembly",
       "index": 2,
       "closedY": 0.5276666666666665,
-      "previewTravel": 0.18
+      "previewTravel": 0.18,
+      "frontContactGap": 0
     }
   ],
   "materialTargets": {
@@ -11812,10 +11815,10 @@
         "v": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.4236,
+          "baseLength": 0.4336,
           "stretchFactor": 0,
           "translationFactor": 0.5,
-          "anchor": 0.7118,
+          "anchor": 0.7168,
           "uvUnitsPerMeter": 1
         }
       },
@@ -11839,7 +11842,7 @@
         "v": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.4236,
+          "baseLength": 0.4336,
           "stretchFactor": 1,
           "translationFactor": 0,
           "anchor": 0.5,
@@ -11866,10 +11869,10 @@
         "v": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.4236,
+          "baseLength": 0.4336,
           "stretchFactor": 0,
           "translationFactor": -0.5,
-          "anchor": 0.2882,
+          "anchor": 0.2832,
           "uvUnitsPerMeter": 1
         }
       },
@@ -11893,10 +11896,10 @@
         "v": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.4236,
+          "baseLength": 0.4336,
           "stretchFactor": 0,
           "translationFactor": -0.5,
-          "anchor": 0.2882,
+          "anchor": 0.2832,
           "uvUnitsPerMeter": 1
         }
       },
@@ -11920,7 +11923,7 @@
         "v": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.4236,
+          "baseLength": 0.4336,
           "stretchFactor": 1,
           "translationFactor": 0,
           "anchor": 0.5,
@@ -11947,10 +11950,10 @@
         "v": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.4236,
+          "baseLength": 0.4336,
           "stretchFactor": 0,
           "translationFactor": 0.5,
-          "anchor": 0.7118,
+          "anchor": 0.7168,
           "uvUnitsPerMeter": 1
         }
       },
@@ -11965,10 +11968,10 @@
         "u": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.4236,
+          "baseLength": 0.4336,
           "stretchFactor": 0,
           "translationFactor": -0.5,
-          "anchor": 0.2882,
+          "anchor": 0.2832,
           "uvUnitsPerMeter": 1
         },
         "v": {
@@ -11992,10 +11995,10 @@
         "u": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.4236,
+          "baseLength": 0.4336,
           "stretchFactor": 0,
           "translationFactor": -0.5,
-          "anchor": 0.2882,
+          "anchor": 0.2832,
           "uvUnitsPerMeter": 1
         },
         "v": {
@@ -12019,10 +12022,10 @@
         "u": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.4236,
+          "baseLength": 0.4336,
           "stretchFactor": 0,
           "translationFactor": -0.5,
-          "anchor": 0.2882,
+          "anchor": 0.2832,
           "uvUnitsPerMeter": 1
         },
         "v": {
@@ -12046,7 +12049,7 @@
         "u": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.4236,
+          "baseLength": 0.4336,
           "stretchFactor": 1,
           "translationFactor": 0,
           "anchor": 0.5,
@@ -12073,7 +12076,7 @@
         "u": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.4236,
+          "baseLength": 0.4336,
           "stretchFactor": 1,
           "translationFactor": 0,
           "anchor": 0.5,
@@ -12100,7 +12103,7 @@
         "u": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.4236,
+          "baseLength": 0.4336,
           "stretchFactor": 1,
           "translationFactor": 0,
           "anchor": 0.5,
@@ -12127,10 +12130,10 @@
         "u": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.4236,
+          "baseLength": 0.4336,
           "stretchFactor": 0,
           "translationFactor": 0.5,
-          "anchor": 0.7118,
+          "anchor": 0.7168,
           "uvUnitsPerMeter": 1
         },
         "v": {
@@ -12154,10 +12157,10 @@
         "u": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.4236,
+          "baseLength": 0.4336,
           "stretchFactor": 0,
           "translationFactor": 0.5,
-          "anchor": 0.7118,
+          "anchor": 0.7168,
           "uvUnitsPerMeter": 1
         },
         "v": {
@@ -12181,10 +12184,10 @@
         "u": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.4236,
+          "baseLength": 0.4336,
           "stretchFactor": 0,
           "translationFactor": 0.5,
-          "anchor": 0.7118,
+          "anchor": 0.7168,
           "uvUnitsPerMeter": 1
         },
         "v": {
@@ -12370,10 +12373,10 @@
         "u": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.4236,
+          "baseLength": 0.4336,
           "stretchFactor": 0,
           "translationFactor": 0.5,
-          "anchor": 0.7118,
+          "anchor": 0.7168,
           "uvUnitsPerMeter": 1
         },
         "v": {
@@ -12397,7 +12400,7 @@
         "u": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.4236,
+          "baseLength": 0.4336,
           "stretchFactor": 1,
           "translationFactor": 0,
           "anchor": 0.5,
@@ -12424,10 +12427,10 @@
         "u": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.4236,
+          "baseLength": 0.4336,
           "stretchFactor": 0,
           "translationFactor": -0.5,
-          "anchor": 0.2882,
+          "anchor": 0.2832,
           "uvUnitsPerMeter": 1
         },
         "v": {
@@ -12451,10 +12454,10 @@
         "u": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.4236,
+          "baseLength": 0.4336,
           "stretchFactor": 0,
           "translationFactor": 0.5,
-          "anchor": 0.7118,
+          "anchor": 0.7168,
           "uvUnitsPerMeter": 1
         },
         "v": {
@@ -12478,7 +12481,7 @@
         "u": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.4236,
+          "baseLength": 0.4336,
           "stretchFactor": 1,
           "translationFactor": 0,
           "anchor": 0.5,
@@ -12505,10 +12508,10 @@
         "u": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.4236,
+          "baseLength": 0.4336,
           "stretchFactor": 0,
           "translationFactor": -0.5,
-          "anchor": 0.2882,
+          "anchor": 0.2832,
           "uvUnitsPerMeter": 1
         },
         "v": {
@@ -12532,10 +12535,10 @@
         "u": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.4236,
+          "baseLength": 0.4336,
           "stretchFactor": 0,
           "translationFactor": 0.5,
-          "anchor": 0.7118,
+          "anchor": 0.7168,
           "uvUnitsPerMeter": 1
         },
         "v": {
@@ -12559,7 +12562,7 @@
         "u": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.4236,
+          "baseLength": 0.4336,
           "stretchFactor": 1,
           "translationFactor": 0,
           "anchor": 0.5,
@@ -12586,10 +12589,10 @@
         "u": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.4236,
+          "baseLength": 0.4336,
           "stretchFactor": 0,
           "translationFactor": -0.5,
-          "anchor": 0.2882,
+          "anchor": 0.2832,
           "uvUnitsPerMeter": 1
         },
         "v": {
@@ -12622,10 +12625,10 @@
         "v": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.4236,
+          "baseLength": 0.4336,
           "stretchFactor": 0,
           "translationFactor": -0.5,
-          "anchor": 0.2882,
+          "anchor": 0.2832,
           "uvUnitsPerMeter": 1
         }
       },
@@ -12649,7 +12652,7 @@
         "v": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.4236,
+          "baseLength": 0.4336,
           "stretchFactor": 1,
           "translationFactor": 0,
           "anchor": 0.5,
@@ -12676,10 +12679,10 @@
         "v": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.4236,
+          "baseLength": 0.4336,
           "stretchFactor": 0,
           "translationFactor": 0.5,
-          "anchor": 0.7118,
+          "anchor": 0.7168,
           "uvUnitsPerMeter": 1
         }
       },
@@ -12703,10 +12706,10 @@
         "v": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.4236,
+          "baseLength": 0.4336,
           "stretchFactor": 0,
           "translationFactor": 0.5,
-          "anchor": 0.7118,
+          "anchor": 0.7168,
           "uvUnitsPerMeter": 1
         }
       },
@@ -12730,7 +12733,7 @@
         "v": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.4236,
+          "baseLength": 0.4336,
           "stretchFactor": 1,
           "translationFactor": 0,
           "anchor": 0.5,
@@ -12757,10 +12760,10 @@
         "v": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.4236,
+          "baseLength": 0.4336,
           "stretchFactor": 0,
           "translationFactor": -0.5,
-          "anchor": 0.2882,
+          "anchor": 0.2832,
           "uvUnitsPerMeter": 1
         }
       },

@@ -1,0 +1,50 @@
+[
+  {
+    "id": "dresser-10-white-four-drawer.glb",
+    "fixedMeshes": 294,
+    "changedBoxMeshes": 352,
+    "maxClosedVertexErrorMeters": 0
+  },
+  {
+    "id": "dresser-11-nord-door-four-drawer.glb",
+    "fixedMeshes": 412,
+    "changedBoxMeshes": 352,
+    "maxClosedVertexErrorMeters": 2.7755575615628914e-17
+  },
+  {
+    "id": "dresser-12-brooklyn-six-drawer.glb",
+    "fixedMeshes": 390,
+    "changedBoxMeshes": 528,
+    "maxClosedVertexErrorMeters": 0
+  },
+  {
+    "id": "dresser-13-marvel-fluted.glb",
+    "fixedMeshes": 582,
+    "changedBoxMeshes": 352,
+    "maxClosedVertexErrorMeters": 2.7755575615628914e-17
+  },
+  {
+    "id": "dresser-14-baikal-five-drawer.glb",
+    "fixedMeshes": 331,
+    "changedBoxMeshes": 440,
+    "maxClosedVertexErrorMeters": 0
+  },
+  {
+    "id": "wardrobe-07-center-drawers.glb",
+    "fixedMeshes": 651,
+    "changedBoxMeshes": 258,
+    "maxClosedVertexErrorMeters": 0
+  },
+  {
+    "id": "wardrobe-08-four-door.glb",
+    "fixedMeshes": 579,
+    "changedBoxMeshes": 0,
+    "maxClosedVertexErrorMeters": 0
+  },
+  {
+    "id": "wardrobe-09-chelsea-two-door.glb",
+    "fixedMeshes": 254,
+    "changedBoxMeshes": 0,
+    "maxClosedVertexErrorMeters": 2.7755575615628914e-17
+  }
+]

@@ -262,12 +262,12 @@
       "size": [
         0.344,
         0.006,
-        0.265
+        0.277
       ],
       "position": [
         0,
         0.092,
-        -0.015
+        -0.009
       ],
       "sizeFactors": [
         1,
@@ -301,12 +301,12 @@
       "size": [
         0.016,
         0.1372,
-        0.265
+        0.277
       ],
       "position": [
         -0.164,
         0.1636,
-        -0.015
+        -0.009
       ],
       "sizeFactors": [
         0,
@@ -339,12 +339,12 @@
       "size": [
         0.008,
         0.027,
-        0.25
+        0.262
       ],
       "position": [
         -0.181,
         0.139,
-        -0.015
+        -0.009
       ],
       "sizeFactors": [
         0,
@@ -376,12 +376,12 @@
       "size": [
         0.004,
         0.021,
-        0.24
+        0.252
       ],
       "position": [
         -0.174,
         0.139,
-        -0.015
+        -0.009
       ],
       "sizeFactors": [
         0,
@@ -414,12 +414,12 @@
       "size": [
         0.016,
         0.1372,
-        0.265
+        0.277
       ],
       "position": [
         0.164,
         0.1636,
-        -0.015
+        -0.009
       ],
       "sizeFactors": [
         0,
@@ -452,12 +452,12 @@
       "size": [
         0.008,
         0.027,
-        0.25
+        0.262
       ],
       "position": [
         0.181,
         0.139,
-        -0.015
+        -0.009
       ],
       "sizeFactors": [
         0,
@@ -489,12 +489,12 @@
       "size": [
         0.004,
         0.021,
-        0.24
+        0.252
       ],
       "position": [
         0.174,
         0.139,
-        -0.015
+        -0.009
       ],
       "sizeFactors": [
         0,
@@ -571,7 +571,7 @@
       "position": [
         0,
         0.1636,
-        0.1095
+        0.1215
       ],
       "sizeFactors": [
         1,
@@ -683,12 +683,12 @@
       "size": [
         0.344,
         0.006,
-        0.265
+        0.277
       ],
       "position": [
         0,
         0.2812,
-        -0.015
+        -0.009
       ],
       "sizeFactors": [
         1,
@@ -722,12 +722,12 @@
       "size": [
         0.016,
         0.1372,
-        0.265
+        0.277
       ],
       "position": [
         -0.164,
         0.3528,
-        -0.015
+        -0.009
       ],
       "sizeFactors": [
         0,
@@ -760,12 +760,12 @@
       "size": [
         0.008,
         0.027,
-        0.25
+        0.262
       ],
       "position": [
         -0.181,
         0.3282,
-        -0.015
+        -0.009
       ],
       "sizeFactors": [
         0,
@@ -797,12 +797,12 @@
       "size": [
         0.004,
         0.021,
-        0.24
+        0.252
       ],
       "position": [
         -0.174,
         0.3282,
-        -0.015
+        -0.009
       ],
       "sizeFactors": [
         0,
@@ -835,12 +835,12 @@
       "size": [
         0.016,
         0.1372,
-        0.265
+        0.277
       ],
       "position": [
         0.164,
         0.3528,
-        -0.015
+        -0.009
       ],
       "sizeFactors": [
         0,
@@ -873,12 +873,12 @@
       "size": [
         0.008,
         0.027,
-        0.25
+        0.262
       ],
       "position": [
         0.181,
         0.3282,
-        -0.015
+        -0.009
       ],
       "sizeFactors": [
         0,
@@ -910,12 +910,12 @@
       "size": [
         0.004,
         0.021,
-        0.24
+        0.252
       ],
       "position": [
         0.174,
         0.3282,
-        -0.015
+        -0.009
       ],
       "sizeFactors": [
         0,
@@ -992,7 +992,7 @@
       "position": [
         0,
         0.3528,
-        0.1095
+        0.1215
       ],
       "sizeFactors": [
         1,
@@ -1104,12 +1104,12 @@
       "size": [
         0.344,
         0.006,
-        0.265
+        0.277
       ],
       "position": [
         0,
         0.4704,
-        -0.015
+        -0.009
       ],
       "sizeFactors": [
         1,
@@ -1143,12 +1143,12 @@
       "size": [
         0.016,
         0.1372,
-        0.265
+        0.277
       ],
       "position": [
         -0.164,
         0.542,
-        -0.015
+        -0.009
       ],
       "sizeFactors": [
         0,
@@ -1181,12 +1181,12 @@
       "size": [
         0.008,
         0.027,
-        0.25
+        0.262
       ],
       "position": [
         -0.181,
         0.5174,
-        -0.015
+        -0.009
       ],
       "sizeFactors": [
         0,
@@ -1218,12 +1218,12 @@
       "size": [
         0.004,
         0.021,
-        0.24
+        0.252
       ],
       "position": [
         -0.174,
         0.5174,
-        -0.015
+        -0.009
       ],
       "sizeFactors": [
         0,
@@ -1256,12 +1256,12 @@
       "size": [
         0.016,
         0.1372,
-        0.265
+        0.277
       ],
       "position": [
         0.164,
         0.542,
-        -0.015
+        -0.009
       ],
       "sizeFactors": [
         0,
@@ -1294,12 +1294,12 @@
       "size": [
         0.008,
         0.027,
-        0.25
+        0.262
       ],
       "position": [
         0.181,
         0.5174,
-        -0.015
+        -0.009
       ],
       "sizeFactors": [
         0,
@@ -1331,12 +1331,12 @@
       "size": [
         0.004,
         0.021,
-        0.24
+        0.252
       ],
       "position": [
         0.174,
         0.5174,
-        -0.015
+        -0.009
       ],
       "sizeFactors": [
         0,
@@ -1413,7 +1413,7 @@
       "position": [
         0,
         0.542,
-        0.1095
+        0.1215
       ],
       "sizeFactors": [
         1,
@@ -1525,12 +1525,12 @@
       "size": [
         0.344,
         0.006,
-        0.265
+        0.277
       ],
       "position": [
         0,
         0.6596,
-        -0.015
+        -0.009
       ],
       "sizeFactors": [
         1,
@@ -1564,12 +1564,12 @@
       "size": [
         0.016,
         0.1372,
-        0.265
+        0.277
       ],
       "position": [
         -0.164,
         0.7312,
-        -0.015
+        -0.009
       ],
       "sizeFactors": [
         0,
@@ -1602,12 +1602,12 @@
       "size": [
         0.008,
         0.027,
-        0.25
+        0.262
       ],
       "position": [
         -0.181,
         0.7066,
-        -0.015
+        -0.009
       ],
       "sizeFactors": [
         0,
@@ -1639,12 +1639,12 @@
       "size": [
         0.004,
         0.021,
-        0.24
+        0.252
       ],
       "position": [
         -0.174,
         0.7066,
-        -0.015
+        -0.009
       ],
       "sizeFactors": [
         0,
@@ -1677,12 +1677,12 @@
       "size": [
         0.016,
         0.1372,
-        0.265
+        0.277
       ],
       "position": [
         0.164,
         0.7312,
-        -0.015
+        -0.009
       ],
       "sizeFactors": [
         0,
@@ -1715,12 +1715,12 @@
       "size": [
         0.008,
         0.027,
-        0.25
+        0.262
       ],
       "position": [
         0.181,
         0.7066,
-        -0.015
+        -0.009
       ],
       "sizeFactors": [
         0,
@@ -1752,12 +1752,12 @@
       "size": [
         0.004,
         0.021,
-        0.24
+        0.252
       ],
       "position": [
         0.174,
         0.7066,
-        -0.015
+        -0.009
       ],
       "sizeFactors": [
         0,
@@ -1834,7 +1834,7 @@
       "position": [
         0,
         0.7312,
-        0.1095
+        0.1215
       ],
       "sizeFactors": [
         1,
@@ -1946,12 +1946,12 @@
       "size": [
         0.344,
         0.006,
-        0.265
+        0.277
       ],
       "position": [
         0,
         0.8488,
-        -0.015
+        -0.009
       ],
       "sizeFactors": [
         1,
@@ -1985,12 +1985,12 @@
       "size": [
         0.016,
         0.1372,
-        0.265
+        0.277
       ],
       "position": [
         -0.164,
         0.9204,
-        -0.015
+        -0.009
       ],
       "sizeFactors": [
         0,
@@ -2023,12 +2023,12 @@
       "size": [
         0.008,
         0.027,
-        0.25
+        0.262
       ],
       "position": [
         -0.181,
         0.8958,
-        -0.015
+        -0.009
       ],
       "sizeFactors": [
         0,
@@ -2060,12 +2060,12 @@
       "size": [
         0.004,
         0.021,
-        0.24
+        0.252
       ],
       "position": [
         -0.174,
         0.8958,
-        -0.015
+        -0.009
       ],
       "sizeFactors": [
         0,
@@ -2098,12 +2098,12 @@
       "size": [
         0.016,
         0.1372,
-        0.265
+        0.277
       ],
       "position": [
         0.164,
         0.9204,
-        -0.015
+        -0.009
       ],
       "sizeFactors": [
         0,
@@ -2136,12 +2136,12 @@
       "size": [
         0.008,
         0.027,
-        0.25
+        0.262
       ],
       "position": [
         0.181,
         0.8958,
-        -0.015
+        -0.009
       ],
       "sizeFactors": [
         0,
@@ -2173,12 +2173,12 @@
       "size": [
         0.004,
         0.021,
-        0.24
+        0.252
       ],
       "position": [
         0.174,
         0.8958,
-        -0.015
+        -0.009
       ],
       "sizeFactors": [
         0,
@@ -2255,7 +2255,7 @@
       "position": [
         0,
         0.9204,
-        0.1095
+        0.1215
       ],
       "sizeFactors": [
         1,
@@ -2346,9 +2346,10 @@
       "index": 0,
       "column": 0,
       "row": 0,
-      "previewTravel": 0.14575000000000002,
+      "previewTravel": 0.15235,
       "boxWidth": 0.344,
-      "boxDepth": 0.265
+      "boxDepth": 0.277,
+      "frontContactGap": 0
     },
     {
       "name": "Drawer_02_Assembly",
@@ -2356,9 +2357,10 @@
       "index": 1,
       "column": 0,
       "row": 1,
-      "previewTravel": 0.14575000000000002,
+      "previewTravel": 0.15235,
       "boxWidth": 0.344,
-      "boxDepth": 0.265
+      "boxDepth": 0.277,
+      "frontContactGap": 0
     },
     {
       "name": "Drawer_03_Assembly",
@@ -2366,9 +2368,10 @@
       "index": 2,
       "column": 0,
       "row": 2,
-      "previewTravel": 0.14575000000000002,
+      "previewTravel": 0.15235,
       "boxWidth": 0.344,
-      "boxDepth": 0.265
+      "boxDepth": 0.277,
+      "frontContactGap": 0
     },
     {
       "name": "Drawer_04_Assembly",
@@ -2376,9 +2379,10 @@
       "index": 3,
       "column": 0,
       "row": 3,
-      "previewTravel": 0.14575000000000002,
+      "previewTravel": 0.15235,
       "boxWidth": 0.344,
-      "boxDepth": 0.265
+      "boxDepth": 0.277,
+      "frontContactGap": 0
     },
     {
       "name": "Drawer_05_Assembly",
@@ -2386,9 +2390,10 @@
       "index": 4,
       "column": 0,
       "row": 4,
-      "previewTravel": 0.14575000000000002,
+      "previewTravel": 0.15235,
       "boxWidth": 0.344,
-      "boxDepth": 0.265
+      "boxDepth": 0.277,
+      "frontContactGap": 0
     }
   ],
   "facades": [
@@ -5669,10 +5674,10 @@
         "v": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.2636,
+          "baseLength": 0.2756,
           "stretchFactor": 0,
           "translationFactor": 0.5,
-          "anchor": 0.6318,
+          "anchor": 0.6378,
           "uvUnitsPerMeter": 1
         }
       },
@@ -5696,7 +5701,7 @@
         "v": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.2636,
+          "baseLength": 0.2756,
           "stretchFactor": 1,
           "translationFactor": 0,
           "anchor": 0.5,
@@ -5723,10 +5728,10 @@
         "v": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.2636,
+          "baseLength": 0.2756,
           "stretchFactor": 0,
           "translationFactor": -0.5,
-          "anchor": 0.3682,
+          "anchor": 0.3622,
           "uvUnitsPerMeter": 1
         }
       },
@@ -5750,10 +5755,10 @@
         "v": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.2636,
+          "baseLength": 0.2756,
           "stretchFactor": 0,
           "translationFactor": -0.5,
-          "anchor": 0.3682,
+          "anchor": 0.3622,
           "uvUnitsPerMeter": 1
         }
       },
@@ -5777,7 +5782,7 @@
         "v": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.2636,
+          "baseLength": 0.2756,
           "stretchFactor": 1,
           "translationFactor": 0,
           "anchor": 0.5,
@@ -5804,10 +5809,10 @@
         "v": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.2636,
+          "baseLength": 0.2756,
           "stretchFactor": 0,
           "translationFactor": 0.5,
-          "anchor": 0.6318,
+          "anchor": 0.6378,
           "uvUnitsPerMeter": 1
         }
       },
@@ -5822,10 +5827,10 @@
         "u": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.2636,
+          "baseLength": 0.2756,
           "stretchFactor": 0,
           "translationFactor": -0.5,
-          "anchor": 0.3682,
+          "anchor": 0.3622,
           "uvUnitsPerMeter": 1
         },
         "v": {
@@ -5849,10 +5854,10 @@
         "u": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.2636,
+          "baseLength": 0.2756,
           "stretchFactor": 0,
           "translationFactor": -0.5,
-          "anchor": 0.3682,
+          "anchor": 0.3622,
           "uvUnitsPerMeter": 1
         },
         "v": {
@@ -5876,10 +5881,10 @@
         "u": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.2636,
+          "baseLength": 0.2756,
           "stretchFactor": 0,
           "translationFactor": -0.5,
-          "anchor": 0.3682,
+          "anchor": 0.3622,
           "uvUnitsPerMeter": 1
         },
         "v": {
@@ -5903,7 +5908,7 @@
         "u": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.2636,
+          "baseLength": 0.2756,
           "stretchFactor": 1,
           "translationFactor": 0,
           "anchor": 0.5,
@@ -5930,7 +5935,7 @@
         "u": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.2636,
+          "baseLength": 0.2756,
           "stretchFactor": 1,
           "translationFactor": 0,
           "anchor": 0.5,
@@ -5957,7 +5962,7 @@
         "u": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.2636,
+          "baseLength": 0.2756,
           "stretchFactor": 1,
           "translationFactor": 0,
           "anchor": 0.5,
@@ -5984,10 +5989,10 @@
         "u": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.2636,
+          "baseLength": 0.2756,
           "stretchFactor": 0,
           "translationFactor": 0.5,
-          "anchor": 0.6318,
+          "anchor": 0.6378,
           "uvUnitsPerMeter": 1
         },
         "v": {
@@ -6011,10 +6016,10 @@
         "u": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.2636,
+          "baseLength": 0.2756,
           "stretchFactor": 0,
           "translationFactor": 0.5,
-          "anchor": 0.6318,
+          "anchor": 0.6378,
           "uvUnitsPerMeter": 1
         },
         "v": {
@@ -6038,10 +6043,10 @@
         "u": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.2636,
+          "baseLength": 0.2756,
           "stretchFactor": 0,
           "translationFactor": 0.5,
-          "anchor": 0.6318,
+          "anchor": 0.6378,
           "uvUnitsPerMeter": 1
         },
         "v": {
@@ -6227,10 +6232,10 @@
         "u": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.2636,
+          "baseLength": 0.2756,
           "stretchFactor": 0,
           "translationFactor": 0.5,
-          "anchor": 0.6318,
+          "anchor": 0.6378,
           "uvUnitsPerMeter": 1
         },
         "v": {
@@ -6254,7 +6259,7 @@
         "u": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.2636,
+          "baseLength": 0.2756,
           "stretchFactor": 1,
           "translationFactor": 0,
           "anchor": 0.5,
@@ -6281,10 +6286,10 @@
         "u": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.2636,
+          "baseLength": 0.2756,
           "stretchFactor": 0,
           "translationFactor": -0.5,
-          "anchor": 0.3682,
+          "anchor": 0.3622,
           "uvUnitsPerMeter": 1
         },
         "v": {
@@ -6308,10 +6313,10 @@
         "u": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.2636,
+          "baseLength": 0.2756,
           "stretchFactor": 0,
           "translationFactor": 0.5,
-          "anchor": 0.6318,
+          "anchor": 0.6378,
           "uvUnitsPerMeter": 1
         },
         "v": {
@@ -6335,7 +6340,7 @@
         "u": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.2636,
+          "baseLength": 0.2756,
           "stretchFactor": 1,
           "translationFactor": 0,
           "anchor": 0.5,
@@ -6362,10 +6367,10 @@
         "u": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.2636,
+          "baseLength": 0.2756,
           "stretchFactor": 0,
           "translationFactor": -0.5,
-          "anchor": 0.3682,
+          "anchor": 0.3622,
           "uvUnitsPerMeter": 1
         },
         "v": {
@@ -6389,10 +6394,10 @@
         "u": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.2636,
+          "baseLength": 0.2756,
           "stretchFactor": 0,
           "translationFactor": 0.5,
-          "anchor": 0.6318,
+          "anchor": 0.6378,
           "uvUnitsPerMeter": 1
         },
         "v": {
@@ -6416,7 +6421,7 @@
         "u": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.2636,
+          "baseLength": 0.2756,
           "stretchFactor": 1,
           "translationFactor": 0,
           "anchor": 0.5,
@@ -6443,10 +6448,10 @@
         "u": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.2636,
+          "baseLength": 0.2756,
           "stretchFactor": 0,
           "translationFactor": -0.5,
-          "anchor": 0.3682,
+          "anchor": 0.3622,
           "uvUnitsPerMeter": 1
         },
         "v": {
@@ -6479,10 +6484,10 @@
         "v": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.2636,
+          "baseLength": 0.2756,
           "stretchFactor": 0,
           "translationFactor": -0.5,
-          "anchor": 0.3682,
+          "anchor": 0.3622,
           "uvUnitsPerMeter": 1
         }
       },
@@ -6506,7 +6511,7 @@
         "v": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.2636,
+          "baseLength": 0.2756,
           "stretchFactor": 1,
           "translationFactor": 0,
           "anchor": 0.5,
@@ -6533,10 +6538,10 @@
         "v": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.2636,
+          "baseLength": 0.2756,
           "stretchFactor": 0,
           "translationFactor": 0.5,
-          "anchor": 0.6318,
+          "anchor": 0.6378,
           "uvUnitsPerMeter": 1
         }
       },
@@ -6560,10 +6565,10 @@
         "v": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.2636,
+          "baseLength": 0.2756,
           "stretchFactor": 0,
           "translationFactor": 0.5,
-          "anchor": 0.6318,
+          "anchor": 0.6378,
           "uvUnitsPerMeter": 1
         }
       },
@@ -6587,7 +6592,7 @@
         "v": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.2636,
+          "baseLength": 0.2756,
           "stretchFactor": 1,
           "translationFactor": 0,
           "anchor": 0.5,
@@ -6614,10 +6619,10 @@
         "v": {
           "axis": "z",
           "dimension": "depth",
-          "baseLength": 0.2636,
+          "baseLength": 0.2756,
           "stretchFactor": 0,
           "translationFactor": -0.5,
-          "anchor": 0.3682,
+          "anchor": 0.3622,
           "uvUnitsPerMeter": 1
         }
       },

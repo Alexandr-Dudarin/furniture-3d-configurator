@@ -1,0 +1,78 @@
+{
+  "models": [
+    {
+      "id": "dresser-10-white-four-drawer",
+      "parts": 4,
+      "openResizeMinMaxBase": true,
+      "close": true
+    },
+    {
+      "id": "dresser-11-nord-door-four-drawer",
+      "parts": 5,
+      "openResizeMinMaxBase": true,
+      "close": true
+    },
+    {
+      "id": "dresser-12-brooklyn-six-drawer",
+      "parts": 6,
+      "openResizeMinMaxBase": true,
+      "close": true
+    },
+    {
+      "id": "dresser-13-marvel-fluted",
+      "parts": 6,
+      "openResizeMinMaxBase": true,
+      "close": true
+    },
+    {
+      "id": "dresser-14-baikal-five-drawer",
+      "parts": 5,
+      "openResizeMinMaxBase": true,
+      "close": true
+    },
+    {
+      "id": "wardrobe-07-center-drawers",
+      "parts": 7,
+      "openResizeMinMaxBase": true,
+      "close": true
+    },
+    {
+      "id": "wardrobe-08-four-door",
+      "parts": 4,
+      "openResizeMinMaxBase": true,
+      "close": true
+    },
+    {
+      "id": "wardrobe-09-chelsea-two-door",
+      "parts": 2,
+      "openResizeMinMaxBase": true,
+      "close": true
+    }
+  ],
+  "errors": [],
+  "httpErrors": [],
+  "screenshots": [
+    "before-dresser-11-nord-door-four-drawer-drawer-joint.png",
+    "before-dresser-11-nord-door-four-drawer-door-joint.png",
+    "before-wardrobe-07-center-drawers-drawer-joint.png",
+    "before-wardrobe-07-center-drawers-door-joint.png",
+    "before-wardrobe-09-chelsea-two-door-door-joint.png",
+    "after-dresser-10-white-four-drawer-drawer-joint.png",
+    "after-dresser-11-nord-door-four-drawer-drawer-joint.png",
+    "after-dresser-11-nord-door-four-drawer-door-joint.png",
+    "after-dresser-12-brooklyn-six-drawer-drawer-joint.png",
+    "after-dresser-13-marvel-fluted-drawer-joint.png",
+    "after-dresser-13-marvel-fluted-door-joint.png",
+    "after-dresser-14-baikal-five-drawer-drawer-joint.png",
+    "after-wardrobe-07-center-drawers-drawer-joint.png",
+    "after-wardrobe-07-center-drawers-door-joint.png",
+    "after-wardrobe-08-four-door-door-joint.png",
+    "after-wardrobe-09-chelsea-two-door-door-joint.png"
+  ],
+  "mobile": {
+    "width": 390,
+    "height": 844,
+    "noOverflow": true
+  },
+  "passed": true
+}

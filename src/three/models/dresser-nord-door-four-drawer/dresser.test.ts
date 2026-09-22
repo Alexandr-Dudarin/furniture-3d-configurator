@@ -11,6 +11,7 @@ import { DRESSER_11_CONFIG as config, MATERIAL_TARGETS, createMaterialReviewDefi
 
 type Size = {width:number;height:number;depth:number}
 type Axis = 'x'|'y'|'z'
+type DrawerRecord = { name:string; front:string; column:number; row:number; boxDepth:number }
 const keys=['width','height','depth'] as const, axes=['x','y','z'] as const
 // Independent transcription of screenshot dimensions and visible component counts.
 const base:Size={"width": 1.2, "height": 0.9, "depth": 0.45}
@@ -51,13 +52,14 @@ function shape(root:THREE.Object3D,d:Size){
     expect(axes.every(k=>Math.min(a.box.max[k],b.box.max[k])-Math.max(a.box.min[k],b.box.min[k])>EPS),`${a.name} overlaps ${b.name}`).toBe(false)
   }
   for(const bay of contract.bays){
-    const drawers=contract.drawers.filter((r:any)=>r.column===bay.index).sort((a:any,b:any)=>a.row-b.row)
+    const drawers=(contract.drawers as DrawerRecord[]).filter(r=>r.column===bay.index).sort((a,b)=>a.row-b.row)
     for(let i=1;i<drawers.length;i++)close(box(root,drawers[i].front).min.y-box(root,drawers[i-1].front).max.y,spec.frontGap)
     for(const r of drawers){
       const prefix=r.name.replace('_Assembly',''),front=box(root,r.front),floor=box(root,prefix+'_Bottom')
       close(front.min.z-left.max.z,.004);close(front.getSize(new THREE.Vector3()).z,.016)
       close(floor.min.y-front.min.y,.020);close(floor.getSize(new THREE.Vector3()).y,.006)
-      close(floor.max.z,front.min.z-.012)
+      // Facade-to-box contact is zero; runner side clearances remain independent.
+      close(floor.max.z,front.min.z)
       const bayLeft=bay.min+bay.lf*(d.width-base.width),bayRight=bay.max+bay.rf*(d.width-base.width)
       close(floor.min.x-bayLeft,.013);close(bayRight-floor.max.x,.013)
     }
@@ -115,7 +117,18 @@ describe(config.id,()=>{
     for(const d of [limits('min'),base,limits('max')]){
       controller.setDimensions(d)
       for(const r of contract.drawers){const n=required(root,r.name),p=n.position.clone(),before=box(root,r.front),other=snapshot(root),travel=Math.min(.18,(r.boxDepth+d.depth-base.depth)*.55);expect(n.userData.interactiveAnimation).toBe(false);n.position.z+=travel;const after=box(root,r.front);close(after.min.z-before.min.z,travel);closeSize(after.getSize(new THREE.Vector3()),before.getSize(new THREE.Vector3()).toArray());close(after.min.y,before.min.y);n.position.copy(p);expect(snapshot(root)).toEqual(other)}
-      for(const r of contract.doors){const pivot=required(root,r.name),origin=pivot.getWorldPosition(new THREE.Vector3());expect(pivot.userData.interactiveAnimation).toBe(false);for(const deg of [0,15,45,90,105]){pivot.rotation.y=Math.sign(r.angle)*THREE.MathUtils.degToRad(deg);root.updateMatrixWorld(true);expect(pivot.getWorldPosition(new THREE.Vector3()).distanceTo(origin)).toBeLessThan(EPS);expect(box(root,r.front).min.z+EPS).toBeGreaterThanOrEqual(box(root,'Panel_Side_Left').max.z+.004)}pivot.rotation.y=0}
+      for(const r of contract.doors){
+        const pivot=required(root,r.name),origin=pivot.getWorldPosition(new THREE.Vector3()),closed=box(root,r.front)
+        close(origin.z,closed.min.z);expect(pivot.userData.interactiveAnimation).toBe(false)
+        // The outer corner can pass behind the front plane while outside the side panel.
+        // Swept volume/carcass collisions are checked in furnitureJoints.test.ts.
+        for(const deg of [0,15,45,90,105]){
+          pivot.rotation.y=Math.sign(r.angle)*THREE.MathUtils.degToRad(deg);root.updateMatrixWorld(true)
+          expect(pivot.getWorldPosition(new THREE.Vector3()).distanceTo(origin)).toBeLessThan(EPS)
+          expect(box(root,r.front).getCenter(new THREE.Vector3()).z+EPS).toBeGreaterThanOrEqual(closed.getCenter(new THREE.Vector3()).z)
+        }
+        pivot.rotation.y=0
+      }
     }
     controller.setDimensions(base);shape(root,base)
   },30000)

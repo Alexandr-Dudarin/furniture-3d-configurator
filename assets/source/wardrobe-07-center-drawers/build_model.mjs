@@ -258,7 +258,8 @@ for(const [i,key,hingeSide] of [[0,'Outer_Left',-1],[1,'Center_Left',-1],[2,'Cen
 const drawers=[]
 if(drawerModel) {
   const frontBottom=.063, frontTop=.745, recess=.015, frontHeight=(frontTop-frontBottom-2*recess)/3
-  const boxWidth=centerClear-.026, boxRear=bodyBack+.025, boxFront=F-.026, boxDepth=boxFront-boxRear, boxZ=(boxFront+boxRear)/2
+  // All four front-facing box surfaces meet the facade rear plane.
+  const boxWidth=centerClear-.026, boxRear=bodyBack+.025, boxFront=F-t, boxDepth=boxFront-boxRear, boxZ=(boxFront+boxRear)/2
   for(let i=0;i<3;i++) {
     const prefix=`Drawer_${String(i+1).padStart(2,'0')}`, y0=frontBottom+i*(frontHeight+recess), y1=y0+frontHeight
     const drawer=group(prefix+'_Assembly',root,[0,y0,0],zeros(),{kind:'drawer',axis:'+Z',interactiveAnimation:false})
@@ -272,7 +273,7 @@ if(drawerModel) {
       metal(prefix+'_Slide_'+side,carcass,[.010,.012,boxDepth-.020],[s*(centerClear/2-.0065),wallBottom+.060,boxZ],[0,0,1],motion(s*.25,0,0),{fitting:'drawer-slide',drawerIndex:i})
     }
     for(const [edge,z,zf] of [['Back',boxRear+t/2,-.5],['Inner_Front',boxFront-t/2,.5]])board(prefix+'_'+edge,drawer,[boxWidth-2*t,wallH,t],[0,(wallBottom+wallTop)/2,z],[.5,0,0],motion(0,0,zf),2,'carcass','DrawerWall',{drawerIndex:i})
-    drawers.push({name:drawer.getName(),index:i,closedY:y0,previewTravel:.18})
+    drawers.push({name:drawer.getName(),index:i,closedY:y0,previewTravel:.18,frontContactGap:0})
   }
 }
 

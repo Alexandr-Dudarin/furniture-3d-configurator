@@ -73,7 +73,7 @@ export const catalogue: FurnitureDefinition = {
       "kind": "drawer",
       "travel": {
         "dimension": "depth",
-        "baseLength": 0.425,
+        "baseLength": 0.435,
         "factor": 1,
         "ratio": 0.55,
         "max": 0.18
@@ -86,7 +86,7 @@ export const catalogue: FurnitureDefinition = {
       "kind": "drawer",
       "travel": {
         "dimension": "depth",
-        "baseLength": 0.425,
+        "baseLength": 0.435,
         "factor": 1,
         "ratio": 0.55,
         "max": 0.18
@@ -99,7 +99,7 @@ export const catalogue: FurnitureDefinition = {
       "kind": "drawer",
       "travel": {
         "dimension": "depth",
-        "baseLength": 0.425,
+        "baseLength": 0.435,
         "factor": 1,
         "ratio": 0.55,
         "max": 0.18

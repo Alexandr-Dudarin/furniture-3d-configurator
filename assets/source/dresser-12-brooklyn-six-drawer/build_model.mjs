@@ -384,7 +384,8 @@ for(const bay of bays) {
   const isDoor=K==='nord'?bay.index===0:K==='marvel'?(bay.index===0||bay.index===2):false
   if(isDoor) {
     const side=bay.index===0?'Left':'Right',sgn=side==='Left'?-1:1,hx=sgn<0?bay.frontLeft:bay.frontRight,hxf=sgn<0?bay.lf:bay.rf
-    const pivot=group(`Door_${side}_Hinge`,root,[hx,faceBottom,F],motion(hxf,0,.5),{kind:'door-pivot',axis:'Y',openAngleDegrees:sgn*105,interactiveAnimation:false})
+    // Pivot on the rear face: the door stays beside the carcass when opened.
+    const pivot=group(`Door_${side}_Hinge`,root,[hx,faceBottom,F-t],motion(hxf,0,.5),{kind:'door-pivot',axisPlane:'facade-back',axis:'Y',openAngleDegrees:sgn*105,interactiveAnimation:false})
     const f=facade(`Door_${side}_Front`,pivot,bay,faceBottom,faceTop,.5,K==='marvel'?'fluted':'plain',1)
     const shelfY=(bottomY+t+H-t)/2
     board(`Shelf_${side}`,carcass,[bay.width-.001,t,bodyDepth-backT-.020],[bay.x,shelfY,bodyZ+(backT-.012)/2],[bay.wf,0,1],motion(bay.xf,.5,0),1,'carcass','Shelf')
@@ -400,7 +401,8 @@ for(const bay of bays) {
     const index=drawers.length+1,prefix=`Drawer_${String(index).padStart(2,'0')}`,y0=faceBottom+row*(rowH+spec.frontGap),y1=y0+rowH,yf=(row+.5)/N
     const dr=group(prefix+'_Assembly',root,[bay.x,y0,0],motion(bay.xf,row/N,0),{kind:'drawer',axis:'+Z',interactiveAnimation:false,column:bay.index,row})
     const f=facade(prefix+'_Front',dr,bay,y0,y1,yf,K==='baikal'&&row===N-1?'carved':'plain')
-    const x0=bay.min+.013,x1=bay.max-.013,boxW=x1-x0,rear=bodyBack+backT+.014,front=F-t-.012,dep=front-rear,cz=(front+rear)/2
+    // The box ends at the facade rear plane; do not add a floating-front gap.
+    const x0=bay.min+.013,x1=bay.max-.013,boxW=x1-x0,rear=bodyBack+backT+.014,front=F-t,dep=front-rear,cz=(front+rear)/2
     const floorY=y0+.020,wallBottom=floorY+.006,wallTop=y1-.022,wallH=wallTop-wallBottom
     board(prefix+'_Bottom',dr,[boxW,.006,dep],[(x0+x1)/2,floorY+.003,cz],[bay.wf,0,1],motion(bay.xf,row/N,0),1,'carcass','DrawerBottom')
     for(const [side,sgn,xf] of [['Left',-1,bay.lf],['Right',1,bay.rf]]) {
@@ -413,7 +415,7 @@ for(const bay of bays) {
     if((K==='nord'||K==='marvel')&&row<N-1)board(prefix+'_Grip_Recess',carcass,[bay.width-.001,spec.frontGap,.006],[bay.x,y1+spec.frontGap/2,F-t-.007],[bay.wf,0,0],motion(bay.xf,(row+1)/N,.5),2,'carcass','GripRecess')
     if(K==='brooklyn')makeHandle(prefix+'_Handle',dr,bay,y1,(row+1)/N,K)
     if(K==='baikal')makeHandle(prefix+'_Handle',dr,bay,(y0+y1)/2,yf,K)
-    drawers.push({name:dr.getName(),front:f.getName(),index:index-1,column:bay.index,row,previewTravel:Math.min(.18,dep*.55),boxWidth:boxW,boxDepth:dep})
+    drawers.push({name:dr.getName(),front:f.getName(),index:index-1,column:bay.index,row,previewTravel:Math.min(.18,dep*.55),boxWidth:boxW,boxDepth:dep,frontContactGap:0})
   }
 }
 
