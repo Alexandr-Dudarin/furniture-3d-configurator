@@ -10,6 +10,10 @@ function FacadePreview({ style }: { style: FacadeStyleId }) {
     {style === 'frame' && <rect x="21" y="19" width="58" height="30" rx="1" fill="#d3c5b0" stroke="#9b876d" />}
     {style === 'fluted' && Array.from({ length: 12 }, (_, i) => <path key={i} d={`M${17 + i * 6} 15v38`} stroke="#9b876d" strokeWidth="2" strokeLinecap="round" />)}
     {style === 'fluted-sides' && [18, 24, 30, 70, 76, 82].map(x => <path key={x} d={`M${x} 15v38`} stroke="#9b876d" strokeWidth="2" strokeLinecap="round" />)}
+    {style === 'diagonal' && [40, 55, 70, 85, 100, 115].map(sum => {
+      const x1 = Math.max(18, sum - 53), x2 = Math.min(82, sum - 15)
+      return <path key={sum} d={`M${x1} ${sum - x1}L${x2} ${sum - x2}`} stroke="#9b876d" strokeWidth="2" strokeLinecap="round" />
+    })}
   </svg>
 }
 

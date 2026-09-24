@@ -138,7 +138,8 @@ export const catalogue: FurnitureDefinition = {
       "smooth",
       "frame",
       "fluted",
-      "fluted-sides"
+      "fluted-sides",
+      "diagonal"
     ],
     "targets": [
       {
@@ -214,7 +215,15 @@ export const catalogue: FurnitureDefinition = {
       "endMargin": 0.02,
       "fade": 0.003
     },
-    "sourceStyle": "smooth"
+    "sourceStyle": "smooth",
+    "diagonal": {
+      "pitch": 0.08,
+      "width": 0.006,
+      "depth": 0.0015,
+      "margin": 0.045,
+      "endMargin": 0.02,
+      "minLength": 0.024
+    }
   }
 },
   loadRuntime: () => import('./runtime').then(module => module.definition),

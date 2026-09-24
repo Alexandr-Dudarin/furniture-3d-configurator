@@ -100,6 +100,8 @@ it.each([
   ['wardrobe-08-four-door', 'Door_Outer_Left_Panel', 'Handle_Outer_Left_Post_Lower'],
   ['wardrobe-15-katania-four-door', 'Door_01_Panel', 'Handle_01_Lower_Post'],
   ['dresser-11-nord-door-four-drawer', 'Door_Left_Front', 'Handle_Door_Left_Post_Lower'],
+  ['dresser-12-brooklyn-six-drawer', 'Drawer_01_Front_Core', 'Drawer_01_Handle'],
+  ['dresser-13-marvel-fluted', 'Door_Left_Front', 'Handle_Door_Left'],
   ['dresser-14-baikal-five-drawer', 'Drawer_01_Front', 'Drawer_01_Handle'],
   ['dresser-14-baikal-five-drawer', 'Drawer_05_Front', 'Drawer_05_Handle'],
 ])('%s: %s keeps the surface under its existing handle feet', async (id, panelName, handleName) => {
@@ -124,7 +126,7 @@ it.each([
     const sourceHeights = feet.map(foot => new THREE.Raycaster(new THREE.Vector3(foot.x, foot.y, rear + .02), new THREE.Vector3(0, 0, -1)).intersectObjects(sourceMeshes, false)[0].point.z)
     // Read the actual source mounting footprint, including the curved Baikal
     // pull, rather than hard-coding a nominal handle centre.
-    for (const style of ['smooth', 'frame', 'fluted', 'fluted-sides'] as const) {
+    for (const style of ['smooth', 'frame', 'fluted', 'fluted-sides', 'diagonal'] as const) {
       facades.update(dimensions, style); root.updateMatrixWorld(true)
       const visible: THREE.Mesh[] = []
       panel.traverseVisible(o => { if (o instanceof THREE.Mesh) visible.push(o) })

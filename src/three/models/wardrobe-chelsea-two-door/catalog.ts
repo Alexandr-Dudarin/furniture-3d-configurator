@@ -122,7 +122,8 @@ export const catalogue: FurnitureDefinition = {
       "smooth",
       "frame",
       "fluted",
-      "fluted-sides"
+      "fluted-sides",
+      "diagonal"
     ],
     "targets": [
       {
@@ -169,6 +170,14 @@ export const catalogue: FurnitureDefinition = {
       "margin": 0.018,
       "endMargin": 0.02,
       "fade": 0.003
+    },
+    "diagonal": {
+      "pitch": 0.08,
+      "width": 0.006,
+      "depth": 0.0015,
+      "margin": 0.018,
+      "endMargin": 0.02,
+      "minLength": 0.024
     }
   }
 },

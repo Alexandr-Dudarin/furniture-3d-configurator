@@ -24797,7 +24797,8 @@ export const WARDROBE_15_CONFIG = {
       "smooth",
       "frame",
       "fluted",
-      "fluted-sides"
+      "fluted-sides",
+      "diagonal"
     ],
     "targets": [
       {
@@ -24873,7 +24874,15 @@ export const WARDROBE_15_CONFIG = {
       "endMargin": 0.02,
       "fade": 0.003
     },
-    "sourceStyle": "original"
+    "sourceStyle": "original",
+    "diagonal": {
+      "pitch": 0.08,
+      "width": 0.006,
+      "depth": 0.0015,
+      "margin": 0.032,
+      "endMargin": 0.02,
+      "minLength": 0.024
+    }
   }
 } as const satisfies FurnitureDefinition
 

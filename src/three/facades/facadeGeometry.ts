@@ -1,5 +1,6 @@
 import { BufferGeometry, Float32BufferAttribute, Vector3 } from 'three'
 import type { FacadeStyleId, FacadeTarget, FacadeVariants } from './types'
+import { createDiagonalGeometry } from './diagonalGeometry'
 
 type Point = [number, number, number]
 
@@ -29,6 +30,10 @@ export function sideGrooveLayout(width: number, profile: FacadeVariants['fluted'
 export function createFacadeGeometry(width: number, height: number, thickness: number,
   style: Exclude<FacadeStyleId, 'original'>, spec: FacadeVariants,
   target: Pick<FacadeTarget, 'frameWidth' | 'frameField' | 'flutedClearCenter'> = {}): BufferGeometry {
+  if (style === 'diagonal') {
+    if (!spec.diagonal) throw new Error('Missing diagonal facade profile')
+    return createDiagonalGeometry(width, height, thickness, spec.bevel, spec.diagonal, target.flutedClearCenter)
+  }
   const b = spec.bevel, front = thickness / 2, back = -front
   if (Math.min(width, height, thickness) <= 2 * b || spec.frame.depth >= thickness || spec.fluted.depth >= thickness) {
     throw new Error('Facade profile exceeds its panel envelope')
