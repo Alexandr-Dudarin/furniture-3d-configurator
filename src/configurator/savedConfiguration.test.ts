@@ -24,6 +24,18 @@ function sharedUrl(input: unknown) {
 }
 
 describe('configuration portability', () => {
+  it('uses the new Katania depth for fresh/reset configurations while preserving saved and shared 400 mm', () => {
+    const id = 'wardrobe-15-katania-four-door'
+    let session = updateSession(createDefaultSession(), { type: 'select-model', modelId: id })
+    expect(session.models[id].dimensions.depth).toBe(.45)
+    session = updateSession(session, { type: 'set-dimension', name: 'depth', value: .4 })
+    expect(readSavedSession(JSON.stringify(session)).session.models[id].dimensions.depth).toBe(.4)
+    const shared = readSharedConfiguration(createConfigurationUrl(rootUrl, session))
+    expect(shared.status).toBe('valid')
+    expect(applySharedConfiguration(createDefaultSession(), shared.configuration!).models[id].dimensions.depth).toBe(.4)
+    expect(updateSession(session, { type: 'reset-model' }).models[id].dimensions.depth).toBe(.45)
+  })
+
   it.each(definitions)('$id survives model switching, serialization and a shared link', (definition) => {
     let session = updateSession(createDefaultSession(), { type: 'select-model', modelId: definition.id })
     for (const name of definition.dimensionOrder) {
@@ -130,4 +142,61 @@ describe('untrusted and outdated data', () => {
     expect(Object.keys(normalized.materials)).toEqual(['primaryTop', 'frameMetal'])
     expect(Object.hasOwn(Object.prototype, 'polluted')).toBe(false)
   })
+})
+
+
+describe('facade configuration compatibility', () => {
+  const pilots = definitions.filter(d => d.facades).map(d => d.id)
+  it.each(pilots)('%s preserves styles, dimensions and finishes independently through links and resets', id => {
+    let session = updateSession(createDefaultSession(), { type: 'select-model', modelId: id })
+    const defaults = session.models[id]
+    for (const style of ['frame', 'fluted']) {
+      session = updateSession(session, { type: 'set-facade-style', style })
+      session = updateSession(session, { type: 'set-dimension', name: 'width', value: 1 })
+      session = updateSession(session, { type: 'set-material', slot: 'fronts', finishId: 'board-muted-green' })
+      const selected = session.models[id]
+      expect(selected.facadeStyle).toBe(style)
+      expect(readSavedSession(JSON.stringify(session)).session.models[id]).toEqual(selected)
+      const url = createConfigurationUrl(rootUrl, session)
+      expect(JSON.parse(new URL(url).searchParams.get('config')!).version).toBe(3)
+      const parsed = readSharedConfiguration(url)
+      expect(parsed.status).toBe('valid')
+      expect(applySharedConfiguration(createDefaultSession(), parsed.configuration!).models[id]).toEqual(selected)
+      session = updateSession(session, { type: 'select-model', modelId: roundId })
+      session = updateSession(session, { type: 'select-model', modelId: id })
+      expect(session.models[id]).toEqual(selected)
+    }
+    expect(updateSession(session, { type: 'set-facade-style', style: 'unknown' })).toBe(session)
+    expect(updateSession(session, { type: 'reset-model' }).models[id]).toEqual(defaults)
+  })
+
+  it('opens an old link as smooth even when the recipient saved a fluted facade', () => {
+    const id = 'wardrobe-09-chelsea-two-door'
+    let recipient = updateSession(createDefaultSession(), { type: 'select-model', modelId: id })
+    const { dimensions, materials } = recipient.models[id]
+    recipient = updateSession(recipient, { type: 'set-facade-style', style: 'fluted' })
+    for (const version of [1, 2]) {
+      const parsed = readSharedConfiguration(sharedUrl({ version, modelId: id, dimensions, materials }))
+      expect(parsed.status).toBe('valid')
+      expect(applySharedConfiguration(recipient, parsed.configuration!).models[id].facadeStyle).toBe('smooth')
+    }
+    const adjusted = readSharedConfiguration(sharedUrl({ version: 3, modelId: id, dimensions, materials, facadeStyle: 'deleted' }))
+    expect(adjusted.status).toBe('adjusted')
+    expect(adjusted.configuration!.facadeStyle).toBe('smooth')
+    const plain = updateSession(recipient, { type: 'select-model', modelId: roundId })
+    expect(updateSession(plain, { type: 'set-facade-style', style: 'frame' })).toBe(plain)
+    expect(JSON.parse(new URL(createConfigurationUrl(rootUrl, plain)).searchParams.get('config')!).version).toBe(1)
+  })
+})
+
+
+it.each(definitions.filter(d => d.facades))('$id restores the original appearance from old v1/v2/v3 links and storage', definition => {
+  const { id } = definition, defaults = createDefaultSession().models[id]
+  const legacy = { ...defaults }; delete legacy.facadeStyle
+  for (const version of [1, 2, 3]) {
+    const parsed = readSharedConfiguration(sharedUrl({ version, modelId: id, ...legacy }))
+    expect(parsed.status).toBe('valid')
+    expect(parsed.configuration!.facadeStyle).toBe(definition.facades!.defaultStyle)
+  }
+  expect(normalizeModelConfiguration(definition, legacy)).toEqual(defaults)
 })

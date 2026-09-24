@@ -1,3 +1,4 @@
+import { createFacadeController, type FacadeController } from '../facades/facadeController'
 import { useEffect, useMemo, useRef, useState, type RefObject } from 'react'
 import type { Group } from 'three'
 import type { ThreeRuntime } from '../core/createThreeRuntime'
@@ -26,6 +27,7 @@ export function useCatalogScene(
     controller: ReturnType<typeof createFurnitureController>
     materials: FurnitureMaterialController
     motion: FurnitureMotion
+    facades: FacadeController | null
     presentation: ReturnType<typeof createFurniturePresentation>
   } | null>(null)
   const token = useMemo(() => ({ id, enabled, attempt }), [id, enabled, attempt])
@@ -75,8 +77,9 @@ export function useCatalogScene(
         if (cancelled) { disposeFurnitureModel(loaded); return }
         model = loaded
         const controller = createFurnitureController(loaded, definition)
+        const facades = createFacadeController(loaded, definition)
         presentation = createFurniturePresentation(loaded, definition)
-        materials = createFurnitureMaterialController(loaded, definition, {
+        materials = createFurnitureMaterialController(loaded, facades?.materialDefinition ?? definition, {
           maxAnisotropy: anisotropyRef.current, onMaterialsChanged: () => {
             if (motion) motion.withClosedPose(controller.refreshTextures)
             else controller.refreshTextures()
@@ -88,7 +91,9 @@ export function useCatalogScene(
           await materials.setFinishes(applied)
         } while (!cancelled && applied !== store.getSnapshot().session.models[id].materials)
         if (cancelled) return
-        controller.setDimensions(store.getSnapshot().session.models[id].dimensions)
+        const selected = store.getSnapshot().session.models[id]
+        controller.setDimensions(selected.dimensions)
+        facades?.update(selected.dimensions, selected.facadeStyle)
         presentation.setView(viewRef.current)
         motion = createFurnitureMotion(loaded, definition, controller.getDimensions, states => binding?.publish(states))
         if (definition.articulations?.length) {
@@ -101,7 +106,7 @@ export function useCatalogScene(
           stopFrames = runtime.addFrameListener(motion.update)
           stopInteraction = bindFurnitureInteraction(runtime.renderer.domElement, runtime.camera, loaded, motion)
         }
-        active.current = { token, id, controller, materials, presentation, motion }
+        active.current = { token, id, controller, materials, presentation, motion, facades }
         scene.add(loaded)
         setStatus({ token, configuration: store.getSnapshot().session.models[id], error: null })
       } catch (error) {
@@ -125,7 +130,10 @@ export function useCatalogScene(
     const current = active.current
     if (!enabled || !current || current.id !== id) return
     let cancelled = false
-    current.motion.withClosedPose(() => current.controller.setDimensions(configuration.dimensions))
+    current.motion.withClosedPose(() => {
+      current.controller.setDimensions(configuration.dimensions)
+      current.facades?.update(configuration.dimensions, configuration.facadeStyle)
+    })
     void current.materials.setFinishes(configuration.materials).then(() => {
       if (!cancelled && active.current === current) setStatus({ token: current.token, configuration, error: null })
     }).catch((error) => {

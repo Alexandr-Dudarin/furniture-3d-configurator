@@ -167,6 +167,118 @@ export const catalogue: FurnitureDefinition = {
         "metal-brass-satin"
       ]
     }
+  },
+  "facades": {
+    "defaultStyle": "original",
+    "styles": [
+      "original",
+      "smooth",
+      "frame",
+      "fluted"
+    ],
+    "targets": [
+      {
+        "panel": "Door_Left_Front",
+        "width": {
+          "base": 0.378,
+          "dimension": "width",
+          "factor": 0.25
+        },
+        "height": {
+          "base": 0.852,
+          "dimension": "height",
+          "factor": 1
+        },
+        "thickness": 0.016
+      },
+      {
+        "panel": "Drawer_01_Front",
+        "width": {
+          "base": 0.796,
+          "dimension": "width",
+          "factor": 0.5
+        },
+        "height": {
+          "base": 0.1995,
+          "dimension": "height",
+          "factor": 0.25
+        },
+        "thickness": 0.016
+      },
+      {
+        "panel": "Drawer_02_Front",
+        "width": {
+          "base": 0.796,
+          "dimension": "width",
+          "factor": 0.5
+        },
+        "height": {
+          "base": 0.1995,
+          "dimension": "height",
+          "factor": 0.25
+        },
+        "thickness": 0.016
+      },
+      {
+        "panel": "Drawer_03_Front",
+        "width": {
+          "base": 0.796,
+          "dimension": "width",
+          "factor": 0.5
+        },
+        "height": {
+          "base": 0.1995,
+          "dimension": "height",
+          "factor": 0.25
+        },
+        "thickness": 0.016
+      },
+      {
+        "panel": "Drawer_04_Front",
+        "width": {
+          "base": 0.796,
+          "dimension": "width",
+          "factor": 0.5
+        },
+        "height": {
+          "base": 0.1995,
+          "dimension": "height",
+          "factor": 0.25
+        },
+        "thickness": 0.016
+      },
+      {
+        "panel": "Door_Right_Front",
+        "width": {
+          "base": 0.378,
+          "dimension": "width",
+          "factor": 0.25
+        },
+        "height": {
+          "base": 0.852,
+          "dimension": "height",
+          "factor": 1
+        },
+        "thickness": 0.016
+      }
+    ],
+    "materialSlot": "fronts",
+    "bevel": 0.0007,
+    "frame": {
+      "width": 0.028,
+      "depth": 0.003,
+      "slope": 0.002,
+      "minField": 0.04
+    },
+    "fluted": {
+      "pitch": 0.02,
+      "width": 0.006,
+      "depth": 0.0015,
+      "margin": 0.018,
+      "endMargin": 0.02,
+      "fade": 0.003
+    },
+    "sourceStyle": "original"
   }
 },
   loadRuntime: () => import('./runtime').then(module => module.definition),

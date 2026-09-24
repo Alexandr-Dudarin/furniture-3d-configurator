@@ -31,8 +31,7 @@ export const catalogue: FurnitureDefinition = {
     },
     "depth": {
       "label": "Глубина",
-      "base": 0.4,
-      "defaultValue": 0.45,
+      "base": 0.45,
       "min": 0.4,
       "max": 0.6,
       "step": 0.001,
@@ -134,7 +133,91 @@ export const catalogue: FurnitureDefinition = {
       "kind": "door",
       "angle": 105
     }
-  ]
+  ],
+  "facades": {
+    "defaultStyle": "original",
+    "styles": [
+      "original",
+      "smooth",
+      "frame",
+      "fluted"
+    ],
+    "targets": [
+      {
+        "panel": "Door_01_Panel",
+        "width": {
+          "base": 0.3970000000000001,
+          "dimension": "width",
+          "factor": 0.25
+        },
+        "height": {
+          "base": 1.847,
+          "dimension": "height",
+          "factor": 1
+        },
+        "thickness": 0.018
+      },
+      {
+        "panel": "Door_02_Panel",
+        "width": {
+          "base": 0.397,
+          "dimension": "width",
+          "factor": 0.25
+        },
+        "height": {
+          "base": 1.847,
+          "dimension": "height",
+          "factor": 1
+        },
+        "thickness": 0.018
+      },
+      {
+        "panel": "Door_03_Panel",
+        "width": {
+          "base": 0.39700000000000013,
+          "dimension": "width",
+          "factor": 0.25
+        },
+        "height": {
+          "base": 1.847,
+          "dimension": "height",
+          "factor": 1
+        },
+        "thickness": 0.018
+      },
+      {
+        "panel": "Door_04_Panel",
+        "width": {
+          "base": 0.39699999999999996,
+          "dimension": "width",
+          "factor": 0.25
+        },
+        "height": {
+          "base": 1.847,
+          "dimension": "height",
+          "factor": 1
+        },
+        "thickness": 0.018
+      }
+    ],
+    "materialSlot": "fronts",
+    "bevel": 0.0007,
+    "frame": {
+      "width": 0.045,
+      "depth": 0.003,
+      "slope": 0.002,
+      "minField": 0.04
+    },
+    "fluted": {
+      "pitch": 0.02,
+      "width": 0.006,
+      "depth": 0.0015,
+      "margin": 0.032,
+      "endMargin": 0.02,
+      "fade": 0.003
+    },
+    "sourceStyle": "original"
+  }
 },
   loadRuntime: () => import('./runtime').then(module => module.definition),
 }

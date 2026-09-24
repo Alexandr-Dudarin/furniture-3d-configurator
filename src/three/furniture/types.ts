@@ -13,6 +13,8 @@ export type DimensionName =
 export type FurnitureDimensionConfig = {
   label: string
   base: number
+  // Initial/reset selection; base remains the reference dimension of the GLB.
+  defaultValue?: number
   min: number
   max: number
   step: number
@@ -209,6 +211,7 @@ export type FurnitureArticulation = {
 )
 
 export type FurnitureDefinition = {
+  facades?: FacadeVariants
   articulations?: readonly FurnitureArticulation[]
   category?: 'tables' | 'wardrobes' | 'dressers'
   framing?: { width: number; height: number; depth: number }
@@ -245,3 +248,4 @@ export type FurnitureDefinition = {
   materialSlots?:
     FurnitureMaterialSlots
 }
+import type { FacadeVariants } from '../facades/types'

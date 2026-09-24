@@ -1,0 +1,83 @@
+{
+  "defaultStyle": "smooth",
+  "styles": [
+    "smooth",
+    "frame",
+    "fluted"
+  ],
+  "targets": [
+    {
+      "panel": "Door_Outer_Left_Panel",
+      "width": {
+        "base": 0.397,
+        "dimension": "width",
+        "factor": 0.25
+      },
+      "height": {
+        "base": 2.134,
+        "dimension": "height",
+        "factor": 1
+      },
+      "thickness": 0.016
+    },
+    {
+      "panel": "Door_Center_Left_Panel",
+      "width": {
+        "base": 0.397,
+        "dimension": "width",
+        "factor": 0.25
+      },
+      "height": {
+        "base": 2.134,
+        "dimension": "height",
+        "factor": 1
+      },
+      "thickness": 0.016
+    },
+    {
+      "panel": "Door_Center_Right_Panel",
+      "width": {
+        "base": 0.397,
+        "dimension": "width",
+        "factor": 0.25
+      },
+      "height": {
+        "base": 2.134,
+        "dimension": "height",
+        "factor": 1
+      },
+      "thickness": 0.016
+    },
+    {
+      "panel": "Door_Outer_Right_Panel",
+      "width": {
+        "base": 0.397,
+        "dimension": "width",
+        "factor": 0.25
+      },
+      "height": {
+        "base": 2.134,
+        "dimension": "height",
+        "factor": 1
+      },
+      "thickness": 0.016
+    }
+  ],
+  "materialSlot": "fronts",
+  "bevel": 0.0007,
+  "frame": {
+    "width": 0.045,
+    "depth": 0.003,
+    "slope": 0.002,
+    "minField": 0.04
+  },
+  "fluted": {
+    "pitch": 0.02,
+    "width": 0.006,
+    "depth": 0.0015,
+    "margin": 0.045,
+    "endMargin": 0.02,
+    "fade": 0.003
+  },
+  "sourceStyle": "smooth"
+}

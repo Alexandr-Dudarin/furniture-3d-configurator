@@ -31,8 +31,7 @@ export const WARDROBE_15_CONFIG = {
     },
     "depth": {
       "label": "Глубина",
-      "base": 0.4,
-      "defaultValue": 0.45,
+      "base": 0.45,
       "min": 0.4,
       "max": 0.6,
       "step": 0.001,
@@ -98,7 +97,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Panel_Top_Tile_pcc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.3446,
+      "baseLength": 0.3946,
       "factor": 1
     },
     {
@@ -106,7 +105,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Panel_Top_Tile_mcc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.3446,
+      "baseLength": 0.3946,
       "factor": 1
     },
     {
@@ -130,7 +129,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Panel_Top_Tile_ccc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.3446,
+      "baseLength": 0.3946,
       "factor": 1
     },
     {
@@ -146,7 +145,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Panel_Side_Left_Tile_cpc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.3446,
+      "baseLength": 0.3946,
       "factor": 1
     },
     {
@@ -170,7 +169,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Panel_Side_Left_Tile_ccc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.3446,
+      "baseLength": 0.3946,
       "factor": 1
     },
     {
@@ -186,7 +185,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Panel_Side_Left_Tile_cmc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.3446,
+      "baseLength": 0.3946,
       "factor": 1
     },
     {
@@ -194,7 +193,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Panel_Side_Right_Tile_cpc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.3446,
+      "baseLength": 0.3946,
       "factor": 1
     },
     {
@@ -218,7 +217,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Panel_Side_Right_Tile_ccc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.3446,
+      "baseLength": 0.3946,
       "factor": 1
     },
     {
@@ -234,7 +233,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Panel_Side_Right_Tile_cmc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.3446,
+      "baseLength": 0.3946,
       "factor": 1
     },
     {
@@ -242,7 +241,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Panel_Bottom_Tile_pcc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.3446,
+      "baseLength": 0.3946,
       "factor": 1
     },
     {
@@ -250,7 +249,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Panel_Bottom_Tile_mcc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.3446,
+      "baseLength": 0.3946,
       "factor": 1
     },
     {
@@ -274,7 +273,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Panel_Bottom_Tile_ccc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.3446,
+      "baseLength": 0.3946,
       "factor": 1
     },
     {
@@ -338,7 +337,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Panel_Divider_1_Tile_cpc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.3446,
+      "baseLength": 0.3946,
       "factor": 1
     },
     {
@@ -362,7 +361,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Panel_Divider_1_Tile_ccc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.3446,
+      "baseLength": 0.3946,
       "factor": 1
     },
     {
@@ -378,7 +377,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Panel_Divider_1_Tile_cmc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.3446,
+      "baseLength": 0.3946,
       "factor": 1
     },
     {
@@ -386,7 +385,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Plinth_Brace_1_Tile_cpc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.2746,
+      "baseLength": 0.3246,
       "factor": 1
     },
     {
@@ -394,7 +393,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Plinth_Brace_1_Tile_ccc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.2746,
+      "baseLength": 0.3246,
       "factor": 1
     },
     {
@@ -402,7 +401,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Plinth_Brace_1_Tile_cmc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.2746,
+      "baseLength": 0.3246,
       "factor": 1
     },
     {
@@ -410,7 +409,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Panel_Divider_2_Tile_cpc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.3446,
+      "baseLength": 0.3946,
       "factor": 1
     },
     {
@@ -434,7 +433,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Panel_Divider_2_Tile_ccc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.3446,
+      "baseLength": 0.3946,
       "factor": 1
     },
     {
@@ -450,7 +449,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Panel_Divider_2_Tile_cmc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.3446,
+      "baseLength": 0.3946,
       "factor": 1
     },
     {
@@ -458,7 +457,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Plinth_Brace_2_Tile_cpc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.2746,
+      "baseLength": 0.3246,
       "factor": 1
     },
     {
@@ -466,7 +465,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Plinth_Brace_2_Tile_ccc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.2746,
+      "baseLength": 0.3246,
       "factor": 1
     },
     {
@@ -474,7 +473,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Plinth_Brace_2_Tile_cmc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.2746,
+      "baseLength": 0.3246,
       "factor": 1
     },
     {
@@ -482,7 +481,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Panel_Divider_3_Tile_cpc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.3446,
+      "baseLength": 0.3946,
       "factor": 1
     },
     {
@@ -506,7 +505,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Panel_Divider_3_Tile_ccc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.3446,
+      "baseLength": 0.3946,
       "factor": 1
     },
     {
@@ -522,7 +521,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Panel_Divider_3_Tile_cmc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.3446,
+      "baseLength": 0.3946,
       "factor": 1
     },
     {
@@ -530,7 +529,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Plinth_Brace_3_Tile_cpc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.2746,
+      "baseLength": 0.3246,
       "factor": 1
     },
     {
@@ -538,7 +537,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Plinth_Brace_3_Tile_ccc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.2746,
+      "baseLength": 0.3246,
       "factor": 1
     },
     {
@@ -546,7 +545,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Plinth_Brace_3_Tile_cmc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.2746,
+      "baseLength": 0.3246,
       "factor": 1
     },
     {
@@ -554,7 +553,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Shelf_Bay_01_Tile_pcc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.3166,
+      "baseLength": 0.3666,
       "factor": 1
     },
     {
@@ -562,7 +561,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Shelf_Bay_01_Tile_mcc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.3166,
+      "baseLength": 0.3666,
       "factor": 1
     },
     {
@@ -586,7 +585,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Shelf_Bay_01_Tile_ccc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.3166,
+      "baseLength": 0.3666,
       "factor": 1
     },
     {
@@ -602,7 +601,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Bracket_01_Track",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.258,
+      "baseLength": 0.308,
       "factor": 1
     },
     {
@@ -610,7 +609,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Bracket_01_Rod",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.234,
+      "baseLength": 0.284,
       "factor": 1
     },
     {
@@ -618,7 +617,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Shelf_Bay_02_Tile_pcc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.3166,
+      "baseLength": 0.3666,
       "factor": 1
     },
     {
@@ -626,7 +625,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Shelf_Bay_02_Tile_mcc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.3166,
+      "baseLength": 0.3666,
       "factor": 1
     },
     {
@@ -650,7 +649,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Shelf_Bay_02_Tile_ccc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.3166,
+      "baseLength": 0.3666,
       "factor": 1
     },
     {
@@ -666,7 +665,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Bracket_02_Track",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.258,
+      "baseLength": 0.308,
       "factor": 1
     },
     {
@@ -674,7 +673,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Bracket_02_Rod",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.234,
+      "baseLength": 0.284,
       "factor": 1
     },
     {
@@ -682,7 +681,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Shelf_Bay_03_Tile_pcc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.3166,
+      "baseLength": 0.3666,
       "factor": 1
     },
     {
@@ -690,7 +689,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Shelf_Bay_03_Tile_mcc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.3166,
+      "baseLength": 0.3666,
       "factor": 1
     },
     {
@@ -714,7 +713,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Shelf_Bay_03_Tile_ccc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.3166,
+      "baseLength": 0.3666,
       "factor": 1
     },
     {
@@ -730,7 +729,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Bracket_03_Track",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.258,
+      "baseLength": 0.308,
       "factor": 1
     },
     {
@@ -738,7 +737,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Bracket_03_Rod",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.234,
+      "baseLength": 0.284,
       "factor": 1
     },
     {
@@ -746,7 +745,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Shelf_Bay_04_Tile_pcc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.3166,
+      "baseLength": 0.3666,
       "factor": 1
     },
     {
@@ -754,7 +753,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Shelf_Bay_04_Tile_mcc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.3166,
+      "baseLength": 0.3666,
       "factor": 1
     },
     {
@@ -778,7 +777,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Shelf_Bay_04_Tile_ccc",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.3166,
+      "baseLength": 0.3666,
       "factor": 1
     },
     {
@@ -794,7 +793,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Bracket_04_Track",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.258,
+      "baseLength": 0.308,
       "factor": 1
     },
     {
@@ -802,7 +801,7 @@ export const WARDROBE_15_CONFIG = {
       "target": "Bracket_04_Rod",
       "dimension": "depth",
       "axis": "z",
-      "baseLength": 0.234,
+      "baseLength": 0.284,
       "factor": 1
     },
     {
@@ -18170,10 +18169,10 @@ export const WARDROBE_15_CONFIG = {
       },
       "v": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": 0.5,
-        "anchor": 0.6723,
+        "anchor": 0.6973,
         "uvUnitsPerMeter": 1
       }
     },
@@ -18188,7 +18187,7 @@ export const WARDROBE_15_CONFIG = {
       },
       "v": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 1,
         "translationFactor": 0,
         "anchor": 0.5,
@@ -18206,10 +18205,10 @@ export const WARDROBE_15_CONFIG = {
       },
       "v": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": -0.5,
-        "anchor": 0.3277,
+        "anchor": 0.3027,
         "uvUnitsPerMeter": 1
       }
     },
@@ -18224,10 +18223,10 @@ export const WARDROBE_15_CONFIG = {
       },
       "v": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": -0.5,
-        "anchor": 0.3277,
+        "anchor": 0.3027,
         "uvUnitsPerMeter": 1
       }
     },
@@ -18242,7 +18241,7 @@ export const WARDROBE_15_CONFIG = {
       },
       "v": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 1,
         "translationFactor": 0,
         "anchor": 0.5,
@@ -18260,20 +18259,20 @@ export const WARDROBE_15_CONFIG = {
       },
       "v": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": 0.5,
-        "anchor": 0.6723,
+        "anchor": 0.6973,
         "uvUnitsPerMeter": 1
       }
     },
     "Board_Top_mcm_Y": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": -0.5,
-        "anchor": 0.3277,
+        "anchor": 0.3027,
         "uvUnitsPerMeter": 1
       },
       "v": {
@@ -18288,10 +18287,10 @@ export const WARDROBE_15_CONFIG = {
     "Board_Top_ccm_Y": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": -0.5,
-        "anchor": 0.3277,
+        "anchor": 0.3027,
         "uvUnitsPerMeter": 1
       },
       "v": {
@@ -18306,10 +18305,10 @@ export const WARDROBE_15_CONFIG = {
     "Board_Top_pcm_Y": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": -0.5,
-        "anchor": 0.3277,
+        "anchor": 0.3027,
         "uvUnitsPerMeter": 1
       },
       "v": {
@@ -18324,7 +18323,7 @@ export const WARDROBE_15_CONFIG = {
     "Board_Top_mcc_Y": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 1,
         "translationFactor": 0,
         "anchor": 0.5,
@@ -18342,7 +18341,7 @@ export const WARDROBE_15_CONFIG = {
     "Board_Top_ccc_Y": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 1,
         "translationFactor": 0,
         "anchor": 0.5,
@@ -18360,7 +18359,7 @@ export const WARDROBE_15_CONFIG = {
     "Board_Top_pcc_Y": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 1,
         "translationFactor": 0,
         "anchor": 0.5,
@@ -18378,10 +18377,10 @@ export const WARDROBE_15_CONFIG = {
     "Board_Top_mcp_Y": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": 0.5,
-        "anchor": 0.6723,
+        "anchor": 0.6973,
         "uvUnitsPerMeter": 1
       },
       "v": {
@@ -18396,10 +18395,10 @@ export const WARDROBE_15_CONFIG = {
     "Board_Top_ccp_Y": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": 0.5,
-        "anchor": 0.6723,
+        "anchor": 0.6973,
         "uvUnitsPerMeter": 1
       },
       "v": {
@@ -18414,10 +18413,10 @@ export const WARDROBE_15_CONFIG = {
     "Board_Top_pcp_Y": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": 0.5,
-        "anchor": 0.6723,
+        "anchor": 0.6973,
         "uvUnitsPerMeter": 1
       },
       "v": {
@@ -18540,10 +18539,10 @@ export const WARDROBE_15_CONFIG = {
     "Board_Side_cpp_X": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": 0.5,
-        "anchor": 0.6723,
+        "anchor": 0.6973,
         "uvUnitsPerMeter": 1
       },
       "v": {
@@ -18558,7 +18557,7 @@ export const WARDROBE_15_CONFIG = {
     "Board_Side_cpc_X": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 1,
         "translationFactor": 0,
         "anchor": 0.5,
@@ -18576,10 +18575,10 @@ export const WARDROBE_15_CONFIG = {
     "Board_Side_cpm_X": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": -0.5,
-        "anchor": 0.3277,
+        "anchor": 0.3027,
         "uvUnitsPerMeter": 1
       },
       "v": {
@@ -18594,10 +18593,10 @@ export const WARDROBE_15_CONFIG = {
     "Board_Side_ccp_X": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": 0.5,
-        "anchor": 0.6723,
+        "anchor": 0.6973,
         "uvUnitsPerMeter": 1
       },
       "v": {
@@ -18612,7 +18611,7 @@ export const WARDROBE_15_CONFIG = {
     "Board_Side_ccc_X": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 1,
         "translationFactor": 0,
         "anchor": 0.5,
@@ -18630,10 +18629,10 @@ export const WARDROBE_15_CONFIG = {
     "Board_Side_ccm_X": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": -0.5,
-        "anchor": 0.3277,
+        "anchor": 0.3027,
         "uvUnitsPerMeter": 1
       },
       "v": {
@@ -18648,10 +18647,10 @@ export const WARDROBE_15_CONFIG = {
     "Board_Side_cmp_X": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": 0.5,
-        "anchor": 0.6723,
+        "anchor": 0.6973,
         "uvUnitsPerMeter": 1
       },
       "v": {
@@ -18666,7 +18665,7 @@ export const WARDROBE_15_CONFIG = {
     "Board_Side_cmc_X": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 1,
         "translationFactor": 0,
         "anchor": 0.5,
@@ -18684,10 +18683,10 @@ export const WARDROBE_15_CONFIG = {
     "Board_Side_cmm_X": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": -0.5,
-        "anchor": 0.3277,
+        "anchor": 0.3027,
         "uvUnitsPerMeter": 1
       },
       "v": {
@@ -18710,10 +18709,10 @@ export const WARDROBE_15_CONFIG = {
       },
       "v": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": -0.5,
-        "anchor": 0.3277,
+        "anchor": 0.3027,
         "uvUnitsPerMeter": 1
       }
     },
@@ -18728,7 +18727,7 @@ export const WARDROBE_15_CONFIG = {
       },
       "v": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 1,
         "translationFactor": 0,
         "anchor": 0.5,
@@ -18746,10 +18745,10 @@ export const WARDROBE_15_CONFIG = {
       },
       "v": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": 0.5,
-        "anchor": 0.6723,
+        "anchor": 0.6973,
         "uvUnitsPerMeter": 1
       }
     },
@@ -18764,10 +18763,10 @@ export const WARDROBE_15_CONFIG = {
       },
       "v": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": 0.5,
-        "anchor": 0.6723,
+        "anchor": 0.6973,
         "uvUnitsPerMeter": 1
       }
     },
@@ -18782,7 +18781,7 @@ export const WARDROBE_15_CONFIG = {
       },
       "v": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 1,
         "translationFactor": 0,
         "anchor": 0.5,
@@ -18800,10 +18799,10 @@ export const WARDROBE_15_CONFIG = {
       },
       "v": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": -0.5,
-        "anchor": 0.3277,
+        "anchor": 0.3027,
         "uvUnitsPerMeter": 1
       }
     },
@@ -18926,10 +18925,10 @@ export const WARDROBE_15_CONFIG = {
       },
       "v": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": 0.5,
-        "anchor": 0.6723,
+        "anchor": 0.6973,
         "uvUnitsPerMeter": 1
       }
     },
@@ -18944,7 +18943,7 @@ export const WARDROBE_15_CONFIG = {
       },
       "v": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 1,
         "translationFactor": 0,
         "anchor": 0.5,
@@ -18962,10 +18961,10 @@ export const WARDROBE_15_CONFIG = {
       },
       "v": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": -0.5,
-        "anchor": 0.3277,
+        "anchor": 0.3027,
         "uvUnitsPerMeter": 1
       }
     },
@@ -18980,10 +18979,10 @@ export const WARDROBE_15_CONFIG = {
       },
       "v": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": -0.5,
-        "anchor": 0.3277,
+        "anchor": 0.3027,
         "uvUnitsPerMeter": 1
       }
     },
@@ -18998,7 +18997,7 @@ export const WARDROBE_15_CONFIG = {
       },
       "v": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 1,
         "translationFactor": 0,
         "anchor": 0.5,
@@ -19016,20 +19015,20 @@ export const WARDROBE_15_CONFIG = {
       },
       "v": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": 0.5,
-        "anchor": 0.6723,
+        "anchor": 0.6973,
         "uvUnitsPerMeter": 1
       }
     },
     "Board_Bottom_mcm_Y": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": -0.5,
-        "anchor": 0.3277,
+        "anchor": 0.3027,
         "uvUnitsPerMeter": 1
       },
       "v": {
@@ -19044,10 +19043,10 @@ export const WARDROBE_15_CONFIG = {
     "Board_Bottom_ccm_Y": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": -0.5,
-        "anchor": 0.3277,
+        "anchor": 0.3027,
         "uvUnitsPerMeter": 1
       },
       "v": {
@@ -19062,10 +19061,10 @@ export const WARDROBE_15_CONFIG = {
     "Board_Bottom_pcm_Y": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": -0.5,
-        "anchor": 0.3277,
+        "anchor": 0.3027,
         "uvUnitsPerMeter": 1
       },
       "v": {
@@ -19080,7 +19079,7 @@ export const WARDROBE_15_CONFIG = {
     "Board_Bottom_mcc_Y": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 1,
         "translationFactor": 0,
         "anchor": 0.5,
@@ -19098,7 +19097,7 @@ export const WARDROBE_15_CONFIG = {
     "Board_Bottom_ccc_Y": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 1,
         "translationFactor": 0,
         "anchor": 0.5,
@@ -19116,7 +19115,7 @@ export const WARDROBE_15_CONFIG = {
     "Board_Bottom_pcc_Y": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 1,
         "translationFactor": 0,
         "anchor": 0.5,
@@ -19134,10 +19133,10 @@ export const WARDROBE_15_CONFIG = {
     "Board_Bottom_mcp_Y": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": 0.5,
-        "anchor": 0.6723,
+        "anchor": 0.6973,
         "uvUnitsPerMeter": 1
       },
       "v": {
@@ -19152,10 +19151,10 @@ export const WARDROBE_15_CONFIG = {
     "Board_Bottom_ccp_Y": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": 0.5,
-        "anchor": 0.6723,
+        "anchor": 0.6973,
         "uvUnitsPerMeter": 1
       },
       "v": {
@@ -19170,10 +19169,10 @@ export const WARDROBE_15_CONFIG = {
     "Board_Bottom_pcp_Y": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": 0.5,
-        "anchor": 0.6723,
+        "anchor": 0.6973,
         "uvUnitsPerMeter": 1
       },
       "v": {
@@ -19674,10 +19673,10 @@ export const WARDROBE_15_CONFIG = {
     "Board_Divider_cpp_X": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": 0.5,
-        "anchor": 0.6723,
+        "anchor": 0.6973,
         "uvUnitsPerMeter": 1
       },
       "v": {
@@ -19692,7 +19691,7 @@ export const WARDROBE_15_CONFIG = {
     "Board_Divider_cpc_X": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 1,
         "translationFactor": 0,
         "anchor": 0.5,
@@ -19710,10 +19709,10 @@ export const WARDROBE_15_CONFIG = {
     "Board_Divider_cpm_X": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": -0.5,
-        "anchor": 0.3277,
+        "anchor": 0.3027,
         "uvUnitsPerMeter": 1
       },
       "v": {
@@ -19728,10 +19727,10 @@ export const WARDROBE_15_CONFIG = {
     "Board_Divider_ccp_X": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": 0.5,
-        "anchor": 0.6723,
+        "anchor": 0.6973,
         "uvUnitsPerMeter": 1
       },
       "v": {
@@ -19746,7 +19745,7 @@ export const WARDROBE_15_CONFIG = {
     "Board_Divider_ccc_X": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 1,
         "translationFactor": 0,
         "anchor": 0.5,
@@ -19764,10 +19763,10 @@ export const WARDROBE_15_CONFIG = {
     "Board_Divider_ccm_X": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": -0.5,
-        "anchor": 0.3277,
+        "anchor": 0.3027,
         "uvUnitsPerMeter": 1
       },
       "v": {
@@ -19782,10 +19781,10 @@ export const WARDROBE_15_CONFIG = {
     "Board_Divider_cmp_X": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": 0.5,
-        "anchor": 0.6723,
+        "anchor": 0.6973,
         "uvUnitsPerMeter": 1
       },
       "v": {
@@ -19800,7 +19799,7 @@ export const WARDROBE_15_CONFIG = {
     "Board_Divider_cmc_X": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 1,
         "translationFactor": 0,
         "anchor": 0.5,
@@ -19818,10 +19817,10 @@ export const WARDROBE_15_CONFIG = {
     "Board_Divider_cmm_X": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": -0.5,
-        "anchor": 0.3277,
+        "anchor": 0.3027,
         "uvUnitsPerMeter": 1
       },
       "v": {
@@ -19844,10 +19843,10 @@ export const WARDROBE_15_CONFIG = {
       },
       "v": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": -0.5,
-        "anchor": 0.3277,
+        "anchor": 0.3027,
         "uvUnitsPerMeter": 1
       }
     },
@@ -19862,7 +19861,7 @@ export const WARDROBE_15_CONFIG = {
       },
       "v": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 1,
         "translationFactor": 0,
         "anchor": 0.5,
@@ -19880,10 +19879,10 @@ export const WARDROBE_15_CONFIG = {
       },
       "v": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": 0.5,
-        "anchor": 0.6723,
+        "anchor": 0.6973,
         "uvUnitsPerMeter": 1
       }
     },
@@ -19898,10 +19897,10 @@ export const WARDROBE_15_CONFIG = {
       },
       "v": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": 0.5,
-        "anchor": 0.6723,
+        "anchor": 0.6973,
         "uvUnitsPerMeter": 1
       }
     },
@@ -19916,7 +19915,7 @@ export const WARDROBE_15_CONFIG = {
       },
       "v": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 1,
         "translationFactor": 0,
         "anchor": 0.5,
@@ -19934,10 +19933,10 @@ export const WARDROBE_15_CONFIG = {
       },
       "v": {
         "dimension": "depth",
-        "baseLength": 0.3446,
+        "baseLength": 0.3946,
         "stretchFactor": 0,
         "translationFactor": -0.5,
-        "anchor": 0.3277,
+        "anchor": 0.3027,
         "uvUnitsPerMeter": 1
       }
     },
@@ -20052,10 +20051,10 @@ export const WARDROBE_15_CONFIG = {
     "Board_PlinthBrace_cpp_X": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.2746,
+        "baseLength": 0.3246,
         "stretchFactor": 0,
         "translationFactor": 0.5,
-        "anchor": 0.6373,
+        "anchor": 0.6623,
         "uvUnitsPerMeter": 1
       },
       "v": {
@@ -20070,7 +20069,7 @@ export const WARDROBE_15_CONFIG = {
     "Board_PlinthBrace_cpc_X": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.2746,
+        "baseLength": 0.3246,
         "stretchFactor": 1,
         "translationFactor": 0,
         "anchor": 0.5,
@@ -20088,10 +20087,10 @@ export const WARDROBE_15_CONFIG = {
     "Board_PlinthBrace_cpm_X": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.2746,
+        "baseLength": 0.3246,
         "stretchFactor": 0,
         "translationFactor": -0.5,
-        "anchor": 0.3627,
+        "anchor": 0.3377,
         "uvUnitsPerMeter": 1
       },
       "v": {
@@ -20106,10 +20105,10 @@ export const WARDROBE_15_CONFIG = {
     "Board_PlinthBrace_ccp_X": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.2746,
+        "baseLength": 0.3246,
         "stretchFactor": 0,
         "translationFactor": 0.5,
-        "anchor": 0.6373,
+        "anchor": 0.6623,
         "uvUnitsPerMeter": 1
       },
       "v": {
@@ -20124,7 +20123,7 @@ export const WARDROBE_15_CONFIG = {
     "Board_PlinthBrace_ccc_X": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.2746,
+        "baseLength": 0.3246,
         "stretchFactor": 1,
         "translationFactor": 0,
         "anchor": 0.5,
@@ -20142,10 +20141,10 @@ export const WARDROBE_15_CONFIG = {
     "Board_PlinthBrace_ccm_X": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.2746,
+        "baseLength": 0.3246,
         "stretchFactor": 0,
         "translationFactor": -0.5,
-        "anchor": 0.3627,
+        "anchor": 0.3377,
         "uvUnitsPerMeter": 1
       },
       "v": {
@@ -20160,10 +20159,10 @@ export const WARDROBE_15_CONFIG = {
     "Board_PlinthBrace_cmp_X": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.2746,
+        "baseLength": 0.3246,
         "stretchFactor": 0,
         "translationFactor": 0.5,
-        "anchor": 0.6373,
+        "anchor": 0.6623,
         "uvUnitsPerMeter": 1
       },
       "v": {
@@ -20178,7 +20177,7 @@ export const WARDROBE_15_CONFIG = {
     "Board_PlinthBrace_cmc_X": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.2746,
+        "baseLength": 0.3246,
         "stretchFactor": 1,
         "translationFactor": 0,
         "anchor": 0.5,
@@ -20196,10 +20195,10 @@ export const WARDROBE_15_CONFIG = {
     "Board_PlinthBrace_cmm_X": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.2746,
+        "baseLength": 0.3246,
         "stretchFactor": 0,
         "translationFactor": -0.5,
-        "anchor": 0.3627,
+        "anchor": 0.3377,
         "uvUnitsPerMeter": 1
       },
       "v": {
@@ -20222,10 +20221,10 @@ export const WARDROBE_15_CONFIG = {
       },
       "v": {
         "dimension": "depth",
-        "baseLength": 0.2746,
+        "baseLength": 0.3246,
         "stretchFactor": 0,
         "translationFactor": -0.5,
-        "anchor": 0.3627,
+        "anchor": 0.3377,
         "uvUnitsPerMeter": 1
       }
     },
@@ -20240,7 +20239,7 @@ export const WARDROBE_15_CONFIG = {
       },
       "v": {
         "dimension": "depth",
-        "baseLength": 0.2746,
+        "baseLength": 0.3246,
         "stretchFactor": 1,
         "translationFactor": 0,
         "anchor": 0.5,
@@ -20258,10 +20257,10 @@ export const WARDROBE_15_CONFIG = {
       },
       "v": {
         "dimension": "depth",
-        "baseLength": 0.2746,
+        "baseLength": 0.3246,
         "stretchFactor": 0,
         "translationFactor": 0.5,
-        "anchor": 0.6373,
+        "anchor": 0.6623,
         "uvUnitsPerMeter": 1
       }
     },
@@ -20276,10 +20275,10 @@ export const WARDROBE_15_CONFIG = {
       },
       "v": {
         "dimension": "depth",
-        "baseLength": 0.2746,
+        "baseLength": 0.3246,
         "stretchFactor": 0,
         "translationFactor": 0.5,
-        "anchor": 0.6373,
+        "anchor": 0.6623,
         "uvUnitsPerMeter": 1
       }
     },
@@ -20294,7 +20293,7 @@ export const WARDROBE_15_CONFIG = {
       },
       "v": {
         "dimension": "depth",
-        "baseLength": 0.2746,
+        "baseLength": 0.3246,
         "stretchFactor": 1,
         "translationFactor": 0,
         "anchor": 0.5,
@@ -20312,10 +20311,10 @@ export const WARDROBE_15_CONFIG = {
       },
       "v": {
         "dimension": "depth",
-        "baseLength": 0.2746,
+        "baseLength": 0.3246,
         "stretchFactor": 0,
         "translationFactor": -0.5,
-        "anchor": 0.3627,
+        "anchor": 0.3377,
         "uvUnitsPerMeter": 1
       }
     },
@@ -20438,10 +20437,10 @@ export const WARDROBE_15_CONFIG = {
       },
       "v": {
         "dimension": "depth",
-        "baseLength": 0.3166,
+        "baseLength": 0.3666,
         "stretchFactor": 0,
         "translationFactor": 0.5,
-        "anchor": 0.6583,
+        "anchor": 0.6833,
         "uvUnitsPerMeter": 1
       }
     },
@@ -20456,7 +20455,7 @@ export const WARDROBE_15_CONFIG = {
       },
       "v": {
         "dimension": "depth",
-        "baseLength": 0.3166,
+        "baseLength": 0.3666,
         "stretchFactor": 1,
         "translationFactor": 0,
         "anchor": 0.5,
@@ -20474,10 +20473,10 @@ export const WARDROBE_15_CONFIG = {
       },
       "v": {
         "dimension": "depth",
-        "baseLength": 0.3166,
+        "baseLength": 0.3666,
         "stretchFactor": 0,
         "translationFactor": -0.5,
-        "anchor": 0.3417,
+        "anchor": 0.3167,
         "uvUnitsPerMeter": 1
       }
     },
@@ -20492,10 +20491,10 @@ export const WARDROBE_15_CONFIG = {
       },
       "v": {
         "dimension": "depth",
-        "baseLength": 0.3166,
+        "baseLength": 0.3666,
         "stretchFactor": 0,
         "translationFactor": -0.5,
-        "anchor": 0.3417,
+        "anchor": 0.3167,
         "uvUnitsPerMeter": 1
       }
     },
@@ -20510,7 +20509,7 @@ export const WARDROBE_15_CONFIG = {
       },
       "v": {
         "dimension": "depth",
-        "baseLength": 0.3166,
+        "baseLength": 0.3666,
         "stretchFactor": 1,
         "translationFactor": 0,
         "anchor": 0.5,
@@ -20528,20 +20527,20 @@ export const WARDROBE_15_CONFIG = {
       },
       "v": {
         "dimension": "depth",
-        "baseLength": 0.3166,
+        "baseLength": 0.3666,
         "stretchFactor": 0,
         "translationFactor": 0.5,
-        "anchor": 0.6583,
+        "anchor": 0.6833,
         "uvUnitsPerMeter": 1
       }
     },
     "Board_UpperShelf_mcm_Y": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3166,
+        "baseLength": 0.3666,
         "stretchFactor": 0,
         "translationFactor": -0.5,
-        "anchor": 0.3417,
+        "anchor": 0.3167,
         "uvUnitsPerMeter": 1
       },
       "v": {
@@ -20556,10 +20555,10 @@ export const WARDROBE_15_CONFIG = {
     "Board_UpperShelf_ccm_Y": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3166,
+        "baseLength": 0.3666,
         "stretchFactor": 0,
         "translationFactor": -0.5,
-        "anchor": 0.3417,
+        "anchor": 0.3167,
         "uvUnitsPerMeter": 1
       },
       "v": {
@@ -20574,10 +20573,10 @@ export const WARDROBE_15_CONFIG = {
     "Board_UpperShelf_pcm_Y": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3166,
+        "baseLength": 0.3666,
         "stretchFactor": 0,
         "translationFactor": -0.5,
-        "anchor": 0.3417,
+        "anchor": 0.3167,
         "uvUnitsPerMeter": 1
       },
       "v": {
@@ -20592,7 +20591,7 @@ export const WARDROBE_15_CONFIG = {
     "Board_UpperShelf_mcc_Y": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3166,
+        "baseLength": 0.3666,
         "stretchFactor": 1,
         "translationFactor": 0,
         "anchor": 0.5,
@@ -20610,7 +20609,7 @@ export const WARDROBE_15_CONFIG = {
     "Board_UpperShelf_ccc_Y": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3166,
+        "baseLength": 0.3666,
         "stretchFactor": 1,
         "translationFactor": 0,
         "anchor": 0.5,
@@ -20628,7 +20627,7 @@ export const WARDROBE_15_CONFIG = {
     "Board_UpperShelf_pcc_Y": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3166,
+        "baseLength": 0.3666,
         "stretchFactor": 1,
         "translationFactor": 0,
         "anchor": 0.5,
@@ -20646,10 +20645,10 @@ export const WARDROBE_15_CONFIG = {
     "Board_UpperShelf_mcp_Y": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3166,
+        "baseLength": 0.3666,
         "stretchFactor": 0,
         "translationFactor": 0.5,
-        "anchor": 0.6583,
+        "anchor": 0.6833,
         "uvUnitsPerMeter": 1
       },
       "v": {
@@ -20664,10 +20663,10 @@ export const WARDROBE_15_CONFIG = {
     "Board_UpperShelf_ccp_Y": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3166,
+        "baseLength": 0.3666,
         "stretchFactor": 0,
         "translationFactor": 0.5,
-        "anchor": 0.6583,
+        "anchor": 0.6833,
         "uvUnitsPerMeter": 1
       },
       "v": {
@@ -20682,10 +20681,10 @@ export const WARDROBE_15_CONFIG = {
     "Board_UpperShelf_pcp_Y": {
       "u": {
         "dimension": "depth",
-        "baseLength": 0.3166,
+        "baseLength": 0.3666,
         "stretchFactor": 0,
         "translationFactor": 0.5,
-        "anchor": 0.6583,
+        "anchor": 0.6833,
         "uvUnitsPerMeter": 1
       },
       "v": {
@@ -24790,7 +24789,91 @@ export const WARDROBE_15_CONFIG = {
       "kind": "door",
       "angle": 105
     }
-  ]
+  ],
+  "facades": {
+    "defaultStyle": "original",
+    "styles": [
+      "original",
+      "smooth",
+      "frame",
+      "fluted"
+    ],
+    "targets": [
+      {
+        "panel": "Door_01_Panel",
+        "width": {
+          "base": 0.3970000000000001,
+          "dimension": "width",
+          "factor": 0.25
+        },
+        "height": {
+          "base": 1.847,
+          "dimension": "height",
+          "factor": 1
+        },
+        "thickness": 0.018
+      },
+      {
+        "panel": "Door_02_Panel",
+        "width": {
+          "base": 0.397,
+          "dimension": "width",
+          "factor": 0.25
+        },
+        "height": {
+          "base": 1.847,
+          "dimension": "height",
+          "factor": 1
+        },
+        "thickness": 0.018
+      },
+      {
+        "panel": "Door_03_Panel",
+        "width": {
+          "base": 0.39700000000000013,
+          "dimension": "width",
+          "factor": 0.25
+        },
+        "height": {
+          "base": 1.847,
+          "dimension": "height",
+          "factor": 1
+        },
+        "thickness": 0.018
+      },
+      {
+        "panel": "Door_04_Panel",
+        "width": {
+          "base": 0.39699999999999996,
+          "dimension": "width",
+          "factor": 0.25
+        },
+        "height": {
+          "base": 1.847,
+          "dimension": "height",
+          "factor": 1
+        },
+        "thickness": 0.018
+      }
+    ],
+    "materialSlot": "fronts",
+    "bevel": 0.0007,
+    "frame": {
+      "width": 0.045,
+      "depth": 0.003,
+      "slope": 0.002,
+      "minField": 0.04
+    },
+    "fluted": {
+      "pitch": 0.02,
+      "width": 0.006,
+      "depth": 0.0015,
+      "margin": 0.032,
+      "endMargin": 0.02,
+      "fade": 0.003
+    },
+    "sourceStyle": "original"
+  }
 } as const satisfies FurnitureDefinition
 
 export const MATERIAL_TARGETS = {

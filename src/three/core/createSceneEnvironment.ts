@@ -30,28 +30,32 @@ export function createSceneEnvironment(
     generator.dispose()
   }
   scene.environment = environmentTarget.texture
-  scene.environmentIntensity = 0.45
+  // Leave headroom on white finishes: too much unshadowed studio light pushes
+  // both the flat face and the profile highlights into tone-map compression.
+  scene.environmentIntensity = 0.32
 
   const background = scene.background instanceof THREE.Color ? scene.background : new THREE.Color(0xeef0f3)
   const fog = new THREE.Fog(background, 9, 22)
   scene.fog = fog
 
-  const fillLight = new THREE.HemisphereLight(0xffffff, 0xbcc2cc, 0.3)
+  const fillLight = new THREE.HemisphereLight(0xffffff, 0xbcc2cc, 0.2)
   fillLight.name = 'Studio_Fill'
 
-  const keyLight = new THREE.DirectionalLight(0xffffff, 2.7)
+  const keyLight = new THREE.DirectionalLight(0xffffff, 2.6)
   keyLight.name = 'Studio_Key'
-  keyLight.position.set(-3, 4.5, 3)
+  keyLight.position.set(-3.8, 4.5, 3)
   keyLight.target.position.set(0, 0.45, 0)
   keyLight.castShadow = true
   keyLight.shadow.mapSize.set(2048, 2048)
-  keyLight.shadow.radius = 4
+  // A wide filter and the former 8 mm normal offset erased small contact
+  // shadows. Keep a modest offset for acne and a tighter filter for profiles.
+  keyLight.shadow.radius = 2
   keyLight.shadow.bias = -0.0001
-  keyLight.shadow.normalBias = 0.008
+  keyLight.shadow.normalBias = 0.002
   Object.assign(keyLight.shadow.camera, { left: -3, right: 3, top: 3, bottom: -3, near: 0.5, far: 12 })
   keyLight.shadow.camera.updateProjectionMatrix()
 
-  const rimLight = new THREE.DirectionalLight(0xffffff, 0.8)
+  const rimLight = new THREE.DirectionalLight(0xffffff, 0.6)
   rimLight.name = 'Studio_Rim'
   rimLight.position.set(3, 3, -4)
   // A single shadow map avoids multiple competing silhouettes on the floor.

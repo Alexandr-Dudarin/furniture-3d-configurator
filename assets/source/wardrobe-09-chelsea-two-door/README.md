@@ -65,3 +65,13 @@ blender --background --python assets/source/wardrobe-09-chelsea-two-door/create_
 Скрипт читает обновлённый `mesh-source.json`, создаёт `.blend`, контрольный GLB
 и `blender-verification.json`; production GLB автоматически не заменяет.
 Blender export/reimport в этом обновлении не выполнялся.
+
+## Сменные фасады — facade-variants-v1
+
+Эта модель участвует в пилоте: гладкий, рамочный, вертикально рифлёный.
+Параметры находятся в `facade-variants.json`. Интеграционный генератор
+категории переносит их в `catalog.ts`; runtime наследует каталог.
+Новые профили строятся в приложении внутри прежних panel-групп,
+исходный GLB сохраняет гладкие панели. Рисунок и покрытие независимы.
+Контракт: `docs/3d-furniture-asset-standard.md`, v2.9, раздел 40.
+Бюджеты, проверки и ограничения: `docs/facade-variants-v1-validation.md`.

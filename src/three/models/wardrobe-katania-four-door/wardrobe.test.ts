@@ -18,8 +18,8 @@ const contract = JSON.parse(await readFile(`assets/source/${definition.id}/model
 const keys = ['width', 'height', 'depth'] as const
 const axes = ['x', 'y', 'z'] as const
 type Size = { width: number; height: number; depth: number }
-const base: Size = { width: 1.6, height: 1.9, depth: .4 }
-const min: Size = { ...base }, max: Size = { width: 2.4, height: 2.7, depth: .6 }
+const base: Size = { width: 1.6, height: 1.9, depth: .45 }
+const min: Size = { ...base, depth: .4 }, max: Size = { width: 2.4, height: 2.7, depth: .6 }
 const middle: Size = { width: 2, height: 2.3, depth: .5 }
 const close = (a: number, b: number, label = '') => expect(Math.abs(a-b), `${label}: ${a} != ${b}`).toBeLessThan(1e-6)
 const bounds = (o: THREE.Object3D) => { o.updateWorldMatrix(true, true); return new THREE.Box3().setFromObject(o, true) }
@@ -62,14 +62,14 @@ function checkShape(root: THREE.Object3D, d: Size) {
 }
 
 describe('wardrobe-15-katania-four-door', () => {
-  it('applies the 450 mm starting depth to the 400 mm source geometry without changing panel thicknesses', async () => {
+  it('starts and resets at a real 450 mm source depth while still supporting 400 mm', async () => {
     const root = await load(), controller = createFurnitureController(root, definition)
     const initial = createModelConfiguration(catalogue).dimensions as Size
     expect(initial).toEqual({ width: 1.6, height: 1.9, depth: .45 })
     controller.setDimensions(initial)
     checkShape(root, initial)
     controller.setDimension('depth', .4)
-    checkShape(root, base)
+    checkShape(root, { ...base, depth: .4 })
   })
 
   it('loads the real GLB with a complete lazy catalog, unique API names and existing independent finishes', async () => {

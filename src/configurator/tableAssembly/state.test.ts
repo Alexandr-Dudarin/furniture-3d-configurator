@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest'
 import { createConfiguratorStore } from '../configuratorStore'
-import { CONFIGURATION_STORAGE_KEY, LEGACY_CONFIGURATION_STORAGE_KEY, createConfigurationUrl, createDefaultSession, readSharedConfiguration, readSavedSession, updateSession } from '../savedConfiguration'
+import { CONFIGURATION_VERSION, CONFIGURATION_STORAGE_KEY, LEGACY_CONFIGURATION_STORAGE_KEY, createConfigurationUrl, createDefaultSession, readSharedConfiguration, readSavedSession, updateSession } from '../savedConfiguration'
 import { getTableBase, getTabletopWidthConfig, TABLE_BASES, TABLETOP_EDGE_PROFILES, TOP_SHAPES } from './catalog'
 import { createDefaultAssembly, normalizeTableAssembly, updateTableAssembly } from './state'
 
@@ -32,7 +32,7 @@ it('migrates v1 models and links without altering accepted configurations', () =
     'table-05-round-fluted-pedestal': { dimensions: { diameter: 1.3 }, materials: { primaryTop: 'marble-black-gold', frameMetal: 'metal-white-matte' } },
   } }
   const migrated = readSavedSession(JSON.stringify(legacy)).session
-  expect(migrated.version).toBe(2)
+  expect(migrated.version).toBe(CONFIGURATION_VERSION)
   expect(migrated.mode).toBe('catalog')
   expect(migrated.models[legacy.selectedModelId]).toEqual(legacy.models[legacy.selectedModelId])
   const oldUrl = new URL('https://example.test/')
@@ -62,7 +62,7 @@ it('restores and shares an assembly, resetting it independently from catalog mod
   expect(session.models).toBe(catalog)
 })
 
-it('reads the legacy storage key, writes v2 separately and prioritizes a builder link', () => {
+it('reads the legacy storage key, writes the current version separately and prioritizes a builder link', () => {
   const old = JSON.stringify({ version: 1, selectedModelId: 'table-01', models: { 'table-01': { dimensions: { length: 1.8, width: 0.9 } } } })
   const values = new Map([[LEGACY_CONFIGURATION_STORAGE_KEY, old]])
   const shared = updateSession(createDefaultSession(), { type: 'set-mode', mode: 'builder' })
@@ -75,7 +75,7 @@ it('reads the legacy storage key, writes v2 separately and prioritizes a builder
   expect(store.getSnapshot().session.mode).toBe('builder')
   expect(store.getSnapshot().session.models['table-01'].dimensions).toEqual({ length: 1.8, width: 0.9 })
   const disconnect = store.connect()
-  expect(JSON.parse(values.get(CONFIGURATION_STORAGE_KEY)!).version).toBe(2)
+  expect(JSON.parse(values.get(CONFIGURATION_STORAGE_KEY)!).version).toBe(CONFIGURATION_VERSION)
   expect(values.get(LEGACY_CONFIGURATION_STORAGE_KEY)).toBe(old)
   disconnect()
 })
@@ -87,7 +87,7 @@ it('sanitizes an outdated assembly link and rejects malformed payloads', () => {
   expect(parsed.status).toBe('adjusted')
   expect(parsed.assembly!.baseId).toBe('round-fluted')
   expect(parsed.assembly!.length).toBe(1.4)
-  for (const payload of [{ version: 2, kind: 'table-assembly', assembly: [] }, { version: 3, kind: 'table-assembly', assembly: {} }, { version: 1, kind: 'table-assembly', assembly: {} }]) {
+  for (const payload of [{ version: 2, kind: 'table-assembly', assembly: [] }, { version: 99, kind: 'table-assembly', assembly: {} }, { version: 1, kind: 'table-assembly', assembly: {} }]) {
     url.searchParams.set('config', JSON.stringify(payload))
     expect(readSharedConfiguration(url.href).status).toBe('invalid')
   }

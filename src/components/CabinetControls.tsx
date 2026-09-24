@@ -1,3 +1,4 @@
+import { FacadeControls } from './FacadeControls'
 import type { ModelConfiguration, ConfigurationAction } from '../configurator/savedConfiguration'
 import type { FurnitureMotionStore } from '../configurator/furnitureMotionStore'
 import type { FurnitureDefinition } from '../three/furniture/types'
@@ -32,6 +33,8 @@ export function CabinetControls({ definition, configuration, dispatch, motionSto
       })}
       {definition.description && <p className="assembly-summary">{definition.description}</p>}
     </ConfigurationSection>
+    {definition.facades && <FacadeControls spec={definition.facades} value={configuration.facadeStyle}
+      onChange={style => dispatch({ type: 'set-facade-style', style })} />}
     <ConfigurationSection title="Материалы" summary={slots.map(([name, slot]) => (
       <span className="catalog-material-summary" key={name}>
         {name === 'hardware' && definition.category === 'dressers' ? 'Ручки' : slotLabels[name] ?? slot.label}: {getMaterialFinish(materials[name] ?? slot.defaultFinish).label}

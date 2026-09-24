@@ -3,13 +3,29 @@ import type { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import type { FurnitureDefinition } from '../furniture/types'
 
 type Frame = NonNullable<FurnitureDefinition['framing']>
+type FramingControls = Pick<OrbitControls, 'target' | 'maxDistance' | 'update'>
 
-// Fit the declared maximum envelope so dimensional edits never move the camera.
-export function fitFurnitureFrame(camera: PerspectiveCamera, controls: Pick<OrbitControls, 'target' | 'maxDistance' | 'update'>, frame: Frame) {
+// A shared envelope gives comparable objects the same initial camera, regardless
+// of which model is selected first. Catalogue metadata requires no GLB loading.
+export function combineFurnitureFrames(frames: readonly (Frame | undefined)[]): Frame | undefined {
+  let combined: Frame | undefined
+  for (const frame of frames) {
+    if (!frame) continue
+    combined = combined ? {
+      width: Math.max(combined.width, frame.width),
+      height: Math.max(combined.height, frame.height),
+      depth: Math.max(combined.depth, frame.depth),
+    } : { ...frame }
+  }
+  return combined
+}
+
+// Fit the declared maximum envelope so dimensional edits never change the zoom.
+export function fitFurnitureFrame(camera: PerspectiveCamera, controls: FramingControls, frame: Frame, centerY = frame.height / 2) {
   const direction = new Vector3(1.2, 0.6, 2.6).normalize()
   const right = new Vector3().crossVectors(new Vector3(0, 1, 0), direction).normalize()
   const up = new Vector3().crossVectors(direction, right)
-  const target = new Vector3(0, frame.height / 2, 0)
+  const target = new Vector3(0, centerY, 0)
   const tanV = Math.tan(MathUtils.degToRad(camera.fov) / 2)
   const tanH = tanV * camera.aspect
   let distance = 0
@@ -30,27 +46,38 @@ export function fitFurnitureFrame(camera: PerspectiveCamera, controls: Pick<Orbi
   controls.update()
 }
 
-export function createFurnitureFraming(camera: PerspectiveCamera, controls: OrbitControls) {
-  let active: Frame | undefined
-  let previousId = ''
-  let tableView = { position: camera.position.clone(), target: controls.target.clone(), maxDistance: controls.maxDistance }
+// Each view owns its orbit/zoom/pan. Wardrobes share one view for comparison;
+// dressers use a view per model with a target at the current body centre.
+export function createFurnitureFraming(camera: PerspectiveCamera, controls: FramingControls) {
+  type View = { position: Vector3; target: Vector3; maxDistance: number; centerY: number }
+  let key = 'tables', active: Frame | undefined, centerY = 0
+  const views = new Map<string, View>()
+  const capture = (): View => ({ position: camera.position.clone(), target: controls.target.clone(), maxDistance: controls.maxDistance, centerY })
+  const moveCenter = (next: number) => {
+    const dy = next - centerY
+    camera.position.y += dy; controls.target.y += dy; centerY = next
+    if (dy) { camera.lookAt(controls.target); controls.update() }
+  }
   return {
-    select(id: string, frame?: Frame) {
-      if (previousId === id) return
-      previousId = id
-      if (frame) {
-        if (!active) tableView = { position: camera.position.clone(), target: controls.target.clone(), maxDistance: controls.maxDistance }
-        active = frame
-        fitFurnitureFrame(camera, controls, frame)
-      } else if (active) {
-        active = undefined
-        camera.position.copy(tableView.position)
-        controls.target.copy(tableView.target)
-        controls.maxDistance = tableView.maxDistance
-        camera.lookAt(controls.target)
-        controls.update()
+    select(_id: string, frame?: Frame, viewKey = frame ? 'cabinets' : 'tables', targetY = frame?.height ? frame.height / 2 : 0) {
+      if (viewKey === key) { active = frame; moveCenter(targetY); return }
+      views.set(key, capture())
+      key = viewKey; active = frame
+      const saved = views.get(key)
+      if (saved) {
+        camera.position.copy(saved.position); controls.target.copy(saved.target)
+        controls.maxDistance = saved.maxDistance; centerY = saved.centerY
+        moveCenter(targetY); camera.lookAt(controls.target); controls.update()
+      } else if (frame) {
+        centerY = targetY
+        fitFurnitureFrame(camera, controls, frame, centerY)
       }
     },
-    resize() { if (active) fitFurnitureFrame(camera, controls, active) },
+    resize() {
+      // Cached projections belong to the old viewport. Refit other views when
+      // revisited; keep the table view usable and fit the active category now.
+      for (const cached of views.keys()) if (cached !== 'tables') views.delete(cached)
+      if (active) fitFurnitureFrame(camera, controls, active, centerY)
+    },
   }
 }

@@ -9,7 +9,7 @@
   "base": {
     "width": 1.6,
     "height": 1.9,
-    "depth": 0.4
+    "depth": 0.45
   },
   "limits": {
     "width": [
@@ -50,8 +50,5 @@
     "Default graphite finish is the existing shared board-graphite-matte, an approximation of the main photo.",
     "Door motion is the existing visual Y-axis hinge approximation, not manufacturing hinge kinematics. Bracket extension is not an interactive articulation.",
     "Perforation pitch 128 mm is recorded from the card; unused adjustment holes and concealed fasteners are omitted from render geometry."
-  ],
-  "defaults": {
-    "depth": 0.45
-  }
+  ]
 }

@@ -2,6 +2,7 @@ import {
   CONFIGURATION_QUERY_KEY,
   CONFIGURATION_STORAGE_KEY,
   LEGACY_CONFIGURATION_STORAGE_KEY,
+  PREVIOUS_CONFIGURATION_STORAGE_KEY,
   applySharedConfiguration,
   createConfigurationUrl,
   readSavedSession,
@@ -30,7 +31,7 @@ export type ConfiguratorSnapshot = {
 export function createConfiguratorStore(environment: ConfiguratorEnvironment) {
   let stored: string | null = null
   try {
-    stored = environment.getStorage().getItem(CONFIGURATION_STORAGE_KEY) ?? environment.getStorage().getItem(LEGACY_CONFIGURATION_STORAGE_KEY)
+    stored = environment.getStorage().getItem(CONFIGURATION_STORAGE_KEY) ?? environment.getStorage().getItem(PREVIOUS_CONFIGURATION_STORAGE_KEY) ?? environment.getStorage().getItem(LEGACY_CONFIGURATION_STORAGE_KEY)
   } catch { /* Browsers may disable local storage. The editor still works. */ }
   const restored = readSavedSession(stored)
   const shared = readSharedConfiguration(environment.getHref())

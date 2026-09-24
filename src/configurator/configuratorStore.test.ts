@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createConfiguratorStore } from './configuratorStore'
-import { CONFIGURATION_STORAGE_KEY, createConfigurationUrl, createDefaultSession, readSharedConfiguration, updateSession } from './savedConfiguration'
+import { CONFIGURATION_STORAGE_KEY, PREVIOUS_CONFIGURATION_STORAGE_KEY, createConfigurationUrl, createDefaultSession, readSharedConfiguration, updateSession } from './savedConfiguration'
 
 const roundId = 'table-05-round-fluted-pedestal'
 const origin = 'https://furniture.example/'
@@ -179,4 +179,28 @@ describe('browser configuration lifecycle', () => {
     store.dispatch({ type: 'set-dimension', name: 'length', value: 1.7 })
     expect(listener).not.toHaveBeenCalled()
   })
+})
+
+
+it('migrates v2 browser storage once, preserving 400 mm and resetting Katania to 450 mm', () => {
+  const id = 'wardrobe-15-katania-four-door', pilot = 'wardrobe-09-chelsea-two-door'
+  let old = updateSession(createDefaultSession(), { type: 'select-model', modelId: id })
+  old = updateSession(old, { type: 'set-dimension', name: 'depth', value: .4 })
+  const data = JSON.parse(JSON.stringify(old)); data.version = 2
+  for (const model of Object.values(data.models) as Record<string, unknown>[]) delete model.facadeStyle
+  const env = environment()
+  env.values.set(PREVIOUS_CONFIGURATION_STORAGE_KEY, JSON.stringify(data))
+  const store = createConfiguratorStore(env), disconnect = store.connect()
+  expect(store.getSnapshot().session.models[id].dimensions.depth).toBe(.4)
+  expect(store.getSnapshot().session.models[pilot].facadeStyle).toBe('smooth')
+  store.dispatch({ type: 'reset-model' })
+  expect(store.getSnapshot().session.models[id].dimensions.depth).toBe(.45)
+  store.dispatch({ type: 'select-model', modelId: pilot })
+  store.dispatch({ type: 'set-facade-style', style: 'frame' })
+  vi.advanceTimersByTime(250)
+  const restored = createConfiguratorStore(env)
+  expect(restored.getSnapshot().session.models[id].dimensions.depth).toBe(.45)
+  expect(restored.getSnapshot().session.models[pilot].facadeStyle).toBe('frame')
+  expect(JSON.parse(env.values.get(PREVIOUS_CONFIGURATION_STORAGE_KEY)!)).toEqual(data)
+  disconnect()
 })

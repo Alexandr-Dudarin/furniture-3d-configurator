@@ -33,7 +33,7 @@ describe('configuration summary', () => {
     const session = updateSession(createDefaultSession(), { type: 'select-model', modelId: definition.id })
     const summary = getConfigurationSummary(session)
     expect(summary.title).toBe(definition.label)
-    expect(summary.rows).toHaveLength(definition.dimensionOrder.length + Object.keys(definition.materialSlots ?? {}).length)
+    expect(summary.rows).toHaveLength(definition.dimensionOrder.length + Object.keys(definition.materialSlots ?? {}).length + (definition.facades ? 1 : 0))
     expect(configurationSummaryText(summary, 'https://example.com')).not.toMatch(/undefined|NaN/)
   })
 })

@@ -166,6 +166,114 @@ export const catalogue: FurnitureDefinition = {
         "metal-brass-satin"
       ]
     }
+  },
+  "facades": {
+    "defaultStyle": "original",
+    "styles": [
+      "original",
+      "smooth",
+      "frame",
+      "fluted"
+    ],
+    "targets": [
+      {
+        "panel": "Drawer_01_Front",
+        "width": {
+          "base": 0.366,
+          "dimension": "width",
+          "factor": 1
+        },
+        "height": {
+          "base": 0.1852,
+          "dimension": "height",
+          "factor": 0.2
+        },
+        "thickness": 0.016,
+        "frameField": "flush",
+        "flutedClearCenter": 0.012
+      },
+      {
+        "panel": "Drawer_02_Front",
+        "width": {
+          "base": 0.366,
+          "dimension": "width",
+          "factor": 1
+        },
+        "height": {
+          "base": 0.1852,
+          "dimension": "height",
+          "factor": 0.2
+        },
+        "thickness": 0.016,
+        "frameField": "flush",
+        "flutedClearCenter": 0.012
+      },
+      {
+        "panel": "Drawer_03_Front",
+        "width": {
+          "base": 0.366,
+          "dimension": "width",
+          "factor": 1
+        },
+        "height": {
+          "base": 0.1852,
+          "dimension": "height",
+          "factor": 0.2
+        },
+        "thickness": 0.016,
+        "frameField": "flush",
+        "flutedClearCenter": 0.012
+      },
+      {
+        "panel": "Drawer_04_Front",
+        "width": {
+          "base": 0.366,
+          "dimension": "width",
+          "factor": 1
+        },
+        "height": {
+          "base": 0.1852,
+          "dimension": "height",
+          "factor": 0.2
+        },
+        "thickness": 0.016,
+        "frameField": "flush",
+        "flutedClearCenter": 0.012
+      },
+      {
+        "panel": "Drawer_05_Front",
+        "width": {
+          "base": 0.366,
+          "dimension": "width",
+          "factor": 1
+        },
+        "height": {
+          "base": 0.1852,
+          "dimension": "height",
+          "factor": 0.2
+        },
+        "thickness": 0.016,
+        "frameField": "flush",
+        "flutedClearCenter": 0.012
+      }
+    ],
+    "materialSlot": "fronts",
+    "bevel": 0.0007,
+    "frame": {
+      "width": 0.028,
+      "depth": 0.003,
+      "slope": 0.002,
+      "minField": 0.04
+    },
+    "fluted": {
+      "pitch": 0.02,
+      "width": 0.006,
+      "depth": 0.0015,
+      "margin": 0.018,
+      "endMargin": 0.02,
+      "fade": 0.003
+    },
+    "sourceStyle": "original"
   }
 },
   loadRuntime: () => import('./runtime').then(module => module.definition),

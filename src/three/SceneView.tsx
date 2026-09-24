@@ -1,17 +1,20 @@
 import type { PngExportStore } from '../configurator/pngExportStore'
 import { useEffect, useRef, useSyncExternalStore } from 'react'
 import type { Scene } from 'three'
-import { getFurnitureDefinition } from '../configurator/furnitureRegistry'
+import { getFurnitureDefinition, getFurnitureDefinitions } from '../configurator/furnitureRegistry'
 import type { FurnitureMotionStore } from '../configurator/furnitureMotionStore'
 import type { ConfiguratorStore } from '../configurator/configuratorStore'
 import { ViewerStatus } from '../components/ViewerStatus'
 import { createThreeRuntime } from './core/createThreeRuntime'
+import { combineFurnitureFrames } from './core/furnitureFraming'
 import { createSceneEnvironment } from './core/createSceneEnvironment'
 import { disposeMaterialFinishCache } from './materials/createMaterial'
 import { disposeFurnitureSourceCache } from './furniture/model'
 import { useCatalogScene } from './furniture/useCatalogScene'
 import type { FurnitureView } from './furniture/furniturePresentation'
 import { useTableAssemblyScene } from './tableAssembly/useTableAssemblyScene'
+
+const wardrobeFrame = combineFurnitureFrames(getFurnitureDefinitions().filter(model => model.category === 'wardrobes').map(model => model.framing))
 
 export default function SceneView({ store, furnitureView, motionStore, pngExport }: { pngExport: PngExportStore; store: ConfiguratorStore; furnitureView: FurnitureView; motionStore: FurnitureMotionStore }) {
   const { session } = useSyncExternalStore(store.subscribe, store.getSnapshot)
@@ -43,11 +46,17 @@ export default function SceneView({ store, furnitureView, motionStore, pngExport
     }
   }, [])
 
+  const selectedHeight = session.models[session.selectedModelId].dimensions.height
   useEffect(() => {
     const definition = getFurnitureDefinition(session.selectedModelId)
-    runtimeRef.current?.framing.select(session.mode === 'builder' ? 'builder' : definition.id,
-      session.mode === 'catalog' ? definition.framing : undefined)
-  }, [session.mode, session.selectedModelId])
+    if (session.mode === 'catalog' && definition.category === 'wardrobes') {
+      runtimeRef.current?.framing.select(definition.id, wardrobeFrame, 'wardrobes')
+    } else if (session.mode === 'catalog' && definition.category === 'dressers') {
+      runtimeRef.current?.framing.select(definition.id, definition.framing, definition.id, selectedHeight / 2)
+    } else {
+      runtimeRef.current?.framing.select('tables')
+    }
+  }, [session.mode, session.selectedModelId, selectedHeight])
 
   const catalog = useCatalogScene(runtimeRef, anisotropyRef, store, session, furnitureView, motionStore)
   const assembly = useTableAssemblyScene(sceneRef, anisotropyRef, store, session.mode === 'builder', session.assembly)

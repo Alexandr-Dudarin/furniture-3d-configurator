@@ -1,3 +1,4 @@
+import { getFacadeStyle } from './facades/catalog'
 import { getFurnitureDefinition } from './furnitureRegistry'
 import type { ConfiguratorSession } from './savedConfiguration'
 import { getTableBase, getTabletopEdgeProfile, TOP_SHAPES } from './tableAssembly/catalog'
@@ -28,6 +29,7 @@ export function getConfigurationSummary(session: ConfiguratorSession): Configura
   return { title: definition.label, fileStem: definition.id, rows: [
     ...definition.dimensionOrder.map(name => ({ label: definition.dimensions[name].label,
       value: size(config.dimensions[name], definition.dimensions[name].displayUnit === 'mm' ? 'мм' : 'см') })),
+    ...(definition.facades ? [{ label: 'Рисунок фасадов', value: getFacadeStyle(config.facadeStyle ?? definition.facades.defaultStyle).label }] : []),
     ...Object.entries(definition.materialSlots ?? {}).map(([name, slot]) => ({ label: slot.label,
       value: getMaterialFinish(config.materials[name] ?? slot.defaultFinish).label })),
   ] }

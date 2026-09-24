@@ -1,3 +1,4 @@
+import type { FacadeStyleId } from '../three/facades/types'
 import type { FurnitureDefinition } from '../three/furniture/types'
 import type { MaterialSelections } from '../three/materials/types'
 import { createInitialDimensions, type ConfiguratorDimensions } from './configuratorState'
@@ -6,14 +7,16 @@ import { DEFAULT_EDGE_PROFILE } from './tableAssembly/catalog'
 
 import { createDefaultAssembly, normalizeTableAssembly, updateTableAssembly, type TableAssemblyConfiguration } from './tableAssembly/state'
 
-export const CONFIGURATION_VERSION = 2
-export const CONFIGURATION_STORAGE_KEY = 'furniture-3d-configurator:configuration:v2'
+export const CONFIGURATION_VERSION = 3
+export const CONFIGURATION_STORAGE_KEY = 'furniture-3d-configurator:configuration:v3'
+export const PREVIOUS_CONFIGURATION_STORAGE_KEY = 'furniture-3d-configurator:configuration:v2'
 export const LEGACY_CONFIGURATION_STORAGE_KEY = 'furniture-3d-configurator:configuration:v1'
 export const CONFIGURATION_QUERY_KEY = 'config'
 
 export type ModelConfiguration = {
   dimensions: ConfiguratorDimensions
   materials: MaterialSelections
+  facadeStyle?: FacadeStyleId
 }
 
 export type ConfiguratorSession = {
@@ -25,7 +28,7 @@ export type ConfiguratorSession = {
 }
 
 type SharedConfiguration = ModelConfiguration & {
-  version: 1 | 2
+  version: 1 | 2 | 3
   modelId: string
 }
 
@@ -40,6 +43,7 @@ export function findFurnitureDefinition(id: string) {
 export function createModelConfiguration(definition: FurnitureDefinition): ModelConfiguration {
   return {
     dimensions: createInitialDimensions(definition),
+    ...(definition.facades ? { facadeStyle: definition.facades.defaultStyle } : {}),
     materials: Object.fromEntries(
       Object.entries(definition.materialSlots ?? {}).map(([name, slot]) => [name, slot.defaultFinish]),
     ),
@@ -81,6 +85,9 @@ export function normalizeModelConfiguration(definition: FurnitureDefinition, inp
       configuration.materials[name] = value
     }
   }
+  if (definition.facades && typeof source.facadeStyle === 'string' && definition.facades.styles.includes(source.facadeStyle as FacadeStyleId)) {
+    configuration.facadeStyle = source.facadeStyle as FacadeStyleId
+  }
   return configuration
 }
 
@@ -89,7 +96,7 @@ export function readSavedSession(raw: string | null): { session: ConfiguratorSes
   if (raw === null) return { session, notice: null }
   try {
     const input: unknown = JSON.parse(raw)
-    if (!isRecord(input) || typeof input.version !== 'number' || ![1, CONFIGURATION_VERSION].includes(Number(input.version)) || !isRecord(input.models)) {
+    if (!isRecord(input) || typeof input.version !== 'number' || ![1, 2, CONFIGURATION_VERSION].includes(Number(input.version)) || !isRecord(input.models)) {
       throw new Error('Unsupported saved configuration')
     }
     for (const definition of getFurnitureDefinitions()) {
@@ -98,7 +105,7 @@ export function readSavedSession(raw: string | null): { session: ConfiguratorSes
     if (typeof input.selectedModelId === 'string' && findFurnitureDefinition(input.selectedModelId)) {
       session.selectedModelId = input.selectedModelId
     }
-    if (input.version === CONFIGURATION_VERSION) {
+    if (input.version >= 2) {
       session.mode = input.mode === 'builder' ? 'builder' : 'catalog'
       session.assembly = normalizeTableAssembly(input.assembly)
     }
@@ -121,8 +128,8 @@ export function readSharedConfiguration(href: string): SharedConfigurationResult
   if (raw.length > 16000 || params.getAll(CONFIGURATION_QUERY_KEY).length !== 1) return { status: 'invalid' }
   try {
     const input: unknown = JSON.parse(raw)
-    if (!isRecord(input) || (input.version !== 1 && input.version !== CONFIGURATION_VERSION)) return { status: 'invalid' }
-    if (input.kind === 'table-assembly' && input.version === CONFIGURATION_VERSION) {
+    if (!isRecord(input) || typeof input.version !== 'number' || ![1, 2, CONFIGURATION_VERSION].includes(input.version)) return { status: 'invalid' }
+    if (input.kind === 'table-assembly' && (input.version === 2 || input.version === CONFIGURATION_VERSION)) {
       if (!isRecord(input.assembly)) return { status: 'invalid' }
       const assembly = normalizeTableAssembly(input.assembly)
       // Ссылки до выбора кромки уже описывали фаску 1 мм. Добавление этого
@@ -142,7 +149,8 @@ export function readSharedConfiguration(href: string): SharedConfigurationResult
       isRecord(source) && Object.keys(source).length === Object.keys(target).length &&
       Object.entries(target).every(([key, value]) => Object.hasOwn(source, key) && source[key] === value)
     return {
-      status: complete(input.dimensions, normalized.dimensions) && complete(input.materials, normalized.materials)
+      status: complete(input.dimensions, normalized.dimensions) && complete(input.materials, normalized.materials) &&
+        (input.facadeStyle === normalized.facadeStyle || input.facadeStyle === undefined)
         ? 'valid' : 'adjusted',
       configuration: { version: CONFIGURATION_VERSION, modelId: definition.id, ...normalized },
     }
@@ -158,7 +166,8 @@ export function applySharedConfiguration(session: ConfiguratorSession, configura
     mode: 'catalog',
     models: {
       ...session.models,
-      [configuration.modelId]: { dimensions: configuration.dimensions, materials: configuration.materials },
+      [configuration.modelId]: { dimensions: configuration.dimensions, materials: configuration.materials,
+        ...(configuration.facadeStyle ? { facadeStyle: configuration.facadeStyle } : {}) },
     },
   }
 }
@@ -166,9 +175,9 @@ export function applySharedConfiguration(session: ConfiguratorSession, configura
 export function createConfigurationUrl(href: string, session: ConfiguratorSession): string {
   const url = new URL(href)
   const configuration = session.mode === 'builder' ? {
-    version: CONFIGURATION_VERSION, kind: 'table-assembly', assembly: session.assembly,
+    version: 2, kind: 'table-assembly', assembly: session.assembly,
   } : {
-    version: 1,
+    version: session.models[session.selectedModelId].facadeStyle ? CONFIGURATION_VERSION : 1,
     modelId: session.selectedModelId,
     ...session.models[session.selectedModelId],
   }
@@ -182,6 +191,7 @@ export type ConfigurationAction =
   | { type: 'select-model'; modelId: string }
   | { type: 'set-dimension'; name: string; value: number }
   | { type: 'set-material'; slot: string; finishId: string }
+  | { type: 'set-facade-style'; style: string }
   | { type: 'reset-model' }
 
 export function updateSession(session: ConfiguratorSession, action: ConfigurationAction): ConfiguratorSession {
@@ -203,6 +213,9 @@ export function updateSession(session: ConfiguratorSession, action: Configuratio
   let next: ModelConfiguration
   if (action.type === 'reset-model') {
     next = createModelConfiguration(definition)
+  } else if (action.type === 'set-facade-style') {
+    if (!definition.facades?.styles.includes(action.style as FacadeStyleId)) return session
+    next = { ...current, facadeStyle: action.style as FacadeStyleId }
   } else if (action.type === 'set-dimension') {
     if (!definition.dimensionOrder.includes(action.name) || !Number.isFinite(action.value)) return session
     const dimensions = normalizeModelConfiguration(definition, {

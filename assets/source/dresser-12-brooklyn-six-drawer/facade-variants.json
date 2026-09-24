@@ -1,0 +1,110 @@
+{
+  "defaultStyle": "smooth",
+  "styles": [
+    "smooth",
+    "frame",
+    "fluted"
+  ],
+  "targets": [
+    {
+      "panel": "Drawer_01_Front_Core",
+      "width": {
+        "base": 0.795,
+        "dimension": "width",
+        "factor": 0.5
+      },
+      "height": {
+        "base": 0.208,
+        "dimension": "height",
+        "factor": 0.3333333333333333
+      },
+      "thickness": 0.016
+    },
+    {
+      "panel": "Drawer_02_Front_Core",
+      "width": {
+        "base": 0.795,
+        "dimension": "width",
+        "factor": 0.5
+      },
+      "height": {
+        "base": 0.208,
+        "dimension": "height",
+        "factor": 0.3333333333333333
+      },
+      "thickness": 0.016
+    },
+    {
+      "panel": "Drawer_03_Front_Core",
+      "width": {
+        "base": 0.795,
+        "dimension": "width",
+        "factor": 0.5
+      },
+      "height": {
+        "base": 0.208,
+        "dimension": "height",
+        "factor": 0.3333333333333333
+      },
+      "thickness": 0.016
+    },
+    {
+      "panel": "Drawer_04_Front_Core",
+      "width": {
+        "base": 0.795,
+        "dimension": "width",
+        "factor": 0.5
+      },
+      "height": {
+        "base": 0.208,
+        "dimension": "height",
+        "factor": 0.3333333333333333
+      },
+      "thickness": 0.016
+    },
+    {
+      "panel": "Drawer_05_Front_Core",
+      "width": {
+        "base": 0.795,
+        "dimension": "width",
+        "factor": 0.5
+      },
+      "height": {
+        "base": 0.208,
+        "dimension": "height",
+        "factor": 0.3333333333333333
+      },
+      "thickness": 0.016
+    },
+    {
+      "panel": "Drawer_06_Front_Core",
+      "width": {
+        "base": 0.795,
+        "dimension": "width",
+        "factor": 0.5
+      },
+      "height": {
+        "base": 0.208,
+        "dimension": "height",
+        "factor": 0.3333333333333333
+      },
+      "thickness": 0.016
+    }
+  ],
+  "materialSlot": "fronts",
+  "bevel": 0.0007,
+  "frame": {
+    "width": 0.028,
+    "depth": 0.003,
+    "slope": 0.002,
+    "minField": 0.04
+  },
+  "fluted": {
+    "pitch": 0.02,
+    "width": 0.006,
+    "depth": 0.0015,
+    "margin": 0.018,
+    "endMargin": 0.02,
+    "fade": 0.003
+  }
+}

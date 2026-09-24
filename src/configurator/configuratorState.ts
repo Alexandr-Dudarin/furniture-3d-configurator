@@ -23,7 +23,7 @@ export type ConfiguratorDimensions =
  * функция автоматически создаст:
  *
  * {
- *   diameter: baseValue
+ *   diameter: defaultValue ?? baseValue
  * }
  */
 export function createInitialDimensions(
@@ -46,7 +46,7 @@ export function createInitialDimensions(
       }
 
       dimensions[dimension] =
-        config.base
+        config.defaultValue ?? config.base
     },
   )
 
