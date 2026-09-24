@@ -1,4 +1,4 @@
-export type FacadeStyleId = 'original' | 'smooth' | 'frame' | 'fluted'
+export type FacadeStyleId = 'original' | 'smooth' | 'frame' | 'fluted' | 'fluted-sides'
 
 export type FacadeDimension = { base: number; dimension: string; factor: number }
 export type FacadeTarget = {

@@ -24796,7 +24796,8 @@ export const WARDROBE_15_CONFIG = {
       "original",
       "smooth",
       "frame",
-      "fluted"
+      "fluted",
+      "fluted-sides"
     ],
     "targets": [
       {

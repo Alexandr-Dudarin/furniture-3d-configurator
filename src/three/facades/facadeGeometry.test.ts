@@ -1,11 +1,58 @@
 import { describe, expect, it } from 'vitest'
 import { Vector3 } from 'three'
-import { createFacadeGeometry, grooveLayout } from './facadeGeometry'
+import { createFacadeGeometry, grooveLayout, sideGrooveLayout } from './facadeGeometry'
 import { getFurnitureDefinition } from '../../configurator/furnitureRegistry'
 
 const spec = getFurnitureDefinition('dresser-12-brooklyn-six-drawer').facades!
 
 describe('physical facade profiles', () => {
+  it('keeps side grooves mirrored, edge-anchored and outside the smooth centre at every millimetre', () => {
+    for (const margin of [.018, .032, .045]) {
+      const profile = { ...spec.fluted, margin }
+      let previousOffsets: number[] = []
+      for (let mm = 294; mm <= 1000; mm++) {
+        const width = mm / 1000, { centers, count } = sideGrooveLayout(width, profile)
+        expect(count).toBeGreaterThan(0)
+        expect(count % 2).toBe(0)
+        const right = centers.filter(c => c > 0)
+        const offsets = right.map(c => width / 2 - c)
+        for (const offset of previousOffsets) expect(offsets.some(n => Math.abs(n - offset) < 1e-9)).toBe(true)
+        for (const c of right) {
+          expect(centers.some(n => Math.abs(n + c) < 1e-9)).toBe(true)
+          expect(c - profile.width / 2).toBeGreaterThanOrEqual(width / 4 - 1e-9)
+          expect(width / 2 - c - profile.width / 2).toBeGreaterThanOrEqual(margin - 1e-9)
+        }
+        for (let i = 1; i < right.length; i++) expect(right[i] - right[i - 1]).toBeCloseTo(profile.pitch, 9)
+        previousOffsets = offsets
+      }
+    }
+    const cleared = sideGrooveLayout(.4, spec.fluted, .3)
+    expect(cleared.count).toBeGreaterThan(0)
+    expect(cleared.centers.every(c => Math.abs(c) - spec.fluted.width / 2 >= .15 - 1e-9)).toBe(true)
+  })
+
+  it('leaves a flat central mounting plane and cuts side grooves to the physical depth', () => {
+    const geometry = createFacadeGeometry(.795, .208, .016, 'fluted-sides', spec)
+    try {
+      const p = geometry.getAttribute('position'), n = geometry.getAttribute('normal')
+      const samplesAt = (x: number) => {
+        // Sample a full-depth row away from both ends and the bevel.
+        const y = -.208 / 2 + spec.fluted.endMargin + spec.fluted.fade
+        return Array.from({ length: p.count }, (_, i) => i).filter(i => Math.abs(p.getY(i) - y) < 1e-7 && Math.abs(p.getX(i) - x) < 1e-7 && p.getZ(i) > 0)
+      }
+      const centers = sideGrooveLayout(.795, spec.fluted).centers
+      for (const center of centers) for (const i of samplesAt(center)) expect(p.getZ(i)).toBeCloseTo(.008 - spec.fluted.depth, 7)
+      for (const edge of [centers.filter(c => c < 0).at(-1)! + spec.fluted.width / 2, centers.find(c => c > 0)! - spec.fluted.width / 2]) {
+        const ids = samplesAt(edge)
+        expect(ids.length).toBeGreaterThan(0)
+        for (const i of ids) {
+          expect(p.getZ(i)).toBeCloseTo(.008, 7)
+          expect([n.getX(i), n.getY(i), n.getZ(i)]).toEqual([0, 0, 1])
+        }
+      }
+    } finally { geometry.dispose() }
+  })
+
   it('adds centred groove pairs without stretching or shifting the existing pattern', () => {
     let previous = grooveLayout(.2, spec.fluted)
     for (let mm = 201; mm <= 1000; mm++) {
@@ -20,7 +67,7 @@ describe('physical facade profiles', () => {
     }
   })
 
-  it.each(['smooth', 'frame', 'fluted'] as const)('%s remains a closed nondegenerate solid inside its physical envelope', style => {
+  it.each(['smooth', 'frame', 'fluted', 'fluted-sides'] as const)('%s remains a closed nondegenerate solid inside its physical envelope', style => {
     for (const [width, height] of [[.595, .1646666667], [.795, .208], [.995, .2813333333], [.496, 2.311]]) {
       const geometry = createFacadeGeometry(width, height, .016, style, spec)
       try {
@@ -44,8 +91,8 @@ describe('physical facade profiles', () => {
     }
   })
 
-  it('keeps grain spacing metric along a grooved row, including its sloped surfaces', () => {
-    const geometry = createFacadeGeometry(.795, .208, .016, 'fluted', spec)
+  it.each(['fluted', 'fluted-sides'] as const)('%s keeps grain spacing metric along the machined surface', style => {
+    const geometry = createFacadeGeometry(.795, .208, .016, style, spec)
     try {
       const p = geometry.getAttribute('position'), uv = geometry.getAttribute('uv')
       const y = -.208 / 2 + spec.fluted.endMargin + spec.fluted.fade

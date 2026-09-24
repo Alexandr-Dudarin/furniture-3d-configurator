@@ -12,6 +12,18 @@ export function grooveLayout(width: number, profile: FacadeVariants['fluted']) {
   return { count, centers, margin: count ? (width - (count - 1) * profile.pitch - profile.width) / 2 : width / 2 }
 }
 
+export function sideGrooveLayout(width: number, profile: FacadeVariants['fluted'], clearCenter = 0) {
+  // Each outer quarter may contain whole grooves. Anchor their phase to the
+  // nearest edge; widening the panel only adds mirrored pairs towards the field.
+  // The middle half (or a larger handle footprint) always stays on the front plane.
+  const outer = width / 2 - profile.margin - profile.width / 2
+  const inner = Math.max(width / 4, clearCenter / 2) + profile.width / 2
+  const perSide = Math.max(0, 1 + Math.floor((outer - inner + 1e-10) / profile.pitch))
+  const right = Array.from({ length: perSide }, (_, i) => outer - i * profile.pitch)
+  const centers = [...right.map(x => -x), ...right.slice().reverse()]
+  return { count: centers.length, centers }
+}
+
 // One owned mesh per panel. Dimensions and profiles are in metres; all relief is
 // cut into the original thickness, never added in front of the mounting plane.
 export function createFacadeGeometry(width: number, height: number, thickness: number,
@@ -21,7 +33,7 @@ export function createFacadeGeometry(width: number, height: number, thickness: n
   if (Math.min(width, height, thickness) <= 2 * b || spec.frame.depth >= thickness || spec.fluted.depth >= thickness) {
     throw new Error('Facade profile exceeds its panel envelope')
   }
-  const positions: number[] = [], uv: number[] = [], indices: number[] = []
+  const positions: number[] = [], uv: number[] = [], indices: number[] = [], flatFront: number[] = []
   const vertex = (p: Point, u = .5 + p[0], v = .5 + p[1]) => {
     const index = positions.length / 3; positions.push(...p); uv.push(u, v); return index
   }
@@ -69,7 +81,9 @@ export function createFacadeGeometry(width: number, height: number, thickness: n
     for (let i = 0; i < 8; i++) indices.push(center, field[i], field[(i + 1) % 8])
     closeSolid(rings[0])
   } else {
-    const profile = spec.fluted, layout = grooveLayout(width, profile)
+    const profile = spec.fluted, layout = style === 'fluted-sides'
+      ? sideGrooveLayout(width, profile, target.flutedClearCenter)
+      : grooveLayout(width, profile)
     const centers = layout.centers.filter(c => !target.flutedClearCenter || Math.abs(c) - profile.width / 2 >= target.flutedClearCenter / 2)
     count = centers.length
     if (!count || height <= 2 * (profile.endMargin + profile.fade)) throw new Error('Facade is too small for its fluting')
@@ -96,7 +110,13 @@ export function createFacadeGeometry(width: number, height: number, thickness: n
       return values.map(v => .5 + v - values.at(-1)! / 2)
     }
     const us = points.map(arc), vs = xs.map((_, x) => arc(points.map(row => row[x])))
-    const grid = points.map((row, y) => row.map((p, x) => vertex(p, us[y][x], vs[x][y])))
+    const grid = points.map((row, y) => row.map((p, x) => {
+      const id = vertex(p, us[y][x], vs[x][y])
+      // A cosine groove meets its flat land with zero slope. Keep that exact
+      // normal so neighbouring grooves do not shade the wide centre like a bowl.
+      if (style === 'fluted-sides' && Math.abs(p[2] - front) < 1e-10) flatFront.push(id)
+      return id
+    }))
     for (let y = 0; y < ys.length - 1; y++) for (let x = 0; x < xs.length - 1; x++) quad(grid[y][x], grid[y][x + 1], grid[y + 1][x + 1], grid[y + 1][x])
     // Every front boundary vertex is retained in the rim, avoiding T-junctions.
     const outline = [...points[0], ...points.slice(1).map(row => row.at(-1)!),
@@ -108,6 +128,7 @@ export function createFacadeGeometry(width: number, height: number, thickness: n
   geometry.setAttribute('uv', new Float32BufferAttribute(uv, 2))
   geometry.setIndex(indices)
   geometry.computeVertexNormals(); geometry.computeBoundingBox(); geometry.computeBoundingSphere()
+  for (const id of flatFront) geometry.getAttribute('normal').setXYZ(id, 0, 0, 1)
   geometry.userData.facade = { style, width, height, thickness, grooveCount: count }
   return geometry
 }

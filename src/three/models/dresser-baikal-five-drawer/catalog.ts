@@ -173,7 +173,8 @@ export const catalogue: FurnitureDefinition = {
       "original",
       "smooth",
       "frame",
-      "fluted"
+      "fluted",
+      "fluted-sides"
     ],
     "targets": [
       {
