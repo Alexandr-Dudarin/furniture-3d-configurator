@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { createProgressiveRenderer } from './progressiveRenderer'
 import { createFurnitureFraming } from './furnitureFraming'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 
@@ -38,7 +39,11 @@ export type ThreeRuntime = {
 
   framing: ReturnType<typeof createFurnitureFraming>
 
-  addFrameListener: (listener: (deltaSeconds: number) => void) => () => void
+  addFrameListener: (listener: (deltaSeconds: number) => boolean | void) => () => void
+
+  invalidate: () => void
+
+  setDetailRefinement: (enabled: boolean) => void
 
   capturePng: () => Promise<Blob>
 
@@ -200,6 +205,12 @@ export function createThreeRuntime(
 
   const framing = createFurnitureFraming(camera, controls)
 
+  const rendering = createProgressiveRenderer(renderer, scene, camera)
+  const cameraChanged = () => rendering.invalidate(false)
+  controls.addEventListener('change', cameraChanged)
+  const contextRestored = () => rendering.resize()
+  renderer.domElement.addEventListener('webglcontextrestored', contextRestored)
+
   const resize =
     () => {
       const width =
@@ -221,6 +232,7 @@ export function createThreeRuntime(
       camera.updateProjectionMatrix()
       framing.resize()
 
+      rendering.resize()
       renderer.setSize(
         width,
         height,
@@ -249,8 +261,8 @@ export function createThreeRuntime(
    * --------------------------------
    */
 
-  const frameListeners = new Set<(deltaSeconds: number) => void>()
-  const addFrameListener = (listener: (deltaSeconds: number) => void) => {
+  const frameListeners = new Set<(deltaSeconds: number) => boolean | void>()
+  const addFrameListener = (listener: (deltaSeconds: number) => boolean | void) => {
     frameListeners.add(listener)
     return () => { frameListeners.delete(listener) }
   }
@@ -268,13 +280,10 @@ export function createThreeRuntime(
       const now = performance.now()
       const deltaSeconds = Math.min(0.1, (now - lastFrameTime) / 1000)
       lastFrameTime = now
-      frameListeners.forEach(listener => listener(deltaSeconds))
+      frameListeners.forEach(listener => { if (listener(deltaSeconds)) rendering.invalidate() })
       controls.update()
 
-      renderer.render(
-        scene,
-        camera,
-      )
+      rendering.render(now)
 
       animationFrameId =
         requestAnimationFrame(
@@ -305,7 +314,10 @@ export function createThreeRuntime(
 
       resizeObserver.disconnect()
 
+      controls.removeEventListener('change', cameraChanged)
+      renderer.domElement.removeEventListener('webglcontextrestored', contextRestored)
       controls.dispose()
+      rendering.dispose()
 
       renderer.dispose()
 
@@ -328,7 +340,7 @@ export function createThreeRuntime(
     // Render and request the snapshot in the same task. No permanent
     // preserveDrawingBuffer cost, camera changes or UI layers in the image.
     try {
-      renderer.render(scene, camera)
+      rendering.present()
       renderer.domElement.toBlob(blob => {
         if (blob && blob.size > 0) resolve(blob)
         else reject(new Error('PNG encoding failed'))
@@ -338,6 +350,8 @@ export function createThreeRuntime(
 
   return {
     capturePng,
+    invalidate: () => rendering.invalidate(),
+    setDetailRefinement: rendering.setEnabled,
     scene,
     camera,
     renderer,

@@ -88,6 +88,7 @@ export function createFurnitureMotion(root: Object3D, definition: FurnitureDefin
         changed = true
       }
       if (changed) apply()
+      return changed
     },
     // Dimension/UV controllers own closed transforms. Never let them capture a
     // partly opened pose, including when an async finish refresh completes.

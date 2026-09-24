@@ -95,10 +95,10 @@ export function useCatalogScene(
         controller.setDimensions(selected.dimensions)
         facades?.update(selected.dimensions, selected.facadeStyle)
         presentation.setView(viewRef.current)
-        motion = createFurnitureMotion(loaded, definition, controller.getDimensions, states => binding?.publish(states))
+        motion = createFurnitureMotion(loaded, definition, controller.getDimensions, states => { binding?.publish(states); runtime.invalidate() })
         if (definition.articulations?.length) {
           const preference = window.matchMedia('(prefers-reduced-motion: reduce)')
-          const updatePreference = () => motion?.setReducedMotion(preference.matches)
+          const updatePreference = () => { motion?.setReducedMotion(preference.matches); runtime.invalidate() }
           updatePreference()
           preference.addEventListener('change', updatePreference)
           stopPreference = () => preference.removeEventListener('change', updatePreference)

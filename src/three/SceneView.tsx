@@ -62,6 +62,16 @@ export default function SceneView({ store, furnitureView, motionStore, pngExport
   const assembly = useTableAssemblyScene(sceneRef, anisotropyRef, store, session.mode === 'builder', session.assembly)
   const preview = session.mode === 'builder' ? assembly : catalog
   useEffect(() => {
+    const definition = getFurnitureDefinition(session.selectedModelId)
+    const style = session.models[session.selectedModelId].facadeStyle ?? definition.facades?.defaultStyle
+    const detail = session.mode === 'catalog' && !!definition.facades &&
+      (style === 'fluted' || style === 'fluted-sides' || style === 'original')
+    runtimeRef.current?.setDetailRefinement(detail)
+    // Session edits can change geometry immediately; async finish/model readiness
+    // invalidates again once resources arrive. Both catalog and builder use this.
+    runtimeRef.current?.invalidate()
+  }, [session, furnitureView, preview.ready, preview.loading, preview.error])
+  useEffect(() => {
     const runtime = runtimeRef.current
     if (!runtime || !preview.ready) return
     return pngExport.attach({ session, capture: () => {
