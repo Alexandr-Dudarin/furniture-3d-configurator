@@ -1,6 +1,6 @@
-import { BufferGeometry, Mesh, MeshStandardMaterial, type Object3D } from 'three'
+import { BufferGeometry, Matrix4, Mesh, MeshStandardMaterial, Vector3, type Object3D } from 'three'
 import type { FurnitureDefinition } from '../furniture/types'
-import type { FacadeStyleId } from './types'
+import type { FacadeComposition, FacadeStyleId } from './types'
 import { createFacadeGeometry } from './facadeGeometry'
 
 const MATERIAL = 'Configurator_Facade_Profile'
@@ -35,20 +35,43 @@ export function createFacadeController(root: Object3D, definition: FurnitureDefi
     update(dimensions: Readonly<Record<string, number>>, style: FacadeStyleId = spec.defaultStyle) {
       if (!spec.styles.includes(style)) throw new Error(`Unsupported facade style: ${style}`)
       const source = style === (spec.sourceStyle ?? 'smooth')
+      const measured = panels.map(({ target, mesh }) => {
+        const measure = (axis: 'width' | 'height') => {
+          const binding = target[axis]
+          return binding.base + ((dimensions[binding.dimension] ?? definition.dimensions[binding.dimension].base) - definition.dimensions[binding.dimension].base) * binding.factor
+        }
+        return { target, mesh, width: measure('width'), height: measure('height'), composition: undefined as FacadeComposition | undefined }
+      })
+      if (style === 'herringbone-wide') {
+        // update is called inside motion.withClosedPose, after body resizing.
+        // Measure in model space so scene placement and camera never affect
+        // the design. Include actual gaps and different drawer/door heights.
+        root.updateWorldMatrix(true, true)
+        const inverse = root.matrixWorld.clone().invert(), matrix = new Matrix4(), center = new Vector3()
+        const centers = measured.map(panel => {
+          matrix.multiplyMatrices(inverse, panel.mesh.parent!.matrixWorld)
+          center.setFromMatrixPosition(matrix)
+          return { x: center.x, y: center.y }
+        })
+        const left = Math.min(...measured.map((p, i) => centers[i].x - p.width / 2))
+        const right = Math.max(...measured.map((p, i) => centers[i].x + p.width / 2))
+        const bottom = Math.min(...measured.map((p, i) => centers[i].y - p.height / 2))
+        const top = Math.max(...measured.map((p, i) => centers[i].y + p.height / 2))
+        measured.forEach((p, i) => { p.composition = {
+          width: right - left, height: top - bottom,
+          x: centers[i].x - (left + right) / 2, y: centers[i].y - (bottom + top) / 2,
+        } })
+      }
       const next = new Map<string, BufferGeometry>(), replacements: BufferGeometry[] = []
       try {
-        for (const { target } of panels) {
-          const measure = (axis: 'width' | 'height') => {
-            const binding = target[axis]
-            return binding.base + ((dimensions[binding.dimension] ?? definition.dimensions[binding.dimension].base) - definition.dimensions[binding.dimension].base) * binding.factor
-          }
-          const width = measure('width'), height = measure('height')
+        for (const { target, width, height, composition } of measured) {
           // Imported equal doors may differ by ~1e-16 m after coordinate
           // subtraction. Ignore that noise in the key (1 nm), not in the mesh.
           const key = JSON.stringify([style, Math.round(width * 1e9), Math.round(height * 1e9), target.thickness,
-            target.frameWidth ?? spec.frame.width, target.frameField ?? 'recessed', target.flutedClearCenter ?? 0])
+            target.frameWidth ?? spec.frame.width, target.frameField ?? 'recessed', target.flutedClearCenter ?? 0,
+            composition && [composition.width, composition.height, composition.x, composition.y].map(n => Math.round(n * 1e9))])
           let geometry = next.get(key) ?? geometries.get(key)
-          if (!geometry) geometry = source ? new BufferGeometry() : createFacadeGeometry(width, height, target.thickness, style as Exclude<FacadeStyleId, 'original'>, spec, target)
+          if (!geometry) geometry = source ? new BufferGeometry() : createFacadeGeometry(width, height, target.thickness, style as Exclude<FacadeStyleId, 'original'>, spec, target, composition)
           next.set(key, geometry); replacements.push(geometry)
         }
       } catch (error) {

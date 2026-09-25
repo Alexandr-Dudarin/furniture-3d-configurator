@@ -146,11 +146,20 @@ describe('untrusted and outdated data', () => {
 
 
 describe('facade configuration compatibility', () => {
+  it('keeps shared compositions opt-in and adjusts unsupported links to the model default', () => {
+    for (const definition of definitions.filter(d => d.category === 'dressers')) {
+      const session = updateSession(createDefaultSession(), { type: 'select-model', modelId: definition.id })
+      expect(updateSession(session, { type: 'set-facade-style', style: 'herringbone-wide' })).toBe(session)
+      const parsed = readSharedConfiguration(sharedUrl({ version: 3, modelId: definition.id, ...session.models[definition.id], facadeStyle: 'herringbone-wide' }))
+      expect(parsed.status).toBe('adjusted')
+      expect(parsed.configuration!.facadeStyle).toBe(definition.facades!.defaultStyle)
+    }
+  })
   const pilots = definitions.filter(d => d.facades).map(d => d.id)
   it.each(pilots)('%s preserves styles, dimensions and finishes independently through links and resets', id => {
     let session = updateSession(createDefaultSession(), { type: 'select-model', modelId: id })
     const defaults = session.models[id]
-    for (const style of ['frame', 'fluted', 'fluted-sides', 'diagonal', 'herringbone', 'diamonds']) {
+    for (const style of definitions.find(d => d.id === id)!.facades!.styles) {
       session = updateSession(session, { type: 'set-facade-style', style })
       session = updateSession(session, { type: 'set-dimension', name: 'width', value: 1 })
       session = updateSession(session, { type: 'set-material', slot: 'fronts', finishId: 'board-muted-green' })

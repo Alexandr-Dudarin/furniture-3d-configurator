@@ -19,7 +19,7 @@ export function validateSlantedProfile(width: number, height: number, thickness:
 
 /** A single closed panel with rounded 45° grooves and metric coating UVs. */
 export function createSlantedGrooveGeometry(width: number, height: number, thickness: number,
-  bevel: number, profile: DiagonalProfile, grooves: SlantedGroove[], style: 'diagonal' | 'herringbone') {
+  bevel: number, profile: DiagonalProfile, grooves: SlantedGroove[], style: 'diagonal' | 'herringbone' | 'herringbone-wide') {
   if (!grooves.length) throw new Error('Facade is too small for its pattern')
   const front = thickness / 2, back = -front
   const positions: number[] = [], uvs: number[] = [], indices: number[] = []

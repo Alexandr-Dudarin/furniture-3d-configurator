@@ -24800,7 +24800,8 @@ export const WARDROBE_15_CONFIG = {
       "fluted-sides",
       "diagonal",
       "herringbone",
-      "diamonds"
+      "diamonds",
+      "herringbone-wide"
     ],
     "targets": [
       {

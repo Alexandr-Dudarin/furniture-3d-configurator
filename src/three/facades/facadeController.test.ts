@@ -24,6 +24,54 @@ async function load(id: string) {
 }
 afterEach(() => { roots.splice(0).forEach(disposeFurnitureModel); vi.unstubAllGlobals(); vi.restoreAllMocks() })
 
+it.each(getFurnitureDefinitions().filter(d => d.facades?.styles.includes('herringbone-wide')))(
+  '$id aligns actual surfaces in the closed envelope and keeps that phase through motion and scene transforms', async ({ id }) => {
+    const { root, definition, controller, facades } = await load(id), spec = definition.facades!, profile = spec.herringbone!
+    const motion = createFurnitureMotion(root, definition, controller.getDimensions, () => {})
+    const meshes = spec.targets.map(t => root.getObjectByName(`${t.panel}__Facade`) as THREE.Mesh)
+    const material = new THREE.MeshBasicMaterial()
+    const verifyPhase = () => {
+      root.updateWorldMatrix(true, true)
+      const inverse = root.matrixWorld.clone().invert()
+      const boxes = meshes.map(mesh => mesh.geometry.boundingBox!.clone().applyMatrix4(new THREE.Matrix4().multiplyMatrices(inverse, mesh.matrixWorld)))
+      const envelope = boxes.reduce((bounds, b) => bounds.union(b), new THREE.Box3()), origin = envelope.getCenter(new THREE.Vector3())
+      for (const [i, mesh] of meshes.entries()) {
+        const center = boxes[i].getCenter(new THREE.Vector3()).sub(origin), size = boxes[i].getSize(new THREE.Vector3())
+        const local = new THREE.Mesh(mesh.geometry, material)
+        let probes = 0
+        for (const f of [-.3, -.15, .15, .3]) {
+          const x = size.x * f, worldX = x + center.x
+          if (Math.abs(worldX) < profile.centerGap / 2 + .03 || Math.abs(x) < (spec.targets[i].flutedClearCenter ?? 0) / 2 + .015) continue
+          for (let k = -40; k <= 40; k++) {
+            const y = -Math.abs(worldX) - k * profile.pitch / Math.SQRT1_2 - center.y
+            if (Math.abs(y) > size.y / 2 - profile.endMargin - .03) continue
+            const [hit] = new THREE.Raycaster(new THREE.Vector3(x, y, .1), new THREE.Vector3(0, 0, -1)).intersectObject(local)
+            expect(hit, `${id}/${spec.targets[i].panel}`).toBeDefined()
+            expect(hit.point.z).toBeCloseTo(spec.targets[i].thickness / 2 - profile.depth, 7)
+            probes++
+          }
+        }
+        expect(probes, `${id}/${spec.targets[i].panel}`).toBeGreaterThan(0)
+      }
+    }
+    try {
+      for (const fraction of [0, .37, 1]) {
+        const dimensions = Object.fromEntries(Object.entries(definition.dimensions).map(([k, r]) => [k, r.min + (r.max - r.min) * fraction]))
+        motion.withClosedPose(() => { controller.setDimensions(dimensions); facades.update(dimensions, 'herringbone-wide'); verifyPhase() })
+        const geometries = meshes.map(m => m.geometry)
+        motion.setAll(true); motion.update(.24)
+        const poses = definition.articulations!.map(s => { const n = root.getObjectByName(s.target)!; return [...n.position.toArray(), ...n.quaternion.toArray()] })
+        root.position.set(2, .3, -4); root.rotation.set(.1, .4, -.2); root.scale.setScalar(1.3)
+        motion.withClosedPose(() => { facades.update(dimensions, 'herringbone-wide'); verifyPhase() })
+        expect(meshes.map(m => m.geometry)).toEqual(geometries)
+        expect(definition.articulations!.map(s => { const n = root.getObjectByName(s.target)!; return [...n.position.toArray(), ...n.quaternion.toArray()] })).toEqual(poses)
+        expect(motion.getStates().every(s => s.open)).toBe(true)
+      }
+      motion.setAll(false, true); verifyPhase()
+    } finally { material.dispose(); motion.dispose() }
+  },
+)
+
 function fixture(targets?: FacadeTarget[]) {
   const source = getFurnitureDefinition('wardrobe-15-katania-four-door')
   const definition = { ...source, facades: { ...source.facades!, targets: targets ?? source.facades!.targets } }
@@ -200,7 +248,7 @@ it.each([
     const sourceHeights = feet.map(foot => new THREE.Raycaster(new THREE.Vector3(foot.x, foot.y, rear + .02), new THREE.Vector3(0, 0, -1)).intersectObjects(sourceMeshes, false)[0].point.z)
     // Read the actual source mounting footprint, including the curved Baikal
     // pull, rather than hard-coding a nominal handle centre.
-    for (const style of ['smooth', 'frame', 'fluted', 'fluted-sides', 'diagonal', 'herringbone', 'diamonds'] as const) {
+    for (const style of definition.facades!.styles.filter(s => s !== 'original')) {
       facades.update(dimensions, style); root.updateMatrixWorld(true)
       const visible: THREE.Mesh[] = []
       panel.traverseVisible(o => { if (o instanceof THREE.Mesh) visible.push(o) })
