@@ -14,6 +14,10 @@ function FacadePreview({ style }: { style: FacadeStyleId }) {
       const x1 = Math.max(18, sum - 53), x2 = Math.min(82, sum - 15)
       return <path key={sum} d={`M${x1} ${sum - x1}L${x2} ${sum - x2}`} stroke="#9b876d" strokeWidth="2" strokeLinecap="round" />
     })}
+    {style === 'diamonds' && [40, 55, 70, 85, 100, 115].map(sum => {
+      const x1 = Math.max(18, sum - 53), x2 = Math.min(82, sum - 15)
+      return <path key={sum} d={`M${x1} ${sum - x1}L${x2} ${sum - x2}M${100 - x1} ${sum - x1}L${100 - x2} ${sum - x2}`} stroke="#9b876d" strokeWidth="1.5" />
+    })}
     {style === 'herringbone' && [36, 48, 60, 72, 84].map(sum => {
       const x1 = Math.max(18, sum - 53), x2 = Math.min(47, sum - 15)
       return x2 > x1 && <path key={sum} d={`M${x1} ${sum - x1}L${x2} ${sum - x2}M${100 - x1} ${sum - x1}L${100 - x2} ${sum - x2}`} stroke="#9b876d" strokeWidth="2" strokeLinecap="round" />

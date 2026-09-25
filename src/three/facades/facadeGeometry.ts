@@ -1,6 +1,7 @@
 import { BufferGeometry, Float32BufferAttribute, Vector3 } from 'three'
 import type { FacadeStyleId, FacadeTarget, FacadeVariants } from './types'
 import { createDiagonalGeometry } from './diagonalGeometry'
+import { createDiamondsGeometry } from './diamondsGeometry'
 import { createHerringboneGeometry } from './herringboneGeometry'
 
 type Point = [number, number, number]
@@ -31,6 +32,10 @@ export function sideGrooveLayout(width: number, profile: FacadeVariants['fluted'
 export function createFacadeGeometry(width: number, height: number, thickness: number,
   style: Exclude<FacadeStyleId, 'original'>, spec: FacadeVariants,
   target: Pick<FacadeTarget, 'frameWidth' | 'frameField' | 'flutedClearCenter'> = {}): BufferGeometry {
+  if (style === 'diamonds') {
+    if (!spec.diamonds) throw new Error('Missing diamonds facade profile')
+    return createDiamondsGeometry(width, height, thickness, spec.bevel, spec.diamonds, target.flutedClearCenter)
+  }
   if (style === 'herringbone') {
     if (!spec.herringbone) throw new Error('Missing herringbone facade profile')
     return createHerringboneGeometry(width, height, thickness, spec.bevel, spec.herringbone, target.flutedClearCenter)

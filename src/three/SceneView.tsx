@@ -65,7 +65,7 @@ export default function SceneView({ store, furnitureView, motionStore, pngExport
     const definition = getFurnitureDefinition(session.selectedModelId)
     const style = session.models[session.selectedModelId].facadeStyle ?? definition.facades?.defaultStyle
     const detail = session.mode === 'catalog' && !!definition.facades &&
-      (style === 'fluted' || style === 'fluted-sides' || style === 'diagonal' || style === 'herringbone' || style === 'original')
+      (style === 'fluted' || style === 'fluted-sides' || style === 'diagonal' || style === 'herringbone' || style === 'diamonds' || style === 'original')
     runtimeRef.current?.setDetailRefinement(detail)
     // Session edits can change geometry immediately; async finish/model readiness
     // invalidates again once resources arrive. Both catalog and builder use this.

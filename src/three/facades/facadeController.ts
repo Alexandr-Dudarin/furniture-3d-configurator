@@ -17,7 +17,7 @@ export function createFacadeController(root: Object3D, definition: FurnitureDefi
     mesh.name = `${target.panel}__Facade`
     mesh.castShadow = true; mesh.receiveShadow = true; mesh.visible = false
     node.add(mesh)
-    return { target, original, mesh, key: '' }
+    return { target, original, mesh }
   })
   const slot = definition.materialSlots?.[spec.materialSlot]
   if (!slot) throw new Error('Facade material slot is missing')
@@ -26,24 +26,43 @@ export function createFacadeController(root: Object3D, definition: FurnitureDefi
   const materialDefinition: FurnitureDefinition = { ...definition, materialSlots: {
     ...definition.materialSlots, [spec.materialSlot]: { ...slot, targets: [...slot.targets, MATERIAL] },
   } }
+  // Only the current set is retained. Equal panels share immutable geometry,
+  // while each mesh keeps its own material, visibility and moving parent.
+  // disposeFurnitureModel already disposes shared geometries once via a Set.
+  let geometries = new Map<string, BufferGeometry>()
   return {
     materialDefinition,
     update(dimensions: Readonly<Record<string, number>>, style: FacadeStyleId = spec.defaultStyle) {
       if (!spec.styles.includes(style)) throw new Error(`Unsupported facade style: ${style}`)
-      for (const panel of panels) {
-        const { target, mesh } = panel
-        const measure = (axis: 'width' | 'height') => {
-          const binding = target[axis]
-          return binding.base + ((dimensions[binding.dimension] ?? definition.dimensions[binding.dimension].base) - definition.dimensions[binding.dimension].base) * binding.factor
+      const source = style === (spec.sourceStyle ?? 'smooth')
+      const next = new Map<string, BufferGeometry>(), replacements: BufferGeometry[] = []
+      try {
+        for (const { target } of panels) {
+          const measure = (axis: 'width' | 'height') => {
+            const binding = target[axis]
+            return binding.base + ((dimensions[binding.dimension] ?? definition.dimensions[binding.dimension].base) - definition.dimensions[binding.dimension].base) * binding.factor
+          }
+          const width = measure('width'), height = measure('height')
+          // Imported equal doors may differ by ~1e-16 m after coordinate
+          // subtraction. Ignore that noise in the key (1 nm), not in the mesh.
+          const key = JSON.stringify([style, Math.round(width * 1e9), Math.round(height * 1e9), target.thickness,
+            target.frameWidth ?? spec.frame.width, target.frameField ?? 'recessed', target.flutedClearCenter ?? 0])
+          let geometry = next.get(key) ?? geometries.get(key)
+          if (!geometry) geometry = source ? new BufferGeometry() : createFacadeGeometry(width, height, target.thickness, style as Exclude<FacadeStyleId, 'original'>, spec, target)
+          next.set(key, geometry); replacements.push(geometry)
         }
-        const width = measure('width'), height = measure('height'), key = `${style}/${width}/${height}`
-        if (key === panel.key) continue
-        const source = style === (spec.sourceStyle ?? 'smooth')
-        const geometry = source ? new BufferGeometry() : createFacadeGeometry(width, height, target.thickness, style as Exclude<FacadeStyleId, 'original'>, spec, target)
-        mesh.geometry.dispose(); mesh.geometry = geometry
-        panel.original.forEach(({ child, visible }) => { child.visible = source && visible })
-        mesh.visible = !source; panel.key = key
+      } catch (error) {
+        for (const [key, geometry] of next) if (!geometries.has(key)) geometry.dispose()
+        throw error
       }
+      const retired = new Set(panels.map(panel => panel.mesh.geometry)), retained = new Set(next.values())
+      panels.forEach((panel, index) => {
+        panel.mesh.geometry = replacements[index]
+        panel.original.forEach(({ child, visible }) => { child.visible = source && visible })
+        panel.mesh.visible = !source
+      })
+      for (const geometry of retired) if (!retained.has(geometry)) geometry.dispose()
+      geometries = next
     },
   }
 }

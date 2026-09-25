@@ -9,6 +9,8 @@ import { createFurniturePresentation } from '../furniture/furniturePresentation'
 import { disposeFurnitureModel } from '../furniture/model'
 import { createFurnitureMaterialController } from '../materials/materialController'
 import { createFacadeController } from './facadeController'
+import * as facadeGeometry from './facadeGeometry'
+import type { FacadeTarget } from './types'
 
 const roots: THREE.Object3D[] = []
 async function load(id: string) {
@@ -20,7 +22,79 @@ async function load(id: string) {
   const controller = createFurnitureController(root, definition), facades = createFacadeController(root, definition)!
   return { definition, root, controller, facades }
 }
-afterEach(() => { roots.splice(0).forEach(disposeFurnitureModel); vi.unstubAllGlobals() })
+afterEach(() => { roots.splice(0).forEach(disposeFurnitureModel); vi.unstubAllGlobals(); vi.restoreAllMocks() })
+
+function fixture(targets?: FacadeTarget[]) {
+  const source = getFurnitureDefinition('wardrobe-15-katania-four-door')
+  const definition = { ...source, facades: { ...source.facades!, targets: targets ?? source.facades!.targets } }
+  const root = new THREE.Group()
+  for (const target of definition.facades.targets) {
+    const panel = new THREE.Group(); panel.name = target.panel; root.add(panel)
+  }
+  roots.push(root)
+  const facades = createFacadeController(root, definition)!
+  const meshes = definition.facades.targets.map(t => root.getObjectByName(`${t.panel}__Facade`) as THREE.Mesh)
+  const dimensions = Object.fromEntries(Object.entries(definition.dimensions).map(([k, v]) => [k, v.base]))
+  return { root, facades, meshes, dimensions }
+}
+
+describe('geometry reuse during resizing', () => {
+  it('builds equal doors once per size and releases shared geometry once when replaced or unloaded', () => {
+    const build = vi.spyOn(facadeGeometry, 'createFacadeGeometry')
+    const { facades, meshes, dimensions, root } = fixture()
+    facades.update(dimensions, 'diamonds')
+    expect(build).toHaveBeenCalledTimes(1)
+    expect(new Set(meshes.map(m => m.geometry)).size).toBe(1)
+    const first = meshes[0].geometry, disposed = vi.spyOn(first, 'dispose')
+    facades.update({ ...dimensions }, 'diamonds')
+    facades.update({ ...dimensions, depth: dimensions.depth + .01 }, 'diamonds')
+    expect(build).toHaveBeenCalledTimes(1); expect(disposed).not.toHaveBeenCalled()
+    facades.update({ ...dimensions, height: dimensions.height + .001 }, 'diamonds')
+    expect(build).toHaveBeenCalledTimes(2); expect(disposed).toHaveBeenCalledOnce()
+    expect(meshes[0].geometry).not.toBe(first)
+    const second = vi.spyOn(meshes[0].geometry, 'dispose')
+    facades.update(dimensions, 'herringbone')
+    expect(second).toHaveBeenCalledOnce(); expect(build).toHaveBeenCalledTimes(3)
+    const last = vi.spyOn(meshes[0].geometry, 'dispose')
+    disposeFurnitureModel(root); roots.splice(roots.indexOf(root), 1)
+    expect(last).toHaveBeenCalledOnce()
+  })
+
+  it('separates thickness, mounting strips and frame options even for equal width and height', () => {
+    const target = getFurnitureDefinition('wardrobe-15-katania-four-door').facades!.targets[0]
+    const targets = [{}, { thickness: .019 }, { flutedClearCenter: .012 }, { frameField: 'flush' as const }, { frameWidth: .063 }, {}]
+      .map((options, i) => ({ ...target, ...options, panel: `Panel_${i}` }))
+    const { facades, meshes, dimensions } = fixture(targets)
+    for (const style of ['diamonds', 'frame'] as const) {
+      facades.update(dimensions, style)
+      expect(new Set(meshes.map(m => m.geometry)).size).toBe(5)
+      expect(meshes[0].geometry).toBe(meshes[5].geometry)
+    }
+  })
+
+  it('keeps the displayed set intact and frees new geometry if a rebuild fails partway', () => {
+    const target = getFurnitureDefinition('wardrobe-15-katania-four-door').facades!.targets[0]
+    const { facades, meshes, dimensions } = fixture([
+      { ...target, panel: 'Panel_A' }, { ...target, panel: 'Panel_B', width: { ...target.width, base: target.width.base + .001 } },
+    ])
+    facades.update(dimensions, 'diamonds')
+    const old = meshes.map(m => m.geometry), oldDispose = old.map(g => vi.spyOn(g, 'dispose'))
+    const original = facadeGeometry.createFacadeGeometry
+    let created: THREE.BufferGeometry | undefined
+    let released = false
+    const build = vi.spyOn(facadeGeometry, 'createFacadeGeometry')
+      .mockImplementationOnce((...args) => {
+        created = original(...args); created.addEventListener('dispose', () => { released = true }); return created
+      }).mockImplementationOnce(() => { throw new Error('test rebuild failure') })
+    expect(() => facades.update({ ...dimensions, height: dimensions.height + .001 }, 'diamonds')).toThrow('test rebuild failure')
+    expect(created).toBeDefined(); expect(released).toBe(true)
+    expect(meshes.map(m => m.geometry)).toEqual(old)
+    oldDispose.forEach(dispose => expect(dispose).not.toHaveBeenCalled())
+    build.mockRestore()
+    facades.update({ ...dimensions, height: dimensions.height + .001 }, 'diamonds')
+    oldDispose.forEach(dispose => expect(dispose).toHaveBeenCalledOnce())
+  })
+})
 
 for (const { id } of getFurnitureDefinitions().filter(model => model.facades)) describe(id, () => {
   it('resizes every supported style, keeps mounting planes/assemblies and replaces owned geometry without drift', async () => {
@@ -126,7 +200,7 @@ it.each([
     const sourceHeights = feet.map(foot => new THREE.Raycaster(new THREE.Vector3(foot.x, foot.y, rear + .02), new THREE.Vector3(0, 0, -1)).intersectObjects(sourceMeshes, false)[0].point.z)
     // Read the actual source mounting footprint, including the curved Baikal
     // pull, rather than hard-coding a nominal handle centre.
-    for (const style of ['smooth', 'frame', 'fluted', 'fluted-sides', 'diagonal', 'herringbone'] as const) {
+    for (const style of ['smooth', 'frame', 'fluted', 'fluted-sides', 'diagonal', 'herringbone', 'diamonds'] as const) {
       facades.update(dimensions, style); root.updateMatrixWorld(true)
       const visible: THREE.Mesh[] = []
       panel.traverseVisible(o => { if (o instanceof THREE.Mesh) visible.push(o) })

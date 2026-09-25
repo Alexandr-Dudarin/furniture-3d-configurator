@@ -52,7 +52,7 @@ describe('diagonal machined facades', () => {
     expect(() => createDiagonalGeometry(.025, .025, .016, .0007, profile)).toThrow()
   })
 
-  it.each(['diagonal', 'herringbone'] as const)('%s is watertight, consistently wound and bounded on all models at extrema and asymmetric dimensions', style => {
+  it.each(['diagonal', 'herringbone', 'diamonds'] as const)('%s is watertight, consistently wound and bounded on all models at extrema and asymmetric dimensions', style => {
     const failures: string[] = []
     for (const definition of getFurnitureDefinitions().filter(d => d.facades)) {
       const facade = definition.facades!
@@ -79,7 +79,7 @@ describe('diagonal machined facades', () => {
           }
           const badEdges = [...edges.values()].filter(signs => signs.length !== 2 || signs[0] + signs[1] !== 0).length
           if (badArea || badEdges || volume <= 0) failures.push(`${definition.id}/${target.panel}/${fraction}: area=${badArea}, edges=${badEdges}, volume=${volume}`)
-          expect(index.count / 3).toBeLessThan(style === 'herringbone' ? 10000 : 6000)
+          expect(index.count / 3).toBeLessThan(style === 'diamonds' ? 12000 : style === 'herringbone' ? 10000 : 6000)
         } finally { geometry.dispose() }
       }
     }
