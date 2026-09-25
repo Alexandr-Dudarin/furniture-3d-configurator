@@ -67,7 +67,7 @@ describe('physical facade profiles', () => {
     }
   })
 
-  it.each(['smooth', 'frame', 'fluted', 'fluted-sides', 'diagonal'] as const)('%s remains a closed nondegenerate solid inside its physical envelope', style => {
+  it.each(['smooth', 'frame', 'fluted', 'fluted-sides', 'diagonal', 'herringbone'] as const)('%s remains a closed nondegenerate solid inside its physical envelope', style => {
     for (const [width, height] of [[.595, .1646666667], [.795, .208], [.995, .2813333333], [.496, 2.311]]) {
       const geometry = createFacadeGeometry(width, height, .016, style, spec)
       try {

@@ -126,7 +126,7 @@ it.each([
     const sourceHeights = feet.map(foot => new THREE.Raycaster(new THREE.Vector3(foot.x, foot.y, rear + .02), new THREE.Vector3(0, 0, -1)).intersectObjects(sourceMeshes, false)[0].point.z)
     // Read the actual source mounting footprint, including the curved Baikal
     // pull, rather than hard-coding a nominal handle centre.
-    for (const style of ['smooth', 'frame', 'fluted', 'fluted-sides', 'diagonal'] as const) {
+    for (const style of ['smooth', 'frame', 'fluted', 'fluted-sides', 'diagonal', 'herringbone'] as const) {
       facades.update(dimensions, style); root.updateMatrixWorld(true)
       const visible: THREE.Mesh[] = []
       panel.traverseVisible(o => { if (o instanceof THREE.Mesh) visible.push(o) })

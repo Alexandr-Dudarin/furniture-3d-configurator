@@ -7,6 +7,7 @@ export const FACADE_STYLES: readonly { id: FacadeStyleId; label: string; descrip
   { id: 'fluted', label: 'Рифлёный', description: 'Мягкие канавки с постоянным шагом. Их количество подстраивается под ширину фасада.' },
   { id: 'fluted-sides', label: 'Рифлёные края', description: 'Рифление по бокам и гладкая середина. Шаг и глубина канавок сохраняются при изменении размеров.' },
   { id: 'diagonal', label: 'Диагональный', description: 'Канавки под углом 45° с закруглёнными концами. Угол и шаг сохраняются при изменении размеров. У каждой двери и ящика свой рисунок.' },
+  { id: 'herringbone', label: 'Ёлочка', description: 'Зеркальные канавки под углом 45° и узкая гладкая полоса по центру. Угол и шаг сохраняются при изменении размеров. У каждой двери и ящика своя ёлочка.' },
 ]
 
 export const getFacadeStyle = (id: FacadeStyleId) => FACADE_STYLES.find(style => style.id === id)!

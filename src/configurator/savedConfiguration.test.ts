@@ -150,7 +150,7 @@ describe('facade configuration compatibility', () => {
   it.each(pilots)('%s preserves styles, dimensions and finishes independently through links and resets', id => {
     let session = updateSession(createDefaultSession(), { type: 'select-model', modelId: id })
     const defaults = session.models[id]
-    for (const style of ['frame', 'fluted', 'fluted-sides', 'diagonal']) {
+    for (const style of ['frame', 'fluted', 'fluted-sides', 'diagonal', 'herringbone']) {
       session = updateSession(session, { type: 'set-facade-style', style })
       session = updateSession(session, { type: 'set-dimension', name: 'width', value: 1 })
       session = updateSession(session, { type: 'set-material', slot: 'fronts', finishId: 'board-muted-green' })

@@ -52,7 +52,7 @@ describe('diagonal machined facades', () => {
     expect(() => createDiagonalGeometry(.025, .025, .016, .0007, profile)).toThrow()
   })
 
-  it('is watertight, consistently wound and bounded on all models at extrema and asymmetric dimensions', () => {
+  it.each(['diagonal', 'herringbone'] as const)('%s is watertight, consistently wound and bounded on all models at extrema and asymmetric dimensions', style => {
     const failures: string[] = []
     for (const definition of getFurnitureDefinitions().filter(d => d.facades)) {
       const facade = definition.facades!
@@ -62,7 +62,7 @@ describe('diagonal machined facades', () => {
           const value = range.min + (range.max - range.min) * (axis === 'width' ? fraction : 1 - fraction)
           return b.base + (value - range.base) * b.factor
         }
-        const geometry = createFacadeGeometry(measure('width'), measure('height'), target.thickness, 'diagonal', facade, target)
+        const geometry = createFacadeGeometry(measure('width'), measure('height'), target.thickness, style, facade, target)
         try {
           const p = geometry.getAttribute('position'), index = geometry.index!, edges = new Map<string, number[]>()
           const a = new Vector3(), b = new Vector3(), c = new Vector3(), ab = new Vector3(), ac = new Vector3()
@@ -79,7 +79,7 @@ describe('diagonal machined facades', () => {
           }
           const badEdges = [...edges.values()].filter(signs => signs.length !== 2 || signs[0] + signs[1] !== 0).length
           if (badArea || badEdges || volume <= 0) failures.push(`${definition.id}/${target.panel}/${fraction}: area=${badArea}, edges=${badEdges}, volume=${volume}`)
-          expect(index.count / 3).toBeLessThan(6000)
+          expect(index.count / 3).toBeLessThan(style === 'herringbone' ? 10000 : 6000)
         } finally { geometry.dispose() }
       }
     }

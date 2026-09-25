@@ -1,9 +1,11 @@
-export type FacadeStyleId = 'original' | 'smooth' | 'frame' | 'fluted' | 'fluted-sides' | 'diagonal'
+export type FacadeStyleId = 'original' | 'smooth' | 'frame' | 'fluted' | 'fluted-sides' | 'diagonal' | 'herringbone'
 
 export type DiagonalProfile = {
   pitch: number; width: number; depth: number
   margin: number; endMargin: number; minLength: number
 }
+
+export type HerringboneProfile = DiagonalProfile & { centerGap: number }
 
 export type FacadeDimension = { base: number; dimension: string; factor: number }
 export type FacadeTarget = {
@@ -30,4 +32,5 @@ export type FacadeVariants = {
   frame: { width: number; depth: number; slope: number; minField: number }
   fluted: { pitch: number; width: number; depth: number; margin: number; endMargin: number; fade: number }
   diagonal?: DiagonalProfile
+  herringbone?: HerringboneProfile
 }
