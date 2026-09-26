@@ -38,7 +38,7 @@ export function FacadeControls({ spec, value, onChange }: {
       choices={FACADE_STYLES.filter(style => spec.styles.includes(style.id)).map(style => ({
         id: style.id, label: style.label, preview: <FacadePreview style={style.id} />,
       }))} onChange={onChange} />
-    <p className="assembly-summary">{getFacadeStyle(selected).description}</p>
+    <p className="assembly-summary">{selected === 'herringbone-wide' && spec.wideDescription ? spec.wideDescription : getFacadeStyle(selected).description}</p>
     <p className="assembly-summary">Рисунок применяется ко всем фасадам этой модели. Покрытие можно выбрать отдельно в разделе «Материалы».</p>
   </ConfigurationSection>
 }

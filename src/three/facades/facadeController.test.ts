@@ -34,8 +34,9 @@ it.each(getFurnitureDefinitions().filter(d => d.facades?.styles.includes('herrin
       root.updateWorldMatrix(true, true)
       const inverse = root.matrixWorld.clone().invert()
       const boxes = meshes.map(mesh => mesh.geometry.boundingBox!.clone().applyMatrix4(new THREE.Matrix4().multiplyMatrices(inverse, mesh.matrixWorld)))
-      const envelope = boxes.reduce((bounds, b) => bounds.union(b), new THREE.Box3()), origin = envelope.getCenter(new THREE.Vector3())
       for (const [i, mesh] of meshes.entries()) {
+        const envelope = boxes.reduce((bounds, b, j) => spec.targets[j].compositionGroup === spec.targets[i].compositionGroup ? bounds.union(b) : bounds, new THREE.Box3())
+        const origin = envelope.getCenter(new THREE.Vector3())
         const center = boxes[i].getCenter(new THREE.Vector3()).sub(origin), size = boxes[i].getSize(new THREE.Vector3())
         const local = new THREE.Mesh(mesh.geometry, material)
         let probes = 0
@@ -76,6 +77,32 @@ it.each(getFurnitureDefinitions().filter(d => d.facades?.styles.includes('herrin
   },
 )
 
+it('centres Nord grooves on every drawer at mixed dimensions, including resizing while open', async () => {
+  const { root, definition, controller, facades } = await load('dresser-11-nord-door-four-drawer')
+  const spec = definition.facades!, motion = createFurnitureMotion(root, definition, controller.getDimensions, () => {})
+  try {
+    for (const [width, height] of [[1.2, .9], [1, 1.1], [1.6, .75], [1.303, .917]]) {
+      motion.setAll(true, true)
+      const dimensions = { width, height, depth: .45 }
+      motion.withClosedPose(() => {
+        controller.setDimensions(dimensions); facades.update(dimensions, 'herringbone-wide')
+        for (const target of spec.targets) {
+          const mesh = root.getObjectByName(`${target.panel}__Facade`) as THREE.Mesh
+          const p = mesh.geometry.getAttribute('position'), floor = target.thickness / 2 - spec.herringbone!.depth
+          // Actual groove floors must mirror around EACH panel's own centre.
+          // A whole-cabinet axis previously left most of each drawer on one side.
+          const key = (x: number, y: number) => `${Math.round(x * 1e6)},${Math.round(y * 1e6)}`
+          const points = new Map<string, [number, number]>()
+          for (let i = 0; i < p.count; i++) if (Math.abs(p.getZ(i) - floor) < 1e-7) points.set(key(p.getX(i), p.getY(i)), [p.getX(i), p.getY(i)])
+          expect(points.size, target.panel).toBeGreaterThan(3)
+          for (const [x, y] of points.values()) expect(points.has(key(-x, y)), `${target.panel}/${width}/${height}/${x}/${y}`).toBe(true)
+        }
+      })
+      expect(motion.getStates().every(s => s.open)).toBe(true)
+    }
+  } finally { motion.dispose() }
+})
+
 function fixture(targets?: FacadeTarget[]) {
   const source = getFurnitureDefinition('wardrobe-15-katania-four-door')
   const definition = { ...source, facades: { ...source.facades!, targets: targets ?? source.facades!.targets } }
@@ -90,7 +117,7 @@ function fixture(targets?: FacadeTarget[]) {
   return { root, facades, meshes, dimensions }
 }
 
-it.each(getFurnitureDefinitions().filter(d => d.category === 'dressers'))(
+it.each(getFurnitureDefinitions().filter(d => d.category === 'dressers' && d.facades?.styles.includes('herringbone-wide')))(
   '$id keeps shared-pattern panels watertight at wide/low and narrow/tall dimensions', async ({ id }) => {
     const { root, definition, controller, facades } = await load(id)
     for (const fraction of [0, .37, 1]) {

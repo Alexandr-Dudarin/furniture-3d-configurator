@@ -1,6 +1,6 @@
 export type FacadeStyleId = 'original' | 'smooth' | 'frame' | 'fluted' | 'fluted-sides' | 'diagonal' | 'herringbone' | 'diamonds' | 'herringbone-wide'
 
-/** Panel centre relative to the centre of the closed front envelope, in metres. */
+/** Panel centre relative to the centre of its closed composition envelope, in metres. */
 export type FacadeComposition = { width: number; height: number; x: number; y: number }
 
 export type DiagonalProfile = {
@@ -16,6 +16,8 @@ export type FacadeDimension = { base: number; dimension: string; factor: number 
 export type FacadeTarget = {
   // Centred, axis-aligned panel group inside the existing moving assembly.
   panel: string
+  // Optional closed-front composition group; omitted targets share one envelope.
+  compositionGroup?: string
   width: FacadeDimension
   height: FacadeDimension
   thickness: number
@@ -31,6 +33,9 @@ export type FacadeVariants = {
   defaultStyle: FacadeStyleId
   sourceStyle?: 'original' | 'smooth'
   styles: readonly FacadeStyleId[]
+  // Migrate retired choices from links/storage without changing reset defaults.
+  styleFallbacks?: Partial<Record<FacadeStyleId, FacadeStyleId>>
+  wideDescription?: string
   targets: readonly FacadeTarget[]
   materialSlot: string
   bevel: number

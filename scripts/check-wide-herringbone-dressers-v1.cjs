@@ -1,30 +1,35 @@
 #!/usr/bin/env node
-// Read-only content check: dresser compositions over accepted wardrobe wide herringbone v1.
+// Read-only content check: dresser compositions revision 1.1 over accepted wardrobe wide herringbone v1.
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 
 const feature = {
-  "README.md": "056f2e4af49dc5160de03f1e0ae6e6a4ebbd76ccede70031517f82ee871bba4d",
-  "assets/source/dresser-10-white-four-drawer/facade-variants.json": "67f794816fbc63d7ff1ead30f1a7ea44e96c24769d04fb547b4f68448a5d250d",
-  "assets/source/dresser-11-nord-door-four-drawer/facade-variants.json": "19feed55263f6d0009efc6149a7651d975bd3d33ac24405f54627ad4c9abdf42",
+  "README.md": "7fa540e88a30db05e6658e2ab87af1043974d204f5eabd0ad11eb575d55e88f9",
+  "assets/source/dresser-10-white-four-drawer/facade-variants.json": "de4cb33c9caf5cd330821b0125219b6dee073d11a193a177a810fa139cad312b",
+  "assets/source/dresser-11-nord-door-four-drawer/facade-variants.json": "8c3fbcd2033982eba8cf3d30758554d054664a20e84e31e17a203b58d61f2e80",
   "assets/source/dresser-12-brooklyn-six-drawer/facade-variants.json": "79734639cada9a18c83e987ac56bcd13b31c46870b026aa9554a519ea166c0bf",
   "assets/source/dresser-13-marvel-fluted/facade-variants.json": "c381874d80a59d28a3b32e8ecf62c68109da264539067cae6132d845cd34397a",
-  "assets/source/dresser-14-baikal-five-drawer/facade-variants.json": "2411401630edf6622781076f8f8dcb6b7649b37416e0431c1fe94ab1c1ebecf8",
-  "docs/3d-furniture-asset-standard.md": "537800b7214b7bba5a53487af08cb12087097d09338ba8de9f315b9267eb6f48",
-  "docs/facade-variants-plan.md": "e261b345ad8e91613dcd689f7134904636b832ec558b608b6b8f60a9be5e9145",
-  "docs/previews/wide-herringbone-dressers-v1/closed-layouts.png": "a1bbe365f860dc3b02e4ce2dd9817a4f1e1fbdac04205c344db2b22b17424a05",
-  "docs/roadmap.md": "34319751606a9bf8de3c7b12718f506cdf405495aee7e607049fb98a9458021c",
-  "docs/wide-herringbone-dressers-v1-validation.md": "1eff38bdc3885ad4ab45e9ac0f3345dc5130825f04ac08a0478dfa7eb3d0b378",
-  "docs/wide-herringbone-dressers-v1.md": "bbb51996bd10b5c022f411cde70322e7afb4f5e37dcb87a106a5621a573e6587",
+  "assets/source/dresser-14-baikal-five-drawer/facade-variants.json": "359b942f44f45aa50736257045b1bd71a56e18a4c0e349e0b287508407642479",
+  "docs/3d-furniture-asset-standard.md": "d6c98e132e3fea841c3fe7bd9d9f9a23009206acc67bda3e4845ec5dcacaa090",
+  "docs/facade-variants-plan.md": "a7054d7a0fe6ed1dc8d8a1fdb9f249ca449e06a185c0becaa95ac8e8d7679eb0",
+  "docs/previews/wide-herringbone-dressers-v1/closed-layouts.png": "bdea30601ad77714412e412e88a2b3435d25b9cad6da6c54f33e39766f175fc1",
+  "docs/previews/wide-herringbone-dressers-v1/nord-comparison.png": "0d2940f2e71c5d4c342d0455c897faf6cba8309b4a8311f3954181bbe376e761",
+  "docs/roadmap.md": "7d3de7b934d88807c1c9432552122209d2fff53a67977ad8097baf2871668d62",
+  "docs/wide-herringbone-dressers-v1-validation.md": "02e36f4dd4c85e8cb87bf31ee1f6cbe7bafcd9d2f5e90c5d333f8d5062e048ac",
+  "docs/wide-herringbone-dressers-v1.md": "68f895ba9fc20ca3f98bddf9a3aefe692471993e98fbc1d442f2fe7922c265d0",
+  "src/components/FacadeControls.tsx": "d013ee0fb8e98a848200866a28d9ca4196677013186adb0bea69c9c901a5e72f",
   "src/configurator/facades/catalog.ts": "b674809fd3f32f6e14618a01f4ee58fee72722fd1d7b90a751a3914485a04da7",
-  "src/configurator/savedConfiguration.test.ts": "db659c657d159d941d510dc754dd442508c158c9ced833a392500965ed9b9bcd",
-  "src/three/facades/facadeController.test.ts": "199c0b39dbbbe9e5d9e57ca9a5b556d2fbd891505d3dcf644fbe7ca88ebcfcee",
-  "src/three/models/dresser-baikal-five-drawer/catalog.ts": "7ad51d13c7b49c4ec3cd652197f5f65de1347b9e9f9fa50859d1afcb532062a4",
+  "src/configurator/savedConfiguration.test.ts": "4506d0380fbc5f0083a367da218bb12b91e753436ef15d9b98c3c4f470f1730d",
+  "src/configurator/savedConfiguration.ts": "3ffc3d7138be1dac38d958ede8c62ff65db29319febb04fefb80ab42ae1576b3",
+  "src/three/facades/facadeController.test.ts": "a74ea6c6ee052c187bf43d8377e52c026c9a242bd2b2284e22eec4474be6da77",
+  "src/three/facades/facadeController.ts": "6338e77da03b1bf8dfbacfd5a53b4226323655860902b5bff191d217da06d532",
+  "src/three/facades/types.ts": "928d8b2286e5361d2ae0c43405cd7daa5873b89cb82f8105c2fc5ced51148c7e",
+  "src/three/models/dresser-baikal-five-drawer/catalog.ts": "e7b24b72d557f72789436d3de4b55b22e3b1b4923b36c7f3b9a2c3be455ff646",
   "src/three/models/dresser-brooklyn-six-drawer/catalog.ts": "27e835beb99b7117cebea0a34d82a90ce4d6c84850a2daf254c59993032d0862",
   "src/three/models/dresser-marvel-fluted/catalog.ts": "3e8be362d875fa6ebe860fbc169bc3b4bbbb1d17b11a9eb6fcae5c0d2c1a7454",
-  "src/three/models/dresser-nord-door-four-drawer/catalog.ts": "aca8e2697bd9f94d83b6befcdcffebec256e75dd3e0ff15b3650c3edf587102c",
-  "src/three/models/dresser-white-four-drawer/catalog.ts": "eafb3dbce8cb3c6fbb99f4db33a3ff7f656682c714b7e5a82e4e98c208ea760d"
+  "src/three/models/dresser-nord-door-four-drawer/catalog.ts": "60c27a8ad466f4ab4a71f60a814d0f4c7d0a72f007f2ab34c305cee83e832656",
+  "src/three/models/dresser-white-four-drawer/catalog.ts": "613cc3f69ce8b9d691e7837b268d9e45fb78c2a06b6e7f210ec90f0e0dbab005"
 };
 
 const baseline = {
@@ -760,7 +765,6 @@ const baseline = {
   "src/components/ConfigurationActions.tsx": "640984372b7500046200e266f492a5e326cf28e42186b0ff6cdfaac997324db5",
   "src/components/ConfigurationSection.tsx": "19a9df77977693cf533e5948d3e7451b102499e2871b42f6dd5a09f74177eb8a",
   "src/components/ConfigurationSummary.tsx": "93961d77043c56e834cbcf7c4873c20e1d1f6c2f7674d166b2911e171228e2c0",
-  "src/components/FacadeControls.tsx": "c56d09f6faf58b51f7bda4913ea691369bd1f93b966a4f34b8cff4d5aabe496c",
   "src/components/FurnitureMotionControls.tsx": "6f88e790bf7f8b3553a13e0907f3746c1b87fb62afe1fd2b8401485dc28edac9",
   "src/components/FurnitureViewControl.tsx": "a6ec3f32c58fc54499efa6df98e39ac33d496c3378a486c6ba6ee4e200c7a992",
   "src/components/FurnitureViewer.tsx": "6ed023796e620a488458f81e0adc2c79f71a9e2ae607c846091860e710897a7d",
@@ -784,7 +788,6 @@ const baseline = {
   "src/configurator/furnitureRegistry.ts": "396d0f5b262604a464df9ea9507cd26a5003d60ffd15965d88bc400601a7d836",
   "src/configurator/pngExportStore.test.ts": "321ca0acb4a18c2596986face7deec53c649be99a1f36c94e20850bb3d7ffe24",
   "src/configurator/pngExportStore.ts": "f697c7527864e3cbf8b239aefc2735b2a6feff83ca04f22a2b8cee99f26bcd0c",
-  "src/configurator/savedConfiguration.ts": "b690b9cb3b3bf321323de2b9d2668004baa664571107e415ca38ce26657a314f",
   "src/configurator/tableAssembly/catalog.ts": "2f961c2c514161486d9939ab5392a3f735f5bafe8fd80532df8be696541eb132",
   "src/configurator/tableAssembly/outline.ts": "9369ebfe1f44d9ef4f4feb3ce1d03506e003ee6d405dd232579716307cc094e3",
   "src/configurator/tableAssembly/state.test.ts": "f702c81cec186bd9a3d542f05ee89cc421d93c29abd28819ed7643eb4819febc",
@@ -808,13 +811,11 @@ const baseline = {
   "src/three/facades/diagonalGeometry.ts": "831496774257779677dbeac72a7b471c2f28ff846abac60906c5974d56130dec",
   "src/three/facades/diamondsGeometry.test.ts": "3b745932af63e3c397a19923a4a0b6b939396bb052cc1417eb42d928d377b7ff",
   "src/three/facades/diamondsGeometry.ts": "cf3c21da288cbb24ce3576c82fbe1529fb8311aafba86594fd0cda5758196b99",
-  "src/three/facades/facadeController.ts": "de2f61ff55d9e27f5fb3951cfd10b1a8c8f1e1250a2cbff7313f3a590ef2fc15",
   "src/three/facades/facadeGeometry.test.ts": "c065c4aac4042fed7ea39bbec1ce2e538337c945ec523aa95850cd243f082121",
   "src/three/facades/facadeGeometry.ts": "592bacccc53b055b07b8f5910bef24c41906bbfc4027927a59951c3036175628",
   "src/three/facades/herringboneGeometry.test.ts": "2f5205724742bc79978714fbfdb4cac7f16d0559faafd5130693aaa1fab88ea9",
   "src/three/facades/herringboneGeometry.ts": "490f6a63a516bec06c7b4cdb36d4ae8e7a4fb85fb9d15ba06b18dc05e84b3e4e",
   "src/three/facades/slantedGrooveGeometry.ts": "68006453565b0fe6641dcd853f601d6b5c76879cc9ffe2938ef5f4ab00fa1498",
-  "src/three/facades/types.ts": "0bc65a5ed2fade6b8da191215c56d0b61762ac99cfb26b1c0c5f5275f2fcdedc",
   "src/three/furniture/affineTexture.test.ts": "77a1c6ed853b0ca0290ae29b58dfdb8d57db5d143076abf4b5399b2ab141bb90",
   "src/three/furniture/affineTexture.ts": "ad5f4e243585737b1d94fc08dd3755944f41207e17156032246842e6430d9786",
   "src/three/furniture/furnitureController.test.ts": "fcb7f83ac3729e4f26913612b0194ba24ce051f7df9c571934356726fd185e76",
@@ -929,7 +930,7 @@ function check(label, entries) {
   for (const problem of problems) console.log(problem);
   return problems.length === 0;
 }
-console.log('Furniture 3D Configurator: read-only wide herringbone dressers v1 check\n');
+console.log('Furniture 3D Configurator: read-only wide herringbone dressers v1 revision 1.1 check\n');
 const featureOk = check('Wide herringbone dressers v1 files', feature);
 console.log('');
 const baselineOk = check('Compatible accepted baseline files', baseline);

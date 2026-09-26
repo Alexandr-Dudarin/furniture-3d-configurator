@@ -87,6 +87,11 @@ export function normalizeModelConfiguration(definition: FurnitureDefinition, inp
   }
   if (definition.facades && typeof source.facadeStyle === 'string' && definition.facades.styles.includes(source.facadeStyle as FacadeStyleId)) {
     configuration.facadeStyle = source.facadeStyle as FacadeStyleId
+  } else if (definition.facades && typeof source.facadeStyle === 'string') {
+    const aliases = definition.facades.styleFallbacks
+    const fallback = aliases && Object.hasOwn(aliases, source.facadeStyle)
+      ? aliases[source.facadeStyle as FacadeStyleId] : undefined
+    if (fallback && definition.facades.styles.includes(fallback)) configuration.facadeStyle = fallback
   }
   return configuration
 }

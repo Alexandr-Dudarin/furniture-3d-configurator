@@ -148,8 +148,7 @@ export const catalogue: FurnitureDefinition = {
       "fluted-sides",
       "diagonal",
       "herringbone",
-      "diamonds",
-      "herringbone-wide"
+      "diamonds"
     ],
     "targets": [
       {
@@ -250,6 +249,9 @@ export const catalogue: FurnitureDefinition = {
       "margin": 0.018,
       "endMargin": 0.02,
       "fade": 0.006
+    },
+    "styleFallbacks": {
+      "herringbone-wide": "herringbone"
     }
   }
 },

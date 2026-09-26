@@ -148,11 +148,32 @@ describe('untrusted and outdated data', () => {
 describe('facade configuration compatibility', () => {
   it('keeps shared compositions opt-in when a model contract excludes them', () => {
     for (const source of definitions.filter(d => d.facades)) {
-      const restricted = { ...source, facades: { ...source.facades!, styles: source.facades!.styles.filter(s => s !== 'herringbone-wide') } }
+      const restricted = { ...source, facades: { ...source.facades!, styleFallbacks: undefined, styles: source.facades!.styles.filter(s => s !== 'herringbone-wide') } }
       const defaults = createDefaultSession().models[source.id]
       expect(normalizeModelConfiguration(restricted, { ...defaults, facadeStyle: 'herringbone-wide' })).toEqual(defaults)
     }
   })
+  it.each(['dresser-10-white-four-drawer', 'dresser-14-baikal-five-drawer'])(
+    '%s replaces retired shared herringbone in saved sessions and links, preserving dimensions and finishes', id => {
+      const definition = definitions.find(d => d.id === id)!
+      let session = updateSession(createDefaultSession(), { type: 'select-model', modelId: id })
+      session = updateSession(session, { type: 'set-dimension', name: 'width', value: definition.dimensions.width.max })
+      session = updateSession(session, { type: 'set-material', slot: 'fronts', finishId: 'board-muted-green' })
+      expect(definition.facades!.styles).not.toContain('herringbone-wide')
+      expect(updateSession(session, { type: 'set-facade-style', style: 'herringbone-wide' })).toBe(session)
+      const previous = { ...session.models[id], facadeStyle: 'herringbone-wide' as const }
+      const expected = { ...previous, facadeStyle: 'herringbone' }
+      session.models[id] = previous
+      expect(readSavedSession(JSON.stringify(session)).session.models[id]).toEqual(expected)
+      const parsed = readSharedConfiguration(sharedUrl({ version: 3, modelId: id, ...previous }))
+      expect(parsed.status).toBe('adjusted')
+      expect(applySharedConfiguration(createDefaultSession(), parsed.configuration!).models[id]).toEqual(expected)
+      expect(updateSession(session, { type: 'reset-model' }).models[id]).toEqual(createModelConfiguration(definition))
+      for (const style of ['deleted', '__proto__', 'constructor']) {
+        expect(normalizeModelConfiguration(definition, { ...previous, facadeStyle: style }).facadeStyle).toBe(definition.facades!.defaultStyle)
+      }
+    },
+  )
   const pilots = definitions.filter(d => d.facades).map(d => d.id)
   it.each(pilots)('%s preserves styles, dimensions and finishes independently through links and resets', id => {
     let session = updateSession(createDefaultSession(), { type: 'select-model', modelId: id })

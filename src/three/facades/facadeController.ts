@@ -53,14 +53,23 @@ export function createFacadeController(root: Object3D, definition: FurnitureDefi
           center.setFromMatrixPosition(matrix)
           return { x: center.x, y: center.y }
         })
-        const left = Math.min(...measured.map((p, i) => centers[i].x - p.width / 2))
-        const right = Math.max(...measured.map((p, i) => centers[i].x + p.width / 2))
-        const bottom = Math.min(...measured.map((p, i) => centers[i].y - p.height / 2))
-        const top = Math.max(...measured.map((p, i) => centers[i].y + p.height / 2))
-        measured.forEach((p, i) => { p.composition = {
-          width: right - left, height: top - bottom,
-          x: centers[i].x - (left + right) / 2, y: centers[i].y - (bottom + top) / 2,
-        } })
+        // Asymmetric fronts can declare independent balanced compositions.
+        // Groups are explicit asset metadata, never inferred from mesh names.
+        const groups = new Map<string | undefined, number[]>()
+        measured.forEach((p, i) => {
+          const members = groups.get(p.target.compositionGroup) ?? []
+          members.push(i); groups.set(p.target.compositionGroup, members)
+        })
+        for (const members of groups.values()) {
+          const left = Math.min(...members.map(i => centers[i].x - measured[i].width / 2))
+          const right = Math.max(...members.map(i => centers[i].x + measured[i].width / 2))
+          const bottom = Math.min(...members.map(i => centers[i].y - measured[i].height / 2))
+          const top = Math.max(...members.map(i => centers[i].y + measured[i].height / 2))
+          for (const i of members) measured[i].composition = {
+            width: right - left, height: top - bottom,
+            x: centers[i].x - (left + right) / 2, y: centers[i].y - (bottom + top) / 2,
+          }
+        }
       }
       const next = new Map<string, BufferGeometry>(), replacements: BufferGeometry[] = []
       try {
