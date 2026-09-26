@@ -39,7 +39,10 @@ it.each(getFurnitureDefinitions().filter(d => d.facades?.styles.includes('herrin
         const center = boxes[i].getCenter(new THREE.Vector3()).sub(origin), size = boxes[i].getSize(new THREE.Vector3())
         const local = new THREE.Mesh(mesh.geometry, material)
         let probes = 0
-        for (const f of [-.3, -.15, .15, .3]) {
+        // A short drawer can fall between the four probes used on tall doors.
+        // Sweep more x positions so the test actually samples its grooves.
+        const fractions = size.y < .3 ? Array.from({ length: 15 }, (_, n) => -.35 + n * .05) : [-.3, -.15, .15, .3]
+        for (const f of fractions) {
           const x = size.x * f, worldX = x + center.x
           if (Math.abs(worldX) < profile.centerGap / 2 + .03 || Math.abs(x) < (spec.targets[i].flutedClearCenter ?? 0) / 2 + .015) continue
           for (let k = -40; k <= 40; k++) {
@@ -49,6 +52,7 @@ it.each(getFurnitureDefinitions().filter(d => d.facades?.styles.includes('herrin
             expect(hit, `${id}/${spec.targets[i].panel}`).toBeDefined()
             expect(hit.point.z).toBeCloseTo(spec.targets[i].thickness / 2 - profile.depth, 7)
             probes++
+            if (size.y < .3) break
           }
         }
         expect(probes, `${id}/${spec.targets[i].panel}`).toBeGreaterThan(0)
@@ -85,6 +89,39 @@ function fixture(targets?: FacadeTarget[]) {
   const dimensions = Object.fromEntries(Object.entries(definition.dimensions).map(([k, v]) => [k, v.base]))
   return { root, facades, meshes, dimensions }
 }
+
+it.each(getFurnitureDefinitions().filter(d => d.category === 'dressers'))(
+  '$id keeps shared-pattern panels watertight at wide/low and narrow/tall dimensions', async ({ id }) => {
+    const { root, definition, controller, facades } = await load(id)
+    for (const fraction of [0, .37, 1]) {
+      const dimensions = Object.fromEntries(Object.entries(definition.dimensions).map(([k, r]) =>
+        [k, r.min + (r.max - r.min) * (k === 'height' ? 1 - fraction : fraction)]))
+      controller.setDimensions(dimensions); facades.update(dimensions, 'herringbone-wide')
+      for (const target of definition.facades!.targets) {
+        const mesh = root.getObjectByName(`${target.panel}__Facade`) as THREE.Mesh
+        const geometry = mesh.geometry, p = geometry.getAttribute('position'), index = geometry.index!
+        const edges = new Map<string, number[]>()
+        const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3(), ab = new THREE.Vector3(), ac = new THREE.Vector3()
+        const key = (v: THREE.Vector3) => v.toArray().map(n => Math.round(n * 1e7)).join(',')
+        let badArea = 0, volume = 0
+        for (let i = 0; i < index.count; i += 3) {
+          a.fromBufferAttribute(p, index.getX(i)); b.fromBufferAttribute(p, index.getX(i + 1)); c.fromBufferAttribute(p, index.getX(i + 2))
+          if (ab.subVectors(b, a).cross(ac.subVectors(c, a)).lengthSq() < 1e-20) badArea++
+          volume += a.dot(ab.crossVectors(b, c)) / 6
+          for (const [v, w] of [[a, b], [b, c], [c, a]]) {
+            const k1 = key(v), k2 = key(w), edge = [k1, k2].sort().join('|'), signs = edges.get(edge) ?? []
+            signs.push(k1 < k2 ? 1 : -1); edges.set(edge, signs)
+          }
+        }
+        const label = `${id}/${target.panel}/${fraction}`
+        expect(badArea, label).toBe(0)
+        expect([...edges.values()].filter(s => s.length !== 2 || s[0] + s[1] !== 0), label).toEqual([])
+        expect(volume, label).toBeGreaterThan(0)
+        expect(index.count / 3, label).toBeLessThan(10000)
+      }
+    }
+  },
+)
 
 describe('geometry reuse during resizing', () => {
   it('builds equal doors once per size and releases shared geometry once when replaced or unloaded', () => {

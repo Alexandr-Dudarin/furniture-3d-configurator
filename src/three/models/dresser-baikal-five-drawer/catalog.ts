@@ -177,7 +177,8 @@ export const catalogue: FurnitureDefinition = {
       "fluted-sides",
       "diagonal",
       "herringbone",
-      "diamonds"
+      "diamonds",
+      "herringbone-wide"
     ],
     "targets": [
       {

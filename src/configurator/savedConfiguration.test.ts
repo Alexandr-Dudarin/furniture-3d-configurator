@@ -146,13 +146,11 @@ describe('untrusted and outdated data', () => {
 
 
 describe('facade configuration compatibility', () => {
-  it('keeps shared compositions opt-in and adjusts unsupported links to the model default', () => {
-    for (const definition of definitions.filter(d => d.category === 'dressers')) {
-      const session = updateSession(createDefaultSession(), { type: 'select-model', modelId: definition.id })
-      expect(updateSession(session, { type: 'set-facade-style', style: 'herringbone-wide' })).toBe(session)
-      const parsed = readSharedConfiguration(sharedUrl({ version: 3, modelId: definition.id, ...session.models[definition.id], facadeStyle: 'herringbone-wide' }))
-      expect(parsed.status).toBe('adjusted')
-      expect(parsed.configuration!.facadeStyle).toBe(definition.facades!.defaultStyle)
+  it('keeps shared compositions opt-in when a model contract excludes them', () => {
+    for (const source of definitions.filter(d => d.facades)) {
+      const restricted = { ...source, facades: { ...source.facades!, styles: source.facades!.styles.filter(s => s !== 'herringbone-wide') } }
+      const defaults = createDefaultSession().models[source.id]
+      expect(normalizeModelConfiguration(restricted, { ...defaults, facadeStyle: 'herringbone-wide' })).toEqual(defaults)
     }
   })
   const pilots = definitions.filter(d => d.facades).map(d => d.id)
