@@ -2,6 +2,7 @@ import { BufferGeometry, Matrix4, Mesh, MeshStandardMaterial, Vector3, type Obje
 import type { FurnitureDefinition } from '../furniture/types'
 import type { FacadeComposition, FacadeStyleId } from './types'
 import { createFacadeGeometry } from './facadeGeometry'
+import { createSourceFacadeBatch } from './sourceFacadeBatch'
 
 const MATERIAL = 'Configurator_Facade_Profile'
 
@@ -13,11 +14,12 @@ export function createFacadeController(root: Object3D, definition: FurnitureDefi
     const node = root.getObjectByName(target.panel)
     if (!node) throw new Error(`Missing facade panel: ${target.panel}`)
     const original = node.children.map(child => ({ child, visible: child.visible }))
+    const batch = spec.batchSolidSource ? createSourceFacadeBatch(node, node.children.slice()) : null
     const mesh = new Mesh(new BufferGeometry(), placeholder)
     mesh.name = `${target.panel}__Facade`
     mesh.castShadow = true; mesh.receiveShadow = true; mesh.visible = false
     node.add(mesh)
-    return { target, original, mesh }
+    return { target, original, mesh, batch }
   })
   const slot = definition.materialSlots?.[spec.materialSlot]
   if (!slot) throw new Error('Facade material slot is missing')
@@ -32,6 +34,7 @@ export function createFacadeController(root: Object3D, definition: FurnitureDefi
   let geometries = new Map<string, BufferGeometry>()
   return {
     materialDefinition,
+    refreshMaterials() { panels.forEach(panel => panel.batch?.refreshMaterials()) },
     update(dimensions: Readonly<Record<string, number>>, style: FacadeStyleId = spec.defaultStyle) {
       if (!spec.styles.includes(style)) throw new Error(`Unsupported facade style: ${style}`)
       const source = style === (spec.sourceStyle ?? 'smooth')
@@ -92,6 +95,7 @@ export function createFacadeController(root: Object3D, definition: FurnitureDefi
         panel.mesh.geometry = replacements[index]
         panel.original.forEach(({ child, visible }) => { child.visible = source && visible })
         panel.mesh.visible = !source
+        panel.batch?.refresh(source)
       })
       for (const geometry of retired) if (!retained.has(geometry)) geometry.dispose()
       geometries = next

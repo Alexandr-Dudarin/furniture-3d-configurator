@@ -153,7 +153,7 @@ describe('facade configuration compatibility', () => {
       expect(normalizeModelConfiguration(restricted, { ...defaults, facadeStyle: 'herringbone-wide' })).toEqual(defaults)
     }
   })
-  it.each(['dresser-10-white-four-drawer', 'dresser-14-baikal-five-drawer'])(
+  it.each(['dresser-10-white-four-drawer', 'dresser-11-nord-door-four-drawer', 'dresser-14-baikal-five-drawer'])(
     '%s replaces retired shared herringbone in saved sessions and links, preserving dimensions and finishes', id => {
       const definition = definitions.find(d => d.id === id)!
       let session = updateSession(createDefaultSession(), { type: 'select-model', modelId: id })

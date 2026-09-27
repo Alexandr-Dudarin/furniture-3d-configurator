@@ -164,8 +164,7 @@ export const catalogue: FurnitureDefinition = {
       "fluted-sides",
       "diagonal",
       "herringbone",
-      "diamonds",
-      "herringbone-wide"
+      "diamonds"
     ],
     "targets": [
       {
@@ -180,8 +179,7 @@ export const catalogue: FurnitureDefinition = {
           "dimension": "height",
           "factor": 1
         },
-        "thickness": 0.016,
-        "compositionGroup": "door"
+        "thickness": 0.016
       },
       {
         "panel": "Drawer_01_Front",
@@ -195,8 +193,7 @@ export const catalogue: FurnitureDefinition = {
           "dimension": "height",
           "factor": 0.25
         },
-        "thickness": 0.016,
-        "compositionGroup": "drawers"
+        "thickness": 0.016
       },
       {
         "panel": "Drawer_02_Front",
@@ -210,8 +207,7 @@ export const catalogue: FurnitureDefinition = {
           "dimension": "height",
           "factor": 0.25
         },
-        "thickness": 0.016,
-        "compositionGroup": "drawers"
+        "thickness": 0.016
       },
       {
         "panel": "Drawer_03_Front",
@@ -225,8 +221,7 @@ export const catalogue: FurnitureDefinition = {
           "dimension": "height",
           "factor": 0.25
         },
-        "thickness": 0.016,
-        "compositionGroup": "drawers"
+        "thickness": 0.016
       },
       {
         "panel": "Drawer_04_Front",
@@ -240,8 +235,7 @@ export const catalogue: FurnitureDefinition = {
           "dimension": "height",
           "factor": 0.25
         },
-        "thickness": 0.016,
-        "compositionGroup": "drawers"
+        "thickness": 0.016
       }
     ],
     "materialSlot": "fronts",
@@ -286,7 +280,9 @@ export const catalogue: FurnitureDefinition = {
       "endMargin": 0.02,
       "fade": 0.006
     },
-    "wideDescription": "Общая ёлочка на четырёх ящиках: ось проходит по центру блока, линии согласованы по высоте. У двери своя симметричная ёлочка. Гладкие поля у кромок и отдельное открывание сохраняются."
+    "styleFallbacks": {
+      "herringbone-wide": "herringbone"
+    }
   }
 },
   loadRuntime: () => import('./runtime').then(module => module.definition),

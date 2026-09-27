@@ -83,6 +83,7 @@ export function useCatalogScene(
           maxAnisotropy: anisotropyRef.current, onMaterialsChanged: () => {
             if (motion) motion.withClosedPose(controller.refreshTextures)
             else controller.refreshTextures()
+            facades?.refreshMaterials()
           },
         })
         let applied

@@ -77,15 +77,16 @@ it.each(getFurnitureDefinitions().filter(d => d.facades?.styles.includes('herrin
   },
 )
 
-it('centres Nord grooves on every drawer at mixed dimensions, including resizing while open', async () => {
+it('keeps the retained Nord herringbone centred at mixed dimensions, including resizing while open', async () => {
   const { root, definition, controller, facades } = await load('dresser-11-nord-door-four-drawer')
   const spec = definition.facades!, motion = createFurnitureMotion(root, definition, controller.getDimensions, () => {})
+  expect(spec.styles).not.toContain('herringbone-wide')
   try {
     for (const [width, height] of [[1.2, .9], [1, 1.1], [1.6, .75], [1.303, .917]]) {
       motion.setAll(true, true)
       const dimensions = { width, height, depth: .45 }
       motion.withClosedPose(() => {
-        controller.setDimensions(dimensions); facades.update(dimensions, 'herringbone-wide')
+        controller.setDimensions(dimensions); facades.update(dimensions, 'herringbone')
         for (const target of spec.targets) {
           const mesh = root.getObjectByName(`${target.panel}__Facade`) as THREE.Mesh
           const p = mesh.geometry.getAttribute('position'), floor = target.thickness / 2 - spec.herringbone!.depth
@@ -246,7 +247,12 @@ for (const { id } of getFurnitureDefinitions().filter(model => model.facades)) d
       facades.update(base, 'fluted'); expect(disposed).toHaveBeenCalledOnce()
       facades.update(base, spec.sourceStyle ?? 'smooth')
       expect(Object.fromEntries(root.children.map(c => [c.name, c.position.toArray()]))).toEqual(before)
-      for (const mesh of getMeshes()) expect(mesh.parent!.children.filter(c => c !== mesh).every(c => c.visible)).toBe(true)
+      for (const mesh of getMeshes()) {
+        const batch = mesh.parent!.children.find(c => c.name.endsWith('__SourceBatch'))
+        const original = mesh.parent!.children.filter(c => c !== mesh && c !== batch)
+        expect(original.length).toBeGreaterThan(0)
+        expect(original.every(c => c.visible === !batch?.visible)).toBe(true)
+      }
     } finally { motion.dispose() }
   })
 

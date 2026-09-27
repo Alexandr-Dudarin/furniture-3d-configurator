@@ -38,7 +38,7 @@ describe('detail scheduling', () => {
   })
 })
 
-function harness(floatSupported = true) {
+function harness(floatSupported = true, motionSampling = false) {
   const scene = new Scene(), camera = new PerspectiveCamera(45, 1.5, .1, 100)
   const renderer = {
     shadowMap: { autoUpdate: true, needsUpdate: false },
@@ -48,7 +48,7 @@ function harness(floatSupported = true) {
     setClearColor: vi.fn(), setRenderTarget: vi.fn(), clear: vi.fn(),
     copyFramebufferToTexture: vi.fn(), render: vi.fn(),
   }
-  const rendering = createProgressiveRenderer(renderer as unknown as WebGLRenderer, scene, camera)
+  const rendering = createProgressiveRenderer(renderer as unknown as WebGLRenderer, scene, camera, { motionSampling })
   return { renderer, rendering, scene, camera }
 }
 
@@ -120,4 +120,110 @@ it('restores camera and renderer state even if sampling fails', () => {
   expect(renderer.autoClear).toBe(true); expect(renderer.setRenderTarget).toHaveBeenLastCalledWith(null)
   expect(rendering.samples).toBe(0)
   rendering.dispose()
+})
+
+it('averages only the current moving pose, clears each frame and exports without an extra scene draw', () => {
+  const { renderer, rendering, scene, camera } = harness(true, true)
+  const poses: number[][] = [], viewOffsets: number[][] = []
+  renderer.render.mockImplementation(object => {
+    if (object !== scene) return
+    poses.push(camera.position.toArray())
+    viewOffsets.push([camera.view!.offsetX, camera.view!.offsetY])
+  })
+  rendering.setEnabled(true)
+  rendering.render(0)
+  expect(poses).toHaveLength(2)
+  expect(new Set(viewOffsets.map(v => v.join(','))).size).toBe(2)
+  expect(rendering.samples).toBe(0)
+  expect(rendering.stats.mode).toBe('motion-2')
+  expect(renderer.clear).toHaveBeenCalledTimes(1)
+  camera.position.x = 3
+  rendering.invalidate(false); rendering.render(16)
+  expect(poses.slice(2).every(p => p[0] === 3)).toBe(true)
+  expect(renderer.clear).toHaveBeenCalledTimes(2)
+  const count = poses.length
+  rendering.present(); expect(poses).toHaveLength(count)
+  // Settled refinement replaces the moving sum with a fresh sequence.
+  rendering.render(136)
+  expect(renderer.clear).toHaveBeenCalledTimes(3)
+  expect(rendering.samples).toBe(1)
+  for (let i = 1; i < DETAIL_SAMPLES; i++) rendering.render(136 + i * 16)
+  expect(rendering.stats.mode).toBe('refined')
+  const calls = renderer.render.mock.calls.length
+  rendering.render(3000); expect(renderer.render).toHaveBeenCalledTimes(calls)
+  expect(camera.view).toBeNull()
+  rendering.dispose()
+})
+
+it('restores a custom view and projection after moving samples and after a failed sample', () => {
+  const { renderer, rendering, scene, camera } = harness(true, true)
+  camera.setViewOffset(1200, 800, 20, 40, 600, 400)
+  const view = { ...camera.view! }, projection = camera.projectionMatrix.clone()
+  rendering.setEnabled(true); rendering.render(0)
+  expect(camera.view).toEqual(view); expect(camera.projectionMatrix).toEqual(projection)
+  let pass = 0
+  renderer.render.mockImplementation(object => { if (object === scene && ++pass === 2) throw new Error('lost') })
+  rendering.invalidate(false)
+  expect(() => rendering.render(16)).toThrow('lost')
+  expect(camera.view).toEqual(view); expect(camera.projectionMatrix).toEqual(projection)
+  expect(renderer.autoClear).toBe(true)
+  expect(renderer.setRenderTarget).toHaveBeenLastCalledWith(null)
+  // Failed partial motion result cannot be exported as a valid accumulated frame.
+  const before = pass
+  rendering.present(); expect(pass).toBe(before + 1)
+  rendering.dispose()
+})
+
+it('uses one scene pass without the capability, above the memory cap, or with detail disabled', () => {
+  for (const scenario of ['no-float', 'oversize', 'disabled']) {
+    const { renderer, rendering, scene } = harness(scenario !== 'no-float', true)
+    if (scenario === 'oversize') renderer.getDrawingBufferSize = v => v.set(4000, 2000)
+    rendering.setEnabled(scenario !== 'disabled'); rendering.render(0)
+    expect(renderer.render.mock.calls.filter(args => args[0] === scene)).toHaveLength(1)
+    expect(renderer.copyFramebufferToTexture).not.toHaveBeenCalled()
+    rendering.dispose()
+  }
+})
+
+it('changes between four, two and one passes without retaining the previous sum or changing normalization', () => {
+  const clock = vi.spyOn(performance, 'now').mockReturnValue(0)
+  const { renderer, rendering, scene } = harness(true, true)
+  const outputWeights: number[] = []
+  renderer.render.mockImplementation(object => {
+    if (object !== scene && object.material?.transparent === false) outputWeights.push(object.material.uniforms.weight.value)
+  })
+  try {
+    rendering.setEnabled(true)
+    let now = 0
+    for (let i = 0; i < 92; i++) {
+      rendering.invalidate(false); rendering.render(now); now += 16
+    }
+    expect(rendering.stats.mode).toBe('motion-4')
+    expect(outputWeights.at(-1)).toBe(4) // sum stores samples divided by 16
+    const before = rendering.stats.scenePasses
+    rendering.invalidate(false); rendering.render(now)
+    expect(rendering.stats.scenePasses - before).toBe(4)
+    for (let i = 0; i < 4; i++) {
+      now += 150; rendering.invalidate(false); rendering.render(now)
+    }
+    now += 16; rendering.invalidate(false); rendering.render(now)
+    expect(rendering.stats.mode).toBe('motion-2')
+    expect(outputWeights.at(-1)).toBe(8)
+    for (let i = 0; i < 4; i++) {
+      now += 33; rendering.invalidate(false); rendering.render(now)
+    }
+    const copies = renderer.copyFramebufferToTexture.mock.calls.length
+    const passes = rendering.stats.scenePasses
+    now += 16; rendering.invalidate(false); rendering.render(now)
+    expect(rendering.stats.mode).toBe('direct')
+    expect(rendering.stats.scenePasses - passes).toBe(1)
+    expect(renderer.copyFramebufferToTexture).toHaveBeenCalledTimes(copies)
+    rendering.present()
+    expect(rendering.stats.scenePasses - passes).toBe(2) // export cannot reuse old moving sum
+    rendering.render(now + 120)
+    expect(rendering.stats.idleSamples).toBe(1)
+    expect(outputWeights.at(-1)).toBe(16)
+  } finally {
+    rendering.dispose(); clock.mockRestore()
+  }
 })

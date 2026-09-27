@@ -7,8 +7,7 @@
     "fluted-sides",
     "diagonal",
     "herringbone",
-    "diamonds",
-    "herringbone-wide"
+    "diamonds"
   ],
   "targets": [
     {
@@ -23,8 +22,7 @@
         "dimension": "height",
         "factor": 1
       },
-      "thickness": 0.016,
-      "compositionGroup": "door"
+      "thickness": 0.016
     },
     {
       "panel": "Drawer_01_Front",
@@ -38,8 +36,7 @@
         "dimension": "height",
         "factor": 0.25
       },
-      "thickness": 0.016,
-      "compositionGroup": "drawers"
+      "thickness": 0.016
     },
     {
       "panel": "Drawer_02_Front",
@@ -53,8 +50,7 @@
         "dimension": "height",
         "factor": 0.25
       },
-      "thickness": 0.016,
-      "compositionGroup": "drawers"
+      "thickness": 0.016
     },
     {
       "panel": "Drawer_03_Front",
@@ -68,8 +64,7 @@
         "dimension": "height",
         "factor": 0.25
       },
-      "thickness": 0.016,
-      "compositionGroup": "drawers"
+      "thickness": 0.016
     },
     {
       "panel": "Drawer_04_Front",
@@ -83,8 +78,7 @@
         "dimension": "height",
         "factor": 0.25
       },
-      "thickness": 0.016,
-      "compositionGroup": "drawers"
+      "thickness": 0.016
     }
   ],
   "materialSlot": "fronts",
@@ -129,5 +123,7 @@
     "endMargin": 0.02,
     "fade": 0.006
   },
-  "wideDescription": "Общая ёлочка на четырёх ящиках: ось проходит по центру блока, линии согласованы по высоте. У двери своя симметричная ёлочка. Гладкие поля у кромок и отдельное открывание сохраняются."
+  "styleFallbacks": {
+    "herringbone-wide": "herringbone"
+  }
 }

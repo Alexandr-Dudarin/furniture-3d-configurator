@@ -24878,6 +24878,7 @@ export const WARDROBE_15_CONFIG = {
       "fade": 0.003
     },
     "sourceStyle": "original",
+    "batchSolidSource": true,
     "diagonal": {
       "pitch": 0.08,
       "width": 0.006,

@@ -205,7 +205,26 @@ export function createThreeRuntime(
 
   const framing = createFurnitureFraming(camera, controls)
 
-  const rendering = createProgressiveRenderer(renderer, scene, camera)
+  const debugParams = import.meta.env.DEV ? new URLSearchParams(window.location.search) : null
+  const rendering = createProgressiveRenderer(renderer, scene, camera, {
+    motionSampling: debugParams?.get('motionAA') !== 'off',
+  })
+  // Opt-in local diagnostics only; no timer, overlay or saved configuration field.
+  const debugWindow = window as Window & { furnitureRenderStats?: () => unknown }
+  const readStats = () => {
+    let visibleMeshes = 0, sourceBatches = 0
+    scene.traverseVisible(node => {
+      if (node instanceof THREE.Mesh) {
+        visibleMeshes++
+        if (node.name.endsWith('__SourceBatch')) sourceBatches++
+      }
+    })
+    return { ...rendering.stats, visibleMeshes, sourceBatches,
+      geometries: renderer.info.memory.geometries, textures: renderer.info.memory.textures,
+      drawingBuffer: [renderer.domElement.width, renderer.domElement.height],
+    }
+  }
+  if (debugParams?.get('renderStats') === '1') debugWindow.furnitureRenderStats = readStats
   const cameraChanged = () => rendering.invalidate(false)
   controls.addEventListener('change', cameraChanged)
   const contextRestored = () => rendering.resize()
@@ -318,6 +337,7 @@ export function createThreeRuntime(
       renderer.domElement.removeEventListener('webglcontextrestored', contextRestored)
       controls.dispose()
       rendering.dispose()
+      if (debugWindow.furnitureRenderStats === readStats) delete debugWindow.furnitureRenderStats
 
       renderer.dispose()
 

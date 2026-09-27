@@ -32,6 +32,8 @@ export type FacadeTarget = {
 export type FacadeVariants = {
   defaultStyle: FacadeStyleId
   sourceStyle?: 'original' | 'smooth'
+  // Opt-in draw-call reduction for segmented source panels with solid finishes.
+  batchSolidSource?: boolean
   styles: readonly FacadeStyleId[]
   // Migrate retired choices from links/storage without changing reset defaults.
   styleFallbacks?: Partial<Record<FacadeStyleId, FacadeStyleId>>
