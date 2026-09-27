@@ -212,14 +212,15 @@ export function createThreeRuntime(
   // Opt-in local diagnostics only; no timer, overlay or saved configuration field.
   const debugWindow = window as Window & { furnitureRenderStats?: () => unknown }
   const readStats = () => {
-    let visibleMeshes = 0, sourceBatches = 0
+    let visibleMeshes = 0, sourceBatches = 0, filteredReliefMeshes = 0
     scene.traverseVisible(node => {
       if (node instanceof THREE.Mesh) {
         visibleMeshes++
         if (node.name.endsWith('__SourceBatch')) sourceBatches++
+        if (node.geometry.hasAttribute('facadeRelief')) filteredReliefMeshes++
       }
     })
-    return { ...rendering.stats, visibleMeshes, sourceBatches,
+    return { ...rendering.stats, visibleMeshes, sourceBatches, filteredReliefMeshes,
       geometries: renderer.info.memory.geometries, textures: renderer.info.memory.textures,
       drawingBuffer: [renderer.domElement.width, renderer.domElement.height],
     }
@@ -360,7 +361,8 @@ export function createThreeRuntime(
     // Render and request the snapshot in the same task. No permanent
     // preserveDrawingBuffer cost, camera changes or UI layers in the image.
     try {
-      rendering.present()
+      rendering.prepareCapture()
+      if (renderer.getContext().isContextLost()) throw new Error('3D preview unavailable')
       renderer.domElement.toBlob(blob => {
         if (blob && blob.size > 0) resolve(blob)
         else reject(new Error('PNG encoding failed'))

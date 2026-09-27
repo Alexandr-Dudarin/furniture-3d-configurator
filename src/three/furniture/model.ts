@@ -128,11 +128,15 @@ export function disposeFurnitureModel(
         Array.isArray(
           object.material,
         )
-          ? object.material
+          ? [...object.material]
           : [
               object.material,
             ]
 
+      // Filtered facades share custom shadow materials; release each once,
+      // including hidden source/alternate meshes when switching the model.
+      if (object.customDepthMaterial) objectMaterials.push(object.customDepthMaterial)
+      if (object.customDistanceMaterial) objectMaterials.push(object.customDistanceMaterial)
       objectMaterials.forEach(
         (material) => {
           materials.add(

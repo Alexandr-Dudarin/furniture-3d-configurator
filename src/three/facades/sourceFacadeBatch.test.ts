@@ -155,3 +155,29 @@ it.each(['different-colour', 'normal-map', 'shader-hook', 'negative-scale'] as c
   const combined = node.children[2] as THREE.Mesh
   expect(combined.visible).toBe(false); expect(combined.geometry.getAttribute('position')).toBeUndefined()
 })
+
+it('prepares metric relief on real Katania source, batch and wood paths across resize/opening', async () => {
+  const { root, batches, materials, facades, controller, sources } = await load()
+  for (const b of batches) {
+    const data = b.geometry.getAttribute('facadeRelief')
+    expect(data).toBeDefined(); expect(data.getZ(0)).toBeCloseTo(.003, 8)
+    expect(b.customDepthMaterial).toBeDefined()
+  }
+  await materials.setFinish('fronts', 'oak-natural')
+  expect(sources.flat().every(m => m.geometry.hasAttribute('facadeRelief') && m.customDepthMaterial)).toBe(true)
+  controller.setDimensions({ width: 2.4, height: 2.7, depth: .6 }); facades.update(controller.getDimensions(), 'original')
+  for (const source of sources.flat()) {
+    const data = source.geometry.getAttribute('facadeRelief')
+    // Land width and panel height resize; the metric sampling width does not.
+    expect(data.getZ(0) * source.scale.x).toBeCloseTo(.003, 7)
+    expect(data.getW(0) * source.scale.y).toBeCloseTo(.003, 7)
+  }
+  await materials.setFinish('fronts', 'board-white-matte')
+  expect(batches.every(b => b.visible && b.geometry.hasAttribute('facadeRelief'))).toBe(true)
+  const geometry = batches[0].geometry
+  const motion = createFurnitureMotion(root, definition, controller.getDimensions, () => {})
+  motion.setAll(true); motion.update(.1)
+  expect(batches[0].geometry).toBe(geometry)
+  expect(motion.findPart(batches[0])).toBe(definition.articulations![0].id)
+  motion.dispose()
+})

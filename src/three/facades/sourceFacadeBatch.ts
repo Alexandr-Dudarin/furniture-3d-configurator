@@ -1,4 +1,5 @@
 import { BufferGeometry, Material, Matrix4, Mesh, MeshStandardMaterial, type Object3D, type Texture } from 'three'
+import { hasReliefShader, RELIEF_ATTRIBUTE } from './reliefFilter'
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 
 /** Batch an explicitly opted-in, segmented panel without altering its source
@@ -27,7 +28,7 @@ export function createSourceFacadeBatch(node: Object3D, children: readonly Objec
   const signature = (material: Material | Material[]) => {
     if (!(material instanceof MeshStandardMaterial) || material.type !== 'MeshStandardMaterial' ||
       material.transparent || material.clippingPlanes?.length ||
-      material.onBeforeCompile !== Material.prototype.onBeforeCompile ||
+      (material.onBeforeCompile !== Material.prototype.onBeforeCompile && !hasReliefShader(material)) ||
       Object.values(material).some(value => (value as Texture | null)?.isTexture)) return null
     // The asset's per-segment names/IDs differ; actual shading must be equal.
     const data: Record<string, unknown> = { ...material.toJSON() }
@@ -56,7 +57,11 @@ export function createSourceFacadeBatch(node: Object3D, children: readonly Objec
         const copies: BufferGeometry[] = []
         let merged: BufferGeometry | null
         try {
-          for (const part of sources) copies.push(part.geometry.clone().applyMatrix4(part.matrix))
+          for (const part of sources) {
+            // Filter attributes use source-local units; the new batch prepares
+            // them in its own coordinates after merging.
+            copies.push(part.geometry.clone().deleteAttribute(RELIEF_ATTRIBUTE).applyMatrix4(part.matrix))
+          }
           merged = mergeGeometries(copies)
         } finally { copies.forEach(geometry => geometry.dispose()) }
         if (!merged) return

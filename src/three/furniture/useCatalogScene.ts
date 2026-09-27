@@ -77,7 +77,9 @@ export function useCatalogScene(
         if (cancelled) { disposeFurnitureModel(loaded); return }
         model = loaded
         const controller = createFurnitureController(loaded, definition)
-        const facades = createFacadeController(loaded, definition)
+        const facades = createFacadeController(loaded, definition, {
+          filterRelief: !(import.meta.env.DEV && new URLSearchParams(window.location.search).get('reliefFilter') === 'off'),
+        })
         presentation = createFurniturePresentation(loaded, definition)
         materials = createFurnitureMaterialController(loaded, facades?.materialDefinition ?? definition, {
           maxAnisotropy: anisotropyRef.current, onMaterialsChanged: () => {

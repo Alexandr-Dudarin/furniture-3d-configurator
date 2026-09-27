@@ -223,6 +223,7 @@ export const catalogue: FurnitureDefinition = {
     },
     "sourceStyle": "original",
     "batchSolidSource": true,
+    "sourceRelief": { "width": 0.003, "depth": 0.0018 },
     "diagonal": {
       "pitch": 0.08,
       "width": 0.006,

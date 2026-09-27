@@ -30,6 +30,7 @@ export function createDetailSchedule() {
       return 'idle'
     },
     sampled() { samples++ },
+    completeCapture() { dirty = false; samples = DETAIL_SAMPLES },
     get samples() { return samples },
     get valid() { return !dirty && samples > 0 },
   }
@@ -164,6 +165,20 @@ export function createProgressiveRenderer(renderer: WebGLRenderer, scene: Scene,
       present(); outputFrames++
     },
     present,
+    // A capture is a fresh, synchronous burst of ONE pose. No RAF/door/camera
+    // update can interleave, and toBlob must be called in the same task. Never
+    // export the moving sum, even when the idle schedule already looks complete.
+    prepareCapture() {
+      if (disposed) throw new Error('3D preview unavailable')
+      invalidate(false); motionBudget.pause()
+      if (enabled && allocate()) {
+        try {
+          detailOffsets.forEach(([x, y], i) => renderSample(x, y, i))
+          schedule.completeCapture(); lastMode = 'refined'
+        } catch (error) { invalidate(false); throw error }
+      } else lastMode = 'direct'
+      present(); outputFrames++
+    },
     get samples() { return schedule.samples },
     get stats() {
       return { ...motionBudget.stats, mode: lastMode, enabled, scenePasses, outputFrames,

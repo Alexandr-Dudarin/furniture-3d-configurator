@@ -52,7 +52,7 @@ function harness(floatSupported = true, motionSampling = false) {
   return { renderer, rendering, scene, camera }
 }
 
-it('preserves the projection, view offset and display pipeline; idle/export reuse the result', () => {
+it('preserves the projection, view offset and display pipeline; idle presentation reuses the result', () => {
   const { renderer, rendering, scene, camera } = harness()
   camera.setViewOffset(1200, 800, 20, 40, 600, 400)
   const view = { ...camera.view! }, projection = camera.projectionMatrix.clone(), inverse = camera.projectionMatrixInverse.clone()
@@ -122,7 +122,7 @@ it('restores camera and renderer state even if sampling fails', () => {
   rendering.dispose()
 })
 
-it('averages only the current moving pose, clears each frame and exports without an extra scene draw', () => {
+it('averages only the current moving pose, clears each frame and presents without an extra scene draw', () => {
   const { renderer, rendering, scene, camera } = harness(true, true)
   const poses: number[][] = [], viewOffsets: number[][] = []
   renderer.render.mockImplementation(object => {
@@ -226,4 +226,57 @@ it('changes between four, two and one passes without retaining the previous sum 
   } finally {
     rendering.dispose(); clock.mockRestore()
   }
+})
+
+it('finishes a fresh 16-sample capture at one current pose, including during motion or partial refinement', () => {
+  const { renderer, rendering, scene, camera } = harness(true, true)
+  const poses: number[] = [], phases: string[] = []
+  renderer.render.mockImplementation(object => {
+    if (object === scene) { poses.push(camera.position.x); phases.push(`${camera.view?.offsetX}/${camera.view?.offsetY}`) }
+  })
+  rendering.setEnabled(true); rendering.render(0); rendering.render(120)
+  expect(rendering.samples).toBe(1)
+  // Even a pose changed just before the click must not export an old sum.
+  camera.position.x = 7
+  const before = poses.length
+  rendering.prepareCapture()
+  expect(poses.slice(before)).toEqual(Array(16).fill(7))
+  expect(new Set(phases.slice(before)).size).toBe(16)
+  expect(rendering.stats.mode).toBe('refined'); expect(rendering.samples).toBe(16)
+  expect(camera.view).toBeNull()
+  const draws = renderer.render.mock.calls.length
+  rendering.render(10000); expect(renderer.render.mock.calls.length).toBe(draws)
+  camera.position.x = 9; rendering.invalidate(false); rendering.render(10016)
+  expect(poses.slice(-2)).toEqual([9, 9]); expect(rendering.samples).toBe(0)
+  rendering.prepareCapture(); expect(poses.slice(-16)).toEqual(Array(16).fill(9))
+  rendering.dispose()
+})
+
+it('capture has bounded ordinary fallbacks and refuses a disposed runtime', () => {
+  for (const scenario of ['unsupported', 'oversize', 'disabled']) {
+    const { renderer, rendering, scene } = harness(scenario !== 'unsupported')
+    if (scenario === 'oversize') renderer.getDrawingBufferSize = v => v.set(4000, 2000)
+    rendering.setEnabled(scenario !== 'disabled'); rendering.prepareCapture()
+    expect(renderer.render.mock.calls.filter(args => args[0] === scene)).toHaveLength(1)
+    expect(renderer.copyFramebufferToTexture).not.toHaveBeenCalled()
+    expect(rendering.stats.mode).toBe('direct')
+    rendering.dispose(); expect(() => rendering.prepareCapture()).toThrow('unavailable')
+  }
+})
+
+it('failed capture restores the view, discards its partial sum and can be retried', () => {
+  const { renderer, rendering, scene, camera } = harness()
+  camera.setViewOffset(1200, 800, 20, 40, 600, 400)
+  const view = { ...camera.view! }, projection = camera.projectionMatrix.clone()
+  let passes = 0
+  renderer.render.mockImplementation(object => { if (object === scene && ++passes === 5) throw new Error('capture failed') })
+  rendering.setEnabled(true)
+  expect(() => rendering.prepareCapture()).toThrow('capture failed')
+  expect(camera.view).toEqual(view); expect(camera.projectionMatrix).toEqual(projection)
+  expect(rendering.samples).toBe(0); expect(renderer.autoClear).toBe(true)
+  expect(renderer.setRenderTarget).toHaveBeenLastCalledWith(null)
+  rendering.prepareCapture()
+  expect(passes).toBe(21); expect(rendering.samples).toBe(16)
+  expect(camera.view).toEqual(view)
+  rendering.dispose()
 })

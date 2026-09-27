@@ -34,6 +34,8 @@ export type FacadeVariants = {
   sourceStyle?: 'original' | 'smooth'
   // Opt-in draw-call reduction for segmented source panels with solid finishes.
   batchSolidSource?: boolean
+  // Explicit metric profile for supported recessed, vertical source panels.
+  sourceRelief?: { width: number; depth: number }
   styles: readonly FacadeStyleId[]
   // Migrate retired choices from links/storage without changing reset defaults.
   styleFallbacks?: Partial<Record<FacadeStyleId, FacadeStyleId>>

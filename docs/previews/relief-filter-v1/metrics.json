@@ -1,0 +1,16 @@
+{
+  "renderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+  "nearMaxPixelError": 0,
+  "metrics": {
+    "raw": {
+      "movingPixelRms": 17.755445174180604,
+      "spatialStdMean": 33.81975773174551,
+      "meanLuminance": 163.1866120218579
+    },
+    "filtered": {
+      "movingPixelRms": 0.951168871558685,
+      "spatialStdMean": 0.4024686354321043,
+      "meanLuminance": 171.2464480874317
+    }
+  }
+}

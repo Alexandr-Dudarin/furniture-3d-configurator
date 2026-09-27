@@ -3,12 +3,14 @@ import type { FurnitureDefinition } from '../furniture/types'
 import type { FacadeComposition, FacadeStyleId } from './types'
 import { createFacadeGeometry } from './facadeGeometry'
 import { createSourceFacadeBatch } from './sourceFacadeBatch'
+import { createReliefFilter, prepareReliefGeometry, type ReliefProfile } from './reliefFilter'
 
 const MATERIAL = 'Configurator_Facade_Profile'
 
-export function createFacadeController(root: Object3D, definition: FurnitureDefinition) {
+export function createFacadeController(root: Object3D, definition: FurnitureDefinition, options: { filterRelief?: boolean } = {}) {
   const spec = definition.facades
   if (!spec) return null
+  const relief = createReliefFilter()
   const placeholder = new MeshStandardMaterial({ name: MATERIAL })
   const panels = spec.targets.map(target => {
     const node = root.getObjectByName(target.panel)
@@ -19,7 +21,7 @@ export function createFacadeController(root: Object3D, definition: FurnitureDefi
     mesh.name = `${target.panel}__Facade`
     mesh.castShadow = true; mesh.receiveShadow = true; mesh.visible = false
     node.add(mesh)
-    return { target, original, mesh, batch }
+    return { target, node, original, mesh, batch }
   })
   const slot = definition.materialSlots?.[spec.materialSlot]
   if (!slot) throw new Error('Facade material slot is missing')
@@ -32,9 +34,20 @@ export function createFacadeController(root: Object3D, definition: FurnitureDefi
   // while each mesh keeps its own material, visibility and moving parent.
   // disposeFurnitureModel already disposes shared geometries once via a Set.
   let geometries = new Map<string, BufferGeometry>()
+  let filterState: { source: boolean; width: number; height: number; profile: ReliefProfile }[] = []
+  const refreshRelief = () => {
+    if (options.filterRelief === false) return
+    panels.forEach(({ node, target, mesh }, i) => {
+      const state = filterState[i]
+      if (!state) return
+      const candidates = state.source ? node.children.filter(child => child !== mesh) : [mesh]
+      for (const child of candidates) if (child instanceof Mesh && child.visible &&
+        prepareReliefGeometry(child, state.width, state.height, target.thickness, state.source ? 0 : spec.bevel, state.profile)) relief.attach(child)
+    })
+  }
   return {
     materialDefinition,
-    refreshMaterials() { panels.forEach(panel => panel.batch?.refreshMaterials()) },
+    refreshMaterials() { panels.forEach(panel => panel.batch?.refreshMaterials()); refreshRelief() },
     update(dimensions: Readonly<Record<string, number>>, style: FacadeStyleId = spec.defaultStyle) {
       if (!spec.styles.includes(style)) throw new Error(`Unsupported facade style: ${style}`)
       const source = style === (spec.sourceStyle ?? 'smooth')
@@ -99,6 +112,14 @@ export function createFacadeController(root: Object3D, definition: FurnitureDefi
       })
       for (const geometry of retired) if (!retained.has(geometry)) geometry.dispose()
       geometries = next
+      const profile = source ? spec.sourceRelief :
+        (style === 'fluted' || style === 'fluted-sides') ? spec.fluted :
+        style === 'diagonal' ? spec.diagonal : style === 'diamonds' ? spec.diamonds :
+        (style === 'herringbone' || style === 'herringbone-wide') ? spec.herringbone : undefined
+      filterState = profile ? measured.map(p => ({ source, width: p.width, height: p.height,
+        profile: { width: profile.width, depth: profile.depth, vertical: source || style === 'fluted' || style === 'fluted-sides' },
+      })) : []
+      refreshRelief()
     },
   }
 }
