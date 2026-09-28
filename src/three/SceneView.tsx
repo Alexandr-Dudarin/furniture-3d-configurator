@@ -51,11 +51,12 @@ export default function SceneView({ store, furnitureView, motionStore, pngExport
 
   const selectedHeight = session.models[session.selectedModelId].dimensions.height
   const sectionCount = session.wardrobe.sections.length
-  const wardrobeHeight = wardrobeBounds(session.wardrobe).height
+  const { width: wardrobeWidth, height: wardrobeHeight, depth: wardrobeDepth } = wardrobeBounds(session.wardrobe)
   useEffect(() => {
     const definition = getFurnitureDefinition(session.selectedModelId)
     if (session.mode === 'wardrobe') {
-      runtimeRef.current?.framing.select('wardrobe-assembly', { width: sectionCount, height: 2.6, depth: .65 }, 'wardrobe-assembly', wardrobeHeight / 2)
+      // Update the reset/resize envelope, but keep the current zoom during edits.
+      runtimeRef.current?.framing.select('wardrobe-assembly', { width: wardrobeWidth, height: wardrobeHeight, depth: wardrobeDepth }, 'wardrobe-assembly', wardrobeHeight / 2)
       if (previousWardrobeCount.current !== sectionCount) runtimeRef.current?.framing.reset()
       previousWardrobeCount.current = sectionCount
     } else if (session.mode === 'catalog' && definition.category === 'wardrobes') {
@@ -65,7 +66,7 @@ export default function SceneView({ store, furnitureView, motionStore, pngExport
     } else {
       runtimeRef.current?.framing.select('tables')
     }
-  }, [session.mode, session.selectedModelId, selectedHeight, sectionCount, wardrobeHeight])
+  }, [session.mode, session.selectedModelId, selectedHeight, sectionCount, wardrobeWidth, wardrobeHeight, wardrobeDepth])
   useEffect(() => {
     if (wardrobeViewRevision && store.getSnapshot().session.mode === 'wardrobe') {
       runtimeRef.current?.framing.reset(); runtimeRef.current?.invalidate()

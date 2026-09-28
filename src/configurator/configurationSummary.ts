@@ -3,7 +3,7 @@ import { getFurnitureDefinition } from './furnitureRegistry'
 import type { ConfiguratorSession } from './savedConfiguration'
 import { getTableBase, getTabletopEdgeProfile, TOP_SHAPES } from './tableAssembly/catalog'
 import { getMaterialFinish } from '../three/materials/materialRegistry'
-import { wardrobeBounds } from './wardrobeAssembly/state'
+import { wardrobeBounds, wardrobeFillingLabel } from './wardrobeAssembly/state'
 
 const number = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 3 })
 const size = (meters: number, unit: 'см' | 'мм') => `${number.format(meters * (unit === 'мм' ? 1000 : 100))} ${unit}`
@@ -17,7 +17,7 @@ export function getConfigurationSummary(session: ConfiguratorSession): Configura
       { label: 'Общая ширина', value: size(bounds.width, 'см') },
       { label: 'Максимальная высота', value: size(bounds.height, 'см') },
       { label: 'Максимальная глубина', value: size(bounds.depth, 'см') },
-      ...config.sections.map((section, index) => ({ label: `Секция ${index + 1}`, value: `${Math.round(section.width * 100)} × ${Math.round(section.height * 100)} × ${Math.round(section.depth * 100)} см · полок: ${section.shelves}${section.rod ? section.depth < .5 ? ' · торцевая штанга' : ' · штанга' : ''}` })),
+      ...config.sections.map((section, index) => ({ label: `Секция ${index + 1}`, value: `${Math.round(section.width * 100)} × ${Math.round(section.height * 100)} × ${Math.round(section.depth * 100)} см · ${wardrobeFillingLabel(section)}${section.rod && section.depth < .5 ? ' · торцевая штанга' : ''}` })),
       { label: 'Корпус и полки', value: getMaterialFinish(config.bodyFinish).label },
       { label: 'Штанги и крепления', value: getMaterialFinish(config.hardwareFinish).label },
     ] }

@@ -132,3 +132,22 @@ it('fits a six-metre wardrobe row and resets a user orbit without affecting the 
     expect(camera.position).toEqual(catalogue)
   }
 })
+
+it('fits low and tall assemblies on reset while keeping zoom stable during size edits', () => {
+  for (const aspect of [2, .6]) {
+    const camera = new PerspectiveCamera(45, aspect, .1, 100)
+    const controls = { target: new Vector3(), maxDistance: 5, update: () => true }
+    const framing = createFurnitureFraming(camera, controls)
+    for (const frame of [{ width: 2, height: 2.2, depth: .55 }, { width: .4, height: .8, depth: .4 }, { width: 6, height: 2.8, depth: .8 }]) {
+      const distance = camera.position.distanceTo(controls.target)
+      framing.select('row', frame, 'wardrobe-assembly', frame.height / 2)
+      if (frame.width !== 2) expect(camera.position.distanceTo(controls.target)).toBeCloseTo(distance, 8)
+      framing.reset()
+      camera.updateMatrixWorld()
+      for (const x of [-frame.width / 2, frame.width / 2]) for (const y of [0, frame.height]) for (const z of [-frame.depth / 2, frame.depth / 2]) {
+        const point = new Vector3(x, y, z).project(camera)
+        expect(Math.abs(point.x)).toBeLessThan(.821); expect(Math.abs(point.y)).toBeLessThan(.821)
+      }
+    }
+  }
+})

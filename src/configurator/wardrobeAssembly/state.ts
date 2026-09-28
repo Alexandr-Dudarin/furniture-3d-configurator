@@ -1,15 +1,50 @@
 import type { FurnitureDimensionConfig } from '../../three/furniture/types'
 
-// v1 prototype ranges. These are configurator limits, not production approval.
+// Prototype ranges. These are configurator limits, not production approval.
 export const SECTION_DIMENSIONS: Record<'width' | 'height' | 'depth', FurnitureDimensionConfig> = {
   width: { label: 'Ширина секции', base: .6, min: .4, max: 1, step: .05 },
-  height: { label: 'Высота секции', base: 2.2, min: 1.8, max: 2.6, step: .1 },
-  depth: { label: 'Глубина секции', base: .55, min: .4, max: .65, step: .05 },
+  height: { label: 'Высота секции', base: 2.2, min: .8, max: 2.8, step: .1 },
+  depth: { label: 'Глубина секции', base: .55, min: .4, max: .8, step: .05 },
 }
 export const MAX_SECTIONS = 6
 export const PANEL_THICKNESS = .016
 export const BACK_THICKNESS = .004
 export const PLINTH_HEIGHT = .07
+export const MIN_SHELF_CLEARANCE = .2
+export const MIN_ROD_CLEARANCE = .6
+export const ROD_RADIUS = .0125
+const ROD_TOP_CLEARANCE = .08
+
+// Shared by state validation, the controls and the actual geometry. Clearances
+// are usable space between surfaces, never a distance between panel centres.
+export function wardrobeRodY(height: number) {
+  return Math.max(height - .38, PLINTH_HEIGHT + PANEL_THICKNESS + MIN_ROD_CLEARANCE + ROD_RADIUS)
+}
+export function wardrobeShelfLimit(height: number, rod: boolean) {
+  const floor = PLINTH_HEIGHT + PANEL_THICKNESS
+  if (rod) {
+    const y = wardrobeRodY(height)
+    if (height - .26 - PANEL_THICKNESS / 2 - y < ROD_TOP_CLEARANCE - 1e-9) return 0
+    const lowerTop = floor + MIN_SHELF_CLEARANCE + PANEL_THICKNESS
+    return y - ROD_RADIUS - lowerTop >= MIN_ROD_CLEARANCE - 1e-9 ? 2 : 1
+  }
+  const inside = height - PANEL_THICKNESS - floor
+  return Math.max(0, Math.min(6, Math.floor((inside - MIN_SHELF_CLEARANCE + 1e-9) / (MIN_SHELF_CLEARANCE + PANEL_THICKNESS))))
+}
+export function wardrobeShelfYs(section: Pick<WardrobeSection, 'height' | 'shelves' | 'rod'>) {
+  const { height, rod } = section
+  const count = Math.min(section.shelves, wardrobeShelfLimit(height, rod))
+  const floor = PLINTH_HEIGHT + PANEL_THICKNESS
+  if (rod) return count === 0 ? [] : count === 1 ? [height - .26] : [height - .26, floor + MIN_SHELF_CLEARANCE + PANEL_THICKNESS / 2]
+  const gap = (height - PANEL_THICKNESS - floor - count * PANEL_THICKNESS) / (count + 1)
+  return Array.from({ length: count }, (_, index) => floor + gap + PANEL_THICKNESS / 2 + index * (gap + PANEL_THICKNESS))
+}
+
+export function wardrobeFillingLabel(section: Pick<WardrobeSection, 'shelves' | 'rod'>) {
+  const { shelves, rod } = section
+  if (rod) return shelves === 2 ? 'Штанга · верхняя и нижняя полки' : shelves === 1 ? 'Штанга · верхняя полка' : 'Штанга · без полок'
+  return shelves === 0 ? 'Без полок' : `${shelves} ${shelves === 1 ? 'полка' : shelves < 5 ? 'полки' : 'полок'}`
+}
 export const BODY_FINISHES = ['board-white-matte', 'board-cashmere-body', 'board-grey-neutral', 'board-graphite-matte', 'oak-natural', 'oak-grey', 'oak-silver', 'oak-black', 'board-muted-green', 'board-powder-beige']
 export const HARDWARE_FINISHES = ['metal-black-matte', 'metal-white-matte', 'metal-anthracite', 'metal-brass-satin']
 export const SECTION_PRESETS = [
@@ -37,11 +72,11 @@ function size(input: unknown, config: FurnitureDimensionConfig) {
 function section(input: unknown, id: string): WardrobeSection {
   const raw = record(input)
   const rod = raw.rod === true
+  const height = size(raw.height, SECTION_DIMENSIONS.height)
+  const requestedShelves = typeof raw.shelves === 'number' && Number.isFinite(raw.shelves) ? Math.round(raw.shelves) : rod ? 1 : 4
   return {
-    id, width: size(raw.width, SECTION_DIMENSIONS.width), height: size(raw.height, SECTION_DIMENSIONS.height), depth: size(raw.depth, SECTION_DIMENSIONS.depth),
-    // With a rod there is one top shelf at most, keeping the hanging space clear.
-    shelves: typeof raw.shelves === 'number' && Number.isFinite(raw.shelves)
-      ? Math.max(0, Math.min(rod ? 1 : 6, Math.round(raw.shelves))) : rod ? 1 : 4,
+    id, width: size(raw.width, SECTION_DIMENSIONS.width), height, depth: size(raw.depth, SECTION_DIMENSIONS.depth),
+    shelves: Math.max(0, Math.min(wardrobeShelfLimit(height, rod), requestedShelves)),
     rod,
   }
 }
@@ -49,7 +84,7 @@ export function createWardrobeSection(id: string, preset: SectionPreset, dimensi
   return section({ ...dimensions, shelves: preset === 'shelves' ? 4 : preset === 'hanging' ? 1 : 0, rod: preset === 'hanging' }, id)
 }
 export function createDefaultWardrobe(): WardrobeAssemblyConfiguration {
-  return { sections: [createWardrobeSection('section-1', 'shelves'), createWardrobeSection('section-2', 'hanging', { width: .8 }), createWardrobeSection('section-3', 'shelves')], bodyFinish: 'oak-natural', hardwareFinish: 'metal-black-matte' }
+  return { sections: [createWardrobeSection('section-1', 'shelves'), createWardrobeSection('section-2', 'hanging', { width: .8 }), createWardrobeSection('section-3', 'shelves')], bodyFinish: 'board-grey-neutral', hardwareFinish: 'metal-black-matte' }
 }
 export function normalizeWardrobeAssembly(input: unknown): WardrobeAssemblyConfiguration {
   const raw = record(input), defaults = createDefaultWardrobe()
@@ -88,7 +123,12 @@ export function updateWardrobeAssembly(current: WardrobeAssemblyConfiguration, a
       next = { ...current, sections }
     }
   } else if (action.type === 'update-section') {
-    next = { ...current, sections: current.sections.map(item => item.id === action.id ? section({ ...item, ...action.patch }, item.id) : item) }
+    next = { ...current, sections: current.sections.map(item => {
+      if (item.id !== action.id) return item
+      const patch = { ...action.patch }
+      if (patch.rod && !item.rod && patch.shelves === undefined) patch.shelves = Math.min(item.shelves, 1)
+      return section({ ...item, ...patch }, item.id)
+    }) }
   } else if (action.type === 'set-wardrobe-finish') {
     const allowed = action.slot === 'bodyFinish' ? BODY_FINISHES : HARDWARE_FINISHES
     if (allowed.includes(action.finishId)) next = { ...current, [action.slot]: action.finishId }

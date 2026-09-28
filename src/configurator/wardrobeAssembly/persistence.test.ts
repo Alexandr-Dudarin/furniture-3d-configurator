@@ -54,6 +54,18 @@ it('resets only the wardrobe and preserves it across the other modes', () => {
   expect(session.wardrobe).toEqual(createDefaultWardrobe())
   expect(session.models).toBe(models); expect(session.assembly).toBe(table)
 })
+it('preserves an existing oak assembly and roundtrips new sizes and the lower hanging shelf', () => {
+  const old = example()
+  old.wardrobe.bodyFinish = 'oak-natural'
+  expect(readSavedSession(JSON.stringify(old)).session.wardrobe.bodyFinish).toBe('oak-natural')
+  expect(readSharedConfiguration(createConfigurationUrl(origin, old)).wardrobe?.bodyFinish).toBe('oak-natural')
+  let changed = updateSession(old, { type: 'wardrobe-action', action: { type: 'update-section', id: 'section-2', patch: { height: 2.8, depth: .8, shelves: 2 } } })
+  changed = updateSession(changed, { type: 'wardrobe-action', action: { type: 'update-section', id: 'section-1', patch: { height: .8 } } })
+  expect(readSavedSession(JSON.stringify(changed)).session).toEqual(changed)
+  expect(readSharedConfiguration(createConfigurationUrl(origin, changed))).toEqual({ status: 'valid', wardrobe: changed.wardrobe })
+  expect(getConfigurationSummary(changed).rows.find(r => r.label === 'Секция 1')?.value).toContain('верхняя и нижняя полки')
+  expect(updateSession(changed, { type: 'reset-model' }).wardrobe.bodyFinish).toBe('board-grey-neutral')
+})
 it('opens a wardrobe link before saved state and updates that link after edits', () => {
   vi.useFakeTimers()
   try {

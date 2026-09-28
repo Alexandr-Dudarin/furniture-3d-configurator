@@ -1,6 +1,6 @@
 import { BufferGeometry, CylinderGeometry, Group, Mesh, MeshStandardMaterial } from 'three'
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
-import { BACK_THICKNESS as back, PANEL_THICKNESS as panel, PLINTH_HEIGHT as plinth, wardrobeBounds, type WardrobeAssemblyConfiguration } from '../../configurator/wardrobeAssembly/state'
+import { BACK_THICKNESS as back, PANEL_THICKNESS as panel, PLINTH_HEIGHT as plinth, ROD_RADIUS, wardrobeBounds, wardrobeRodY, wardrobeShelfYs, type WardrobeAssemblyConfiguration } from '../../configurator/wardrobeAssembly/state'
 import { createFinishMaterial } from '../materials/createMaterial'
 import { disposeMaterialResources } from '../materials/disposeMaterials'
 
@@ -24,19 +24,19 @@ export function planWardrobeParts(config: WardrobeAssemblyConfiguration): Part[]
     add('Bottom', [inside, panel, d - back], [0, plinth + panel / 2, back / 2])
     add('Back', [inside, h - plinth - 2 * panel, back], [0, (h + plinth) / 2, -d / 2 + back / 2])
     add('Plinth', [inside, plinth, panel], [0, plinth / 2, d / 2 - .03 - panel / 2])
-    for (let index = 0; index < section.shelves; index++) {
-      const y = section.rod ? h - .26 : plinth + panel + (h - plinth - 2 * panel) * (index + 1) / (section.shelves + 1)
+    const shelfYs = wardrobeShelfYs(section)
+    for (const [index, y] of shelfYs.entries()) {
       add(`Shelf_${index + 1}`, [inside - .002, panel, d - back - .025], [0, y, (back - .025) / 2])
     }
     if (section.rod) {
-      const y = h - .38
+      const y = wardrobeRodY(h)
       if (d >= .5) {
-        rod('Rail', .0125, inside - .016, [0, y, 0], 'x')
+        rod('Rail', ROD_RADIUS, inside - .016, [0, y, 0], 'x')
         for (const side of [-1, 1]) rod(`Socket_${side}`, .018, .008, [side * (inside / 2 - .004), y, 0], 'x')
       } else {
         const length = d - back - .07
-        rod('Rail', .0125, length, [0, y, 0], 'z')
-        const ceiling = section.shelves ? h - .26 - panel / 2 : h - panel
+        rod('Rail', ROD_RADIUS, length, [0, y, 0], 'z')
+        const ceiling = shelfYs.length ? shelfYs[0] - panel / 2 : h - panel
         const supportLength = ceiling - y
         for (const side of [-1, 1]) rod(`Bracket_${side}`, .007, supportLength, [0, y + supportLength / 2, side * length / 3], 'y')
       }

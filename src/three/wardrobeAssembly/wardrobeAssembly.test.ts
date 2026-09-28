@@ -4,7 +4,7 @@ import { createDefaultWardrobe, createWardrobeSection, normalizeWardrobeAssembly
 import { createWardrobeAssembly, planWardrobeParts } from './wardrobeAssembly'
 
 it('matches declared outer dimensions with fixed thickness and aligned backs at every supported extreme', () => {
-  for (const width of [.4, 1]) for (const height of [1.8, 2.6]) for (const depth of [.4, .65]) {
+  for (const width of [.4, 1]) for (const height of [.8, 2.8]) for (const depth of [.4, .8]) {
     const config = normalizeWardrobeAssembly({ sections: [createWardrobeSection('section-1', 'hanging', { width, height, depth }), createWardrobeSection('section-2', 'shelves', { width: .65, height: 2.1, depth: .5 })] })
     const assembly = createWardrobeAssembly(config), bounds = wardrobeBounds(config)
     const box = new Box3().setFromObject(assembly.group, true), size = box.getSize(new Vector3())
@@ -24,7 +24,7 @@ it('matches declared outer dimensions with fixed thickness and aligned backs at 
   }
 })
 it('keeps both kinds of rods inside the section, with attached supports', () => {
-  for (const depth of [.4, .45, .5, .65]) for (const shelves of [0, 1]) {
+  for (const depth of [.4, .45, .5, .8]) for (const shelves of [0, 1, 2]) {
     const config = normalizeWardrobeAssembly({ sections: [{ ...createWardrobeSection('section-1', 'hanging'), depth, shelves }] })
     const assembly = createWardrobeAssembly(config)
     for (const child of assembly.group.children) {
@@ -42,6 +42,33 @@ it('keeps both kinds of rods inside the section, with attached supports', () => 
       }
     }
     assembly.dispose()
+  }
+})
+it('keeps usable shelf and hanging clearances across all supported heights and depths', () => {
+  for (let heightCm = 80; heightCm <= 280; heightCm += 10) for (let depthCm = 40; depthCm <= 80; depthCm += 5) {
+    for (const rod of [false, true]) for (const shelves of [0, 1, 2, 4, 6]) {
+      const config = normalizeWardrobeAssembly({ sections: [{ id: 'section-1', height: heightCm / 100, depth: depthCm / 100, width: .6, rod, shelves }] })
+      const parts = planWardrobeParts(config)
+      const bottom = parts.find(p => p.name.endsWith('/Bottom'))!, top = parts.find(p => p.name.endsWith('/Top'))!
+      const shelfParts = parts.filter(p => p.name.includes('/Shelf_')).sort((a, b) => a.position[1] - b.position[1])
+      expect(shelfParts).toHaveLength(config.sections[0].shelves)
+      const panels = [bottom, ...shelfParts, top]
+      for (let i = 1; i < panels.length; i++) {
+        const gap = panels[i].position[1] - panels[i].size[1] / 2 - panels[i - 1].position[1] - panels[i - 1].size[1] / 2
+        expect(gap).toBeGreaterThanOrEqual(.2 - 1e-8)
+      }
+      if (rod) {
+        const rail = parts.find(p => p.name.endsWith('/Rail'))!
+        const below = panels.filter(p => p.position[1] < rail.position[1]).at(-1)!
+        expect(rail.position[1] - rail.size[0] - below.position[1] - below.size[1] / 2).toBeGreaterThanOrEqual(.6 - 1e-8)
+        const above = panels.find(p => p.position[1] > rail.position[1])!
+        expect(above.position[1] - above.size[1] / 2 - rail.position[1] - rail.size[0]).toBeGreaterThan(.05)
+        for (const bracket of parts.filter(p => p.name.includes('/Bracket_'))) {
+          expect(bracket.size[1]).toBeGreaterThan(0)
+          expect(bracket.position[1] + bracket.size[1] / 2).toBeCloseTo(above.position[1] - above.size[1] / 2, 7)
+        }
+      }
+    }
   }
 })
 it('preserves geometry across reorder/material edits and frees abandoned geometry exactly once', async () => {

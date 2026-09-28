@@ -145,7 +145,7 @@
 
 .wardrobe-heading { margin: 0 0 8px; font-size: 18px; }
 .wardrobe-sections { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.wardrobe-sections button, .wardrobe-section-actions button, .wardrobe-add button {
+.wardrobe-sections button, .wardrobe-section-actions button, .wardrobe-add button, .wardrobe-frame-button {
   padding: 9px 7px; border: 1px solid #cfdaea; border-radius: 8px;
   background: white; color: #344b66; font: inherit; font-size: 12px; cursor: pointer; min-height: 42px;
 }
@@ -154,6 +154,12 @@
 .wardrobe-sections svg { height: 64px; width: 50px; }
 .wardrobe-section-actions, .wardrobe-add { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 .wardrobe-section-actions button, .wardrobe-add button { flex: 1; }
+.wardrobe-frame-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin-top: 10px; }
+.wardrobe-frame-button svg { width: 18px; height: 18px; flex: 0 0 auto; }
+.wardrobe-frame-button:hover { background: #f2f6fc; border-color: #97b3d8; }
+.wardrobe-frame-hint { margin: 6px 0 0; font-size: 12px; line-height: 1.45; color: #586b82; }
+.wardrobe-section-actions .wardrobe-delete { background: #fff3f2; color: #a73535; border-color: #edc2be; }
+.wardrobe-section-actions .wardrobe-delete:hover:not(:disabled) { background: #ffe6e3; border-color: #d68c85; }
 .wardrobe-assembly-controls button:disabled { opacity: .45; cursor: default; }
 .wardrobe-assembly-controls button:focus-visible { outline: 2px solid #1767ca; outline-offset: 2px; }
 .wardrobe-toggle { display: flex; align-items: center; gap: 10px; min-height: 44px; font-size: 14px; }
