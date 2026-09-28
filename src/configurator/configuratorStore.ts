@@ -3,6 +3,7 @@ import {
   CONFIGURATION_STORAGE_KEY,
   LEGACY_CONFIGURATION_STORAGE_KEY,
   PREVIOUS_CONFIGURATION_STORAGE_KEY,
+  OLDER_CONFIGURATION_STORAGE_KEY,
   applySharedConfiguration,
   createConfigurationUrl,
   readSavedSession,
@@ -31,12 +32,13 @@ export type ConfiguratorSnapshot = {
 export function createConfiguratorStore(environment: ConfiguratorEnvironment) {
   let stored: string | null = null
   try {
-    stored = environment.getStorage().getItem(CONFIGURATION_STORAGE_KEY) ?? environment.getStorage().getItem(PREVIOUS_CONFIGURATION_STORAGE_KEY) ?? environment.getStorage().getItem(LEGACY_CONFIGURATION_STORAGE_KEY)
+    stored = environment.getStorage().getItem(CONFIGURATION_STORAGE_KEY) ?? environment.getStorage().getItem(PREVIOUS_CONFIGURATION_STORAGE_KEY) ?? environment.getStorage().getItem(OLDER_CONFIGURATION_STORAGE_KEY) ?? environment.getStorage().getItem(LEGACY_CONFIGURATION_STORAGE_KEY)
   } catch { /* Browsers may disable local storage. The editor still works. */ }
   const restored = readSavedSession(stored)
   const shared = readSharedConfiguration(environment.getHref())
   let snapshot: ConfiguratorSnapshot = {
-    session: shared.assembly ? { ...restored.session, mode: 'builder', assembly: shared.assembly }
+    session: shared.wardrobe ? { ...restored.session, mode: 'wardrobe', wardrobe: shared.wardrobe }
+      : shared.assembly ? { ...restored.session, mode: 'builder', assembly: shared.assembly }
       : shared.configuration ? applySharedConfiguration(restored.session, shared.configuration) : restored.session,
     persistence: 'pending',
     notice: shared.status === 'invalid'

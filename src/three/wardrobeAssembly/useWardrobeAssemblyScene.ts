@@ -1,0 +1,71 @@
+import { useEffect, useMemo, useRef, useState, type RefObject } from 'react'
+import { configureWardrobeStudio } from './wardrobeStudio'
+import type { ConfiguratorStore } from '../../configurator/configuratorStore'
+import type { WardrobeAssemblyConfiguration } from '../../configurator/wardrobeAssembly/state'
+import type { ThreeRuntime } from '../core/createThreeRuntime'
+import type { WardrobeAssembly } from './wardrobeAssembly'
+
+export function useWardrobeAssemblyScene(runtimeRef: RefObject<ThreeRuntime | null>, anisotropyRef: RefObject<number>, store: ConfiguratorStore, enabled: boolean, configuration: WardrobeAssemblyConfiguration) {
+  const active = useRef<WardrobeAssembly | null>(null)
+  const [attempt, setAttempt] = useState(0)
+  const token = useMemo(() => ({ enabled, attempt }), [enabled, attempt])
+  const [status, setStatus] = useState<{ token: object; configuration?: WardrobeAssemblyConfiguration; error: string | null; reload?: boolean } | null>(null)
+  useEffect(() => {
+    const runtime = runtimeRef.current
+    if (!enabled || !runtime) return
+    let cancelled = false, assembly: WardrobeAssembly | null = null
+    const restoreStudio = configureWardrobeStudio(runtime.scene)
+    let moduleLoaded = false
+    const prepare = async () => {
+      try {
+        const { createWardrobeAssembly } = await import('./wardrobeAssembly')
+        moduleLoaded = true
+        if (cancelled) return
+        assembly = createWardrobeAssembly(store.getSnapshot().session.wardrobe, { maxAnisotropy: anisotropyRef.current, onChange: () => runtime.invalidate() })
+        let applied: WardrobeAssemblyConfiguration
+        do {
+          applied = store.getSnapshot().session.wardrobe
+          assembly.update(applied)
+          await assembly.setFinishes(applied)
+        } while (!cancelled && applied !== store.getSnapshot().session.wardrobe)
+        if (cancelled) return
+        active.current = assembly
+        runtime.scene.add(assembly.group)
+        runtime.invalidate()
+        setStatus({ token, configuration: applied, error: null })
+      } catch (error) {
+        if (cancelled) return
+        assembly?.dispose()
+        console.error('Ошибка гардеробной:', error)
+        setStatus({ token, error: 'Не удалось подготовить гардеробную. Повторите загрузку.', reload: !moduleLoaded })
+      }
+    }
+    void prepare()
+    return () => {
+      cancelled = true
+      if (active.current === assembly) active.current = null
+      if (assembly) { runtime.scene.remove(assembly.group); assembly.dispose() }
+      restoreStudio()
+      runtime.invalidate()
+    }
+  }, [enabled, token, runtimeRef, anisotropyRef, store])
+
+  useEffect(() => {
+    const current = active.current
+    if (!enabled || !current) return
+    let cancelled = false
+    current.update(configuration)
+    void current.setFinishes(configuration).then(() => {
+      if (!cancelled && active.current === current) setStatus({ token, configuration, error: null })
+    }).catch(error => {
+      if (cancelled || active.current !== current) return
+      console.error('Ошибка покрытия гардеробной:', error)
+      setStatus({ token, error: 'Не удалось загрузить покрытие. Повторите загрузку гардеробной.' })
+    })
+    return () => { cancelled = true }
+  }, [configuration, enabled, token])
+  return { ready: enabled && status?.token === token && status.configuration === configuration && !status.error,
+    loading: enabled && status?.token !== token,
+    error: enabled && status?.token === token ? status.error : null,
+    retry: () => status?.reload ? window.location.replace(store.getShareUrl()) : setAttempt(value => value + 1) }
+}

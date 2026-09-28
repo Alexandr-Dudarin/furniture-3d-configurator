@@ -13,15 +13,18 @@ import { disposeFurnitureSourceCache } from './furniture/model'
 import { useCatalogScene } from './furniture/useCatalogScene'
 import type { FurnitureView } from './furniture/furniturePresentation'
 import { useTableAssemblyScene } from './tableAssembly/useTableAssemblyScene'
+import { useWardrobeAssemblyScene } from './wardrobeAssembly/useWardrobeAssemblyScene'
+import { wardrobeBounds } from '../configurator/wardrobeAssembly/state'
 
 const wardrobeFrame = combineFurnitureFrames(getFurnitureDefinitions().filter(model => model.category === 'wardrobes').map(model => model.framing))
 
-export default function SceneView({ store, furnitureView, motionStore, pngExport }: { pngExport: PngExportStore; store: ConfiguratorStore; furnitureView: FurnitureView; motionStore: FurnitureMotionStore }) {
+export default function SceneView({ store, furnitureView, motionStore, pngExport, wardrobeViewRevision = 0 }: { wardrobeViewRevision?: number; pngExport: PngExportStore; store: ConfiguratorStore; furnitureView: FurnitureView; motionStore: FurnitureMotionStore }) {
   const { session } = useSyncExternalStore(store.subscribe, store.getSnapshot)
   const containerRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<Scene | null>(null)
   const runtimeRef = useRef<ReturnType<typeof createThreeRuntime> | null>(null)
   const anisotropyRef = useRef(1)
+  const previousWardrobeCount = useRef(0)
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -47,20 +50,32 @@ export default function SceneView({ store, furnitureView, motionStore, pngExport
   }, [])
 
   const selectedHeight = session.models[session.selectedModelId].dimensions.height
+  const sectionCount = session.wardrobe.sections.length
+  const wardrobeHeight = wardrobeBounds(session.wardrobe).height
   useEffect(() => {
     const definition = getFurnitureDefinition(session.selectedModelId)
-    if (session.mode === 'catalog' && definition.category === 'wardrobes') {
+    if (session.mode === 'wardrobe') {
+      runtimeRef.current?.framing.select('wardrobe-assembly', { width: sectionCount, height: 2.6, depth: .65 }, 'wardrobe-assembly', wardrobeHeight / 2)
+      if (previousWardrobeCount.current !== sectionCount) runtimeRef.current?.framing.reset()
+      previousWardrobeCount.current = sectionCount
+    } else if (session.mode === 'catalog' && definition.category === 'wardrobes') {
       runtimeRef.current?.framing.select(definition.id, wardrobeFrame, 'wardrobes')
     } else if (session.mode === 'catalog' && definition.category === 'dressers') {
       runtimeRef.current?.framing.select(definition.id, definition.framing, definition.id, selectedHeight / 2)
     } else {
       runtimeRef.current?.framing.select('tables')
     }
-  }, [session.mode, session.selectedModelId, selectedHeight])
+  }, [session.mode, session.selectedModelId, selectedHeight, sectionCount, wardrobeHeight])
+  useEffect(() => {
+    if (wardrobeViewRevision && store.getSnapshot().session.mode === 'wardrobe') {
+      runtimeRef.current?.framing.reset(); runtimeRef.current?.invalidate()
+    }
+  }, [wardrobeViewRevision, store])
 
   const catalog = useCatalogScene(runtimeRef, anisotropyRef, store, session, furnitureView, motionStore)
   const assembly = useTableAssemblyScene(sceneRef, anisotropyRef, store, session.mode === 'builder', session.assembly)
-  const preview = session.mode === 'builder' ? assembly : catalog
+  const wardrobe = useWardrobeAssemblyScene(runtimeRef, anisotropyRef, store, session.mode === 'wardrobe', session.wardrobe)
+  const preview = session.mode === 'wardrobe' ? wardrobe : session.mode === 'builder' ? assembly : catalog
   useEffect(() => {
     const definition = getFurnitureDefinition(session.selectedModelId)
     const style = session.models[session.selectedModelId].facadeStyle ?? definition.facades?.defaultStyle

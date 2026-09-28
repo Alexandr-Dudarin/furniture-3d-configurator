@@ -6,10 +6,12 @@ import { DEFAULT_FURNITURE_ID, getFurnitureDefinitions } from './furnitureRegist
 import { DEFAULT_EDGE_PROFILE } from './tableAssembly/catalog'
 
 import { createDefaultAssembly, normalizeTableAssembly, updateTableAssembly, type TableAssemblyConfiguration } from './tableAssembly/state'
+import { createDefaultWardrobe, normalizeWardrobeAssembly, updateWardrobeAssembly, type WardrobeAssemblyAction, type WardrobeAssemblyConfiguration } from './wardrobeAssembly/state'
 
-export const CONFIGURATION_VERSION = 3
-export const CONFIGURATION_STORAGE_KEY = 'furniture-3d-configurator:configuration:v3'
-export const PREVIOUS_CONFIGURATION_STORAGE_KEY = 'furniture-3d-configurator:configuration:v2'
+export const CONFIGURATION_VERSION = 4
+export const CONFIGURATION_STORAGE_KEY = 'furniture-3d-configurator:configuration:v4'
+export const PREVIOUS_CONFIGURATION_STORAGE_KEY = 'furniture-3d-configurator:configuration:v3'
+export const OLDER_CONFIGURATION_STORAGE_KEY = 'furniture-3d-configurator:configuration:v2'
 export const LEGACY_CONFIGURATION_STORAGE_KEY = 'furniture-3d-configurator:configuration:v1'
 export const CONFIGURATION_QUERY_KEY = 'config'
 
@@ -23,8 +25,9 @@ export type ConfiguratorSession = {
   version: typeof CONFIGURATION_VERSION
   selectedModelId: string
   models: Record<string, ModelConfiguration>
-  mode: 'catalog' | 'builder'
+  mode: 'catalog' | 'builder' | 'wardrobe'
   assembly: TableAssemblyConfiguration
+  wardrobe: WardrobeAssemblyConfiguration
 }
 
 type SharedConfiguration = ModelConfiguration & {
@@ -56,6 +59,7 @@ export function createDefaultSession(): ConfiguratorSession {
     selectedModelId: DEFAULT_FURNITURE_ID,
     mode: 'catalog',
     assembly: createDefaultAssembly(),
+    wardrobe: createDefaultWardrobe(),
     models: Object.fromEntries(
       getFurnitureDefinitions().map((definition) => [definition.id, createModelConfiguration(definition)]),
     ),
@@ -101,7 +105,7 @@ export function readSavedSession(raw: string | null): { session: ConfiguratorSes
   if (raw === null) return { session, notice: null }
   try {
     const input: unknown = JSON.parse(raw)
-    if (!isRecord(input) || typeof input.version !== 'number' || ![1, 2, CONFIGURATION_VERSION].includes(Number(input.version)) || !isRecord(input.models)) {
+    if (!isRecord(input) || typeof input.version !== 'number' || ![1, 2, 3, CONFIGURATION_VERSION].includes(Number(input.version)) || !isRecord(input.models)) {
       throw new Error('Unsupported saved configuration')
     }
     for (const definition of getFurnitureDefinitions()) {
@@ -114,6 +118,10 @@ export function readSavedSession(raw: string | null): { session: ConfiguratorSes
       session.mode = input.mode === 'builder' ? 'builder' : 'catalog'
       session.assembly = normalizeTableAssembly(input.assembly)
     }
+    if (input.version >= 4) {
+      session.wardrobe = normalizeWardrobeAssembly(input.wardrobe)
+      if (input.mode === 'wardrobe') session.mode = 'wardrobe'
+    }
     return { session, notice: null }
   } catch {
     return { session, notice: 'Сохранённые настройки не удалось прочитать. Открыты начальные параметры.' }
@@ -124,6 +132,7 @@ type SharedConfigurationResult = {
   status: 'absent' | 'invalid' | 'valid' | 'adjusted'
   configuration?: SharedConfiguration
   assembly?: TableAssemblyConfiguration
+  wardrobe?: WardrobeAssemblyConfiguration
 }
 
 export function readSharedConfiguration(href: string): SharedConfigurationResult {
@@ -133,8 +142,19 @@ export function readSharedConfiguration(href: string): SharedConfigurationResult
   if (raw.length > 16000 || params.getAll(CONFIGURATION_QUERY_KEY).length !== 1) return { status: 'invalid' }
   try {
     const input: unknown = JSON.parse(raw)
-    if (!isRecord(input) || typeof input.version !== 'number' || ![1, 2, CONFIGURATION_VERSION].includes(input.version)) return { status: 'invalid' }
-    if (input.kind === 'table-assembly' && (input.version === 2 || input.version === CONFIGURATION_VERSION)) {
+    if (!isRecord(input) || typeof input.version !== 'number' || ![1, 2, 3, CONFIGURATION_VERSION].includes(input.version)) return { status: 'invalid' }
+    if (input.kind === 'wardrobe-assembly' && input.version === 4) {
+      if (!isRecord(input.wardrobe) || !Array.isArray(input.wardrobe.sections) || !input.wardrobe.sections.length) return { status: 'invalid' }
+      const wardrobe = normalizeWardrobeAssembly(input.wardrobe)
+      // Key order is irrelevant, including for nested sections.
+      const equal = (a: unknown, b: unknown): boolean => {
+        if (Array.isArray(a) && Array.isArray(b)) return a.length === b.length && a.every((value, index) => equal(value, b[index]))
+        if (isRecord(a) && isRecord(b)) return Object.keys(a).length === Object.keys(b).length && Object.keys(b).every(key => Object.hasOwn(a, key) && equal(a[key], b[key]))
+        return a === b
+      }
+      return { status: equal(input.wardrobe, wardrobe) ? 'valid' : 'adjusted', wardrobe }
+    }
+    if (input.kind === 'table-assembly' && input.version >= 2) {
       if (!isRecord(input.assembly)) return { status: 'invalid' }
       const assembly = normalizeTableAssembly(input.assembly)
       // Ссылки до выбора кромки уже описывали фаску 1 мм. Добавление этого
@@ -157,7 +177,7 @@ export function readSharedConfiguration(href: string): SharedConfigurationResult
       status: complete(input.dimensions, normalized.dimensions) && complete(input.materials, normalized.materials) &&
         (input.facadeStyle === normalized.facadeStyle || input.facadeStyle === undefined)
         ? 'valid' : 'adjusted',
-      configuration: { version: CONFIGURATION_VERSION, modelId: definition.id, ...normalized },
+      configuration: { version: 3, modelId: definition.id, ...normalized },
     }
   } catch {
     return { status: 'invalid' }
@@ -179,10 +199,12 @@ export function applySharedConfiguration(session: ConfiguratorSession, configura
 
 export function createConfigurationUrl(href: string, session: ConfiguratorSession): string {
   const url = new URL(href)
-  const configuration = session.mode === 'builder' ? {
+  const configuration = session.mode === 'wardrobe' ? {
+    version: 4, kind: 'wardrobe-assembly', wardrobe: session.wardrobe,
+  } : session.mode === 'builder' ? {
     version: 2, kind: 'table-assembly', assembly: session.assembly,
   } : {
-    version: session.models[session.selectedModelId].facadeStyle ? CONFIGURATION_VERSION : 1,
+    version: session.models[session.selectedModelId].facadeStyle ? 3 : 1,
     modelId: session.selectedModelId,
     ...session.models[session.selectedModelId],
   }
@@ -191,7 +213,8 @@ export function createConfigurationUrl(href: string, session: ConfiguratorSessio
 }
 
 export type ConfigurationAction =
-  | { type: 'set-mode'; mode: 'catalog' | 'builder' }
+  | { type: 'set-mode'; mode: ConfiguratorSession['mode'] }
+  | { type: 'wardrobe-action'; action: WardrobeAssemblyAction }
   | { type: 'update-assembly'; patch: Partial<TableAssemblyConfiguration> }
   | { type: 'select-model'; modelId: string }
   | { type: 'set-dimension'; name: string; value: number }
@@ -201,6 +224,14 @@ export type ConfigurationAction =
 
 export function updateSession(session: ConfiguratorSession, action: ConfigurationAction): ConfiguratorSession {
   if (action.type === 'set-mode') return action.mode === session.mode ? session : { ...session, mode: action.mode }
+  if (action.type === 'wardrobe-action') {
+    const wardrobe = updateWardrobeAssembly(session.wardrobe, action.action)
+    return wardrobe === session.wardrobe ? session : { ...session, wardrobe }
+  }
+  if (action.type === 'reset-model' && session.mode === 'wardrobe') {
+    const wardrobe = createDefaultWardrobe()
+    return JSON.stringify(wardrobe) === JSON.stringify(session.wardrobe) ? session : { ...session, wardrobe }
+  }
   if (action.type === 'update-assembly') {
     const { configuration: assembly } = updateTableAssembly(session.assembly, action.patch)
     return JSON.stringify(assembly) === JSON.stringify(session.assembly) ? session : { ...session, assembly }

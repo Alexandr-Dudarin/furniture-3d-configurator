@@ -59,6 +59,9 @@ export function createFurnitureFraming(camera: PerspectiveCamera, controls: Fram
     if (dy) { camera.lookAt(controls.target); controls.update() }
   }
   return {
+    reset() {
+      if (active) fitFurnitureFrame(camera, controls, active, centerY)
+    },
     select(_id: string, frame?: Frame, viewKey = frame ? 'cabinets' : 'tables', targetY = frame?.height ? frame.height / 2 : 0) {
       if (viewKey === key) { active = frame; moveCenter(targetY); return }
       views.set(key, capture())

@@ -109,3 +109,26 @@ it('remembers wardrobe and individual dresser views; height follows the body wit
   framing.select(dresser.id, dresser.framing, dresser.id, .45)
   expect(camera.position).toEqual(dresserPosition)
 })
+
+it('fits a six-metre wardrobe row and resets a user orbit without affecting the catalogue view', () => {
+  for (const aspect of [2, .6]) {
+    const camera = new PerspectiveCamera(45, aspect, .1, 100)
+    const controls = { target: new Vector3(), maxDistance: 5, update: () => true }
+    const framing = createFurnitureFraming(camera, controls)
+    framing.select('catalogue', sharedFrame, 'wardrobes')
+    const catalogue = camera.position.clone()
+    framing.select('row', { width: 6, height: 2.6, depth: .65 }, 'wardrobe-assembly', 1.3)
+    const initial = camera.position.clone()
+    camera.position.set(0, 1.3, 1)
+    framing.reset()
+    expect(camera.position).toEqual(initial)
+    camera.updateMatrixWorld()
+    for (const x of [-3, 3]) for (const y of [0, 2.6]) for (const z of [-.325, .325]) {
+      const point = new Vector3(x, y, z).project(camera)
+      expect(Math.abs(point.x)).toBeLessThan(.821); expect(Math.abs(point.y)).toBeLessThan(.821)
+      expect(point.z).toBeLessThan(1)
+    }
+    framing.select('catalogue', sharedFrame, 'wardrobes')
+    expect(camera.position).toEqual(catalogue)
+  }
+})

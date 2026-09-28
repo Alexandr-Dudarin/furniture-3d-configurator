@@ -6,6 +6,7 @@ import { getFurnitureDefinition, getFurnitureDefinitions } from './configurator/
 import { SizeControl } from './components/assembly/SizeControl'
 import { FinishPicker } from './components/assembly/FinishPicker'
 import { TableAssemblyControls } from './components/TableAssemblyControls'
+import { WardrobeAssemblyControls } from './components/WardrobeAssemblyControls'
 import { FurnitureViewer } from './components/FurnitureViewer'
 import { FurnitureViewControl } from './components/FurnitureViewControl'
 import type { FurnitureView } from './three/furniture/furniturePresentation'
@@ -21,6 +22,7 @@ function App() {
   const { store, session, persistence, notice } = useConfigurator()
   const [pngExport] = useState(createPngExportStore)
   const [motionStore] = useState(createFurnitureMotionStore)
+  const [wardrobeViewRevision, setWardrobeViewRevision] = useState(0)
   const [furnitureView, setFurnitureView] = useState<FurnitureView>('exterior')
   const selectedModelId = session.selectedModelId
   const furnitureDefinition = getFurnitureDefinition(selectedModelId)
@@ -48,7 +50,7 @@ function App() {
 
   return (
     <div className="app">
-      <FurnitureViewer pngExport={pngExport} store={store} furnitureView={furnitureView} motionStore={motionStore} />
+      <FurnitureViewer pngExport={pngExport} store={store} furnitureView={furnitureView} motionStore={motionStore} wardrobeViewRevision={wardrobeViewRevision} />
 
       <div
         className="configuration-panel"
@@ -56,8 +58,11 @@ function App() {
         <div className="configuration-mode" role="group" aria-label="Способ выбора мебели">
           <button type="button" aria-pressed={session.mode === 'catalog'} onClick={() => store.dispatch({ type: 'set-mode', mode: 'catalog' })}>Готовые модели</button>
           <button type="button" aria-pressed={session.mode === 'builder'} onClick={() => store.dispatch({ type: 'set-mode', mode: 'builder' })}>Собрать стол</button>
+          <button type="button" aria-pressed={session.mode === 'wardrobe'} onClick={() => store.dispatch({ type: 'set-mode', mode: 'wardrobe' })}>Гардеробная</button>
         </div>
-        {session.mode === 'builder' ? (
+        {session.mode === 'wardrobe' ? <WardrobeAssemblyControls configuration={session.wardrobe}
+          onFrame={() => setWardrobeViewRevision(value => value + 1)}
+          onAction={action => store.dispatch({ type: 'wardrobe-action', action })} /> : session.mode === 'builder' ? (
           <>
             <TableAssemblyControls configuration={session.assembly} onChange={(patch) => store.dispatch({ type: 'update-assembly', patch })} />
           </>
@@ -131,7 +136,7 @@ function App() {
         </>}
         <ConfigurationSummary session={session} store={store} pngExport={pngExport} />
         <ConfigurationActions
-          resetLabel={session.mode === 'builder' ? 'Сбросить сборку' : 'Сбросить эту модель'}
+          resetLabel={session.mode !== 'catalog' ? 'Сбросить сборку' : 'Сбросить эту модель'}
           key={JSON.stringify(session)}
           persistence={persistence}
           notice={notice}
