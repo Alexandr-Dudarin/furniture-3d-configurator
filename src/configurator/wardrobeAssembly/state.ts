@@ -1,5 +1,5 @@
 import type { FurnitureDimensionConfig } from '../../three/furniture/types'
-import { MIN_ROD_SECTION_HEIGHT, fitWardrobeLayout, isValidWardrobeLayout, readWardrobeLayout, wardrobeCanHaveRod, wardrobeShelfLimit, wardrobeManualShelfLimit, wardrobeLayoutTargets, wardrobeLayoutAdjustments, type WardrobeLayout } from './layout'
+import { MIN_ROD_SECTION_HEIGHT, fitWardrobeLayout, fitWardrobeLayoutChange, isValidWardrobeLayout, readWardrobeLayout, wardrobeCanHaveRod, wardrobeShelfLimit, wardrobeManualShelfLimit, wardrobeLayoutAdjustments, type WardrobeLayout } from './layout'
 export * from './layout'
 
 // Prototype ranges. These are configurator limits, not production approval.
@@ -75,7 +75,7 @@ export function previewWardrobeSectionUpdate(current: WardrobeSection, patch: Pa
   const next = section({ ...current, ...changes, layout: undefined }, current.id)
   if (current.layout && changes.layout === undefined) {
     next.shelves = Math.min(next.shelves, wardrobeManualShelfLimit(next.height, next.rod))
-    const layout = fitWardrobeLayout(next, wardrobeLayoutTargets(current, next))
+    const layout = fitWardrobeLayoutChange(current, next)
     if (layout) next.layout = layout
     return next
   }
@@ -86,6 +86,7 @@ export function wardrobeHeightNeedsConfirmation(current: WardrobeSection, next: 
 }
 export function wardrobeSectionNeedsConfirmation(current: WardrobeSection, next: WardrobeSection) {
   return wardrobeHeightNeedsConfirmation(current, next) || wardrobeLayoutAdjustments(current, next).length > 0
+    || (!current.rod && next.rod && next.shelves < current.shelves)
 }
 export function wardrobeAdjustmentNotice(input: unknown, normalized: WardrobeAssemblyConfiguration) {
   const raw = record(input)

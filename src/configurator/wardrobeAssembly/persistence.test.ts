@@ -1,10 +1,26 @@
 import { expect, it, vi } from 'vitest'
 import { CONFIGURATION_STORAGE_KEY, PREVIOUS_CONFIGURATION_STORAGE_KEY, OLDER_CONFIGURATION_STORAGE_KEY, LEGACY_CONFIGURATION_STORAGE_KEY, createConfigurationUrl, createDefaultSession, readSavedSession, readSharedConfiguration, updateSession } from '../savedConfiguration'
-import { createDefaultWardrobe } from './state'
+import { createDefaultWardrobe, normalizeWardrobeAssembly } from './state'
 import { createConfiguratorStore } from '../configuratorStore'
 import { getConfigurationSummary } from '../configurationSummary'
 
 const origin = 'https://example.test/viewer/?campaign=test#model'
+it('roundtrips inserted shelves and a rod under an existing shelf without correction or lost materials', () => {
+  let session = createDefaultSession()
+  session = { ...session, mode: 'wardrobe', wardrobe: normalizeWardrobeAssembly({ sections: [
+    { id: 'section-1', height: 2.8, shelves: 2, rod: false, layout: { shelves: [2.15, 2.45] }, bodyFinish: 'oak-natural' },
+    { id: 'section-2', height: 2.8, shelves: 1, rod: false, layout: { shelves: [2.2] }, hardwareFinish: 'metal-brass-satin' },
+  ] }) }
+  session = updateSession(session, { type: 'wardrobe-action', action: { type: 'update-section', id: 'section-1', patch: { shelves: 4 } } })
+  session = updateSession(session, { type: 'wardrobe-action', action: { type: 'update-section', id: 'section-2', patch: { rod: true } } })
+  expect(session.wardrobe.sections[0].layout!.shelves).toEqual(expect.arrayContaining([2.15, 2.45]))
+  expect(session.wardrobe.sections[0].shelves).toBe(4)
+  expect(session.wardrobe.sections[1].layout).toEqual({ shelves: [2.2], rod: 2.1 })
+  expect(readSavedSession(JSON.stringify(session))).toEqual({ session, notice: null })
+  expect(readSharedConfiguration(createConfigurationUrl(origin, session))).toEqual({ status: 'valid', wardrobe: session.wardrobe })
+  expect(session.wardrobe.sections[0].bodyFinish).toBe('oak-natural')
+  expect(session.wardrobe.sections[1].hardwareFinish).toBe('metal-brass-satin')
+})
 function example() {
   let session = updateSession(createDefaultSession(), { type: 'set-mode', mode: 'wardrobe' })
   session = updateSession(session, { type: 'wardrobe-action', action: { type: 'update-section', id: 'section-2', patch: { width: 1, height: 2.5, depth: .4 } } })

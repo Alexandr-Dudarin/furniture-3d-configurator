@@ -42,7 +42,8 @@ describe('straight wardrobe assembly state', () => {
   })
   it('keeps hanging space clear and isolates edits to the chosen section', () => {
     const initial = createDefaultWardrobe()
-    const next = updateWardrobeAssembly(initial, { type: 'update-section', id: 'section-1', patch: { rod: true } })
+    expect(updateWardrobeAssembly(initial, { type: 'update-section', id: 'section-1', patch: { rod: true } })).toBe(initial)
+    const next = updateWardrobeAssembly(initial, { type: 'update-section', id: 'section-1', patch: { rod: true }, confirmFillingChange: true })
     expect(next.sections[0].shelves).toBe(1)
     expect(next.sections[1]).toBe(initial.sections[1])
     expect(initial.sections[0].shelves).toBe(4)

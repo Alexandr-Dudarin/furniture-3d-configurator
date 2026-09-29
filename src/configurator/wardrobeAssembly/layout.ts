@@ -88,7 +88,7 @@ export function readWardrobeLayout(input: unknown): WardrobeLayout | undefined {
 }
 // Fit to the grid without collisions. Exact valid manual layouts remain exact.
 // The caller decides whether a required adjustment needs confirmation.
-export function fitWardrobeLayout(section: WardrobeFilling, targets = automaticLayout(section)): WardrobeLayout | null {
+export function fitWardrobeLayout(section: WardrobeFilling, targets = automaticLayout(section), preserve: { shelves: number[]; rod?: boolean } = { shelves: [] }): WardrobeLayout | null {
   const defaults = automaticLayout(section)
   const wanted = defaults.shelves.map((y, i) => Math.max(0, Math.min(section.height, targets.shelves[i] ?? y)))
   if (!section.rod) {
@@ -102,7 +102,7 @@ export function fitWardrobeLayout(section: WardrobeFilling, targets = automaticL
     return { shelves }
   }
   const rodBounds = gridRange(Math.max(MIN_ROD_AXIS_HEIGHT, floor + MIN_ROD_CLEARANCE + ROD_RADIUS), section.height - PANEL_THICKNESS - ROD_TOP_CLEARANCE)
-  let best: WardrobeLayout | null = null, bestScore = Infinity
+  let best: WardrobeLayout | null = null, bestScore = Infinity, bestExistingScore = Infinity
   for (let rod = rodBounds.min; rod <= rodBounds.max + EPSILON; rod = round(rod + FILLING_POSITION_STEP)) {
     const candidate: WardrobeLayout = { shelves: [], rod }
     let valid = true
@@ -113,7 +113,13 @@ export function fitWardrobeLayout(section: WardrobeFilling, targets = automaticL
     }
     if (!valid || !isValidWardrobeLayout(section, candidate)) continue
     const score = (rod - Math.max(0, Math.min(section.height, targets.rod ?? defaults.rod!))) ** 2 + candidate.shelves.reduce((sum, y, i) => sum + (y - wanted[i]) ** 2, 0)
-    if (score < bestScore - EPSILON) { best = candidate; bestScore = score }
+    // Existing positions have priority over a new part's suggested position.
+    // In particular, lower a new rod instead of lifting its existing shelf.
+    const existingScore = preserve.shelves.reduce((sum, i) => sum + (candidate.shelves[i] - wanted[i]) ** 2, 0)
+      + (preserve.rod ? (rod - targets.rod!) ** 2 : 0)
+    if (existingScore < bestExistingScore - EPSILON || (Math.abs(existingScore - bestExistingScore) < EPSILON && score < bestScore - EPSILON)) {
+      best = candidate; bestScore = score; bestExistingScore = existingScore
+    }
   }
   return best
 }
@@ -126,6 +132,36 @@ export function wardrobeManualShelfLimit(height: number, rod: boolean): number {
 export function wardrobeSectionShelfLimit(section: WardrobeFilling) {
   return section.layout ? wardrobeManualShelfLimit(section.height, section.rod) : wardrobeShelfLimit(section.height, section.rod)
 }
+// Insert into any free interval, keeping every existing shelf in place. Check
+// remaining capacity before each choice: splitting a gap at its centre alone
+// can make the next shelf impossible even though the original gap could fit it.
+function insertShelves(section: WardrobeFilling, existing: number[]): number[] | null {
+  let shelves = [...existing].sort((a, b) => a - b)
+  if (!isValidWardrobeLayout({ ...section, shelves: shelves.length, rod: false }, { shelves })) return null
+  const spacing = up(PANEL_THICKNESS + MIN_SHELF_CLEARANCE)
+  const intervals = (positions: number[]) => Array.from({ length: positions.length + 1 }, (_, i) => {
+    const below = i ? positions[i - 1] + PANEL_THICKNESS : floor
+    const above = i < positions.length ? positions[i] : section.height - PANEL_THICKNESS
+    return { ...gridRange(below + MIN_SHELF_CLEARANCE, above - PANEL_THICKNESS - MIN_SHELF_CLEARANCE), below, above }
+  })
+  const capacity = (positions: number[]) => intervals(positions).reduce((sum, { min, max }) =>
+    sum + (max < min - EPSILON ? 0 : Math.floor((max - min + EPSILON) / spacing) + 1), 0)
+  if (capacity(shelves) < section.shelves - shelves.length) return null
+  while (shelves.length < section.shelves) {
+    let best: number[] | null = null, bestGap = -Infinity
+    for (const { min, max, below, above } of intervals(shelves)) {
+      for (let y = min; y <= max + EPSILON; y = round(y + FILLING_POSITION_STEP)) {
+        const candidate = [...shelves, y].sort((a, b) => a - b)
+        if (capacity(candidate) < section.shelves - candidate.length) continue
+        const gap = Math.min(y - below, above - y - PANEL_THICKNESS)
+        if (gap > bestGap + EPSILON) { best = candidate; bestGap = gap }
+      }
+    }
+    if (!best) return null
+    shelves = best
+  }
+  return shelves
+}
 // Preserve physical shelves across filling changes. With a rod the array is
 // upper/lower; without a rod it is bottom-to-top, matching labels in the UI.
 export function wardrobeLayoutTargets(current: WardrobeFilling, next: WardrobeFilling): WardrobeLayout {
@@ -133,8 +169,20 @@ export function wardrobeLayoutTargets(current: WardrobeFilling, next: WardrobeFi
   let shelves = [...old.shelves]
   if (current.rod && !next.rod) shelves.sort((a, b) => a - b)
   else if (!current.rod && next.rod) shelves = shelves.length ? [shelves.at(-1)!] : []
+  if (!next.rod && next.shelves > shelves.length) {
+    const inserted = insertShelves(next, shelves)
+    if (inserted) return { shelves: inserted }
+  }
   return { shelves: defaults.shelves.map((y, i) => shelves[i] ?? y),
     ...(next.rod ? { rod: current.rod ? old.rod : defaults.rod } : {}) }
+}
+export function fitWardrobeLayoutChange(current: WardrobeFilling, next: WardrobeFilling) {
+  const targets = wardrobeLayoutTargets(current, next)
+  const old = current.layout ?? automaticLayout(current)
+  return fitWardrobeLayout(next, targets, {
+    shelves: targets.shelves.flatMap((y, i) => old.shelves.includes(y) ? [i] : []),
+    rod: current.rod && next.rod,
+  })
 }
 export function wardrobeLayoutAdjustments(current: WardrobeFilling, next: WardrobeFilling) {
   if (!current.layout) return []

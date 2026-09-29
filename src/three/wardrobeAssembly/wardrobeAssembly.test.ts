@@ -166,7 +166,7 @@ it('shares equal finishes across sections, isolates overrides and retains geomet
 it('uses individual hardware for rods and supports and releases materials only after the last user disappears', async () => {
   const make = vi.fn(async (id: string) => { const m = new MeshStandardMaterial(); m.name = id; return m })
   let config = createDefaultWardrobe()
-  config = updateWardrobeAssembly(config, { type: 'update-section', id: 'section-1', patch: { rod: true, depth: .4 } })
+  config = updateWardrobeAssembly(config, { type: 'update-section', id: 'section-1', patch: { rod: true, depth: .4 }, confirmFillingChange: true })
   config = updateWardrobeAssembly(config, { type: 'set-section-finish', id: 'section-1', slot: 'hardwareFinish', finishId: 'metal-brass-satin' })
   const assembly = createWardrobeAssembly(config, { createMaterial: make })
   await assembly.setFinishes(config)
