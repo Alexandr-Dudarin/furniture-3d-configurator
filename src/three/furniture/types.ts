@@ -217,6 +217,7 @@ export type FurnitureDefinition = {
   framing?: { width: number; height: number; depth: number }
   description?: string
   // Presentation only: these assemblies are hidden to inspect the interior.
+  handles?: import('../../configurator/handles').HandleVariants
   interiorView?: { hiddenNodes: readonly string[] }
   // Lightweight catalogue entries defer geometry rules and UV contracts.
   loadRuntime?: () => Promise<FurnitureDefinition>

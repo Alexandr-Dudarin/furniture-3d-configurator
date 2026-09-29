@@ -1,6 +1,8 @@
+import { WARDROBE_HANDLES } from '../../../configurator/handles'
 import type { FurnitureDefinition } from '../../furniture/types'
 
 export const catalogue: FurnitureDefinition = {
+  handles: WARDROBE_HANDLES['wardrobe-15-katania-four-door'],
   ...{
   "id": "wardrobe-15-katania-four-door",
   "label": "Шкаф «Катания-4.2»",

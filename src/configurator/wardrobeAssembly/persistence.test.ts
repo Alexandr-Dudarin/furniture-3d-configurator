@@ -58,7 +58,7 @@ it('rejects malformed links and bounds excessive section data', () => {
   }
   url.searchParams.set('config', JSON.stringify({ version: 4, kind: 'wardrobe-assembly', wardrobe: { sections: Array(20).fill({ width: 500, shelves: 100 }) } }))
   const result = readSharedConfiguration(url.href)
-  expect(result.status).toBe('adjusted'); expect(result.wardrobe?.sections).toHaveLength(6)
+  expect(result.status).toBe('adjusted'); expect(result.wardrobe?.sections).toHaveLength(7)
   expect(result.wardrobe?.sections.every(s => s.width === 1 && s.shelves === 6)).toBe(true)
 })
 it('resets only the wardrobe and preserves it across the other modes', () => {

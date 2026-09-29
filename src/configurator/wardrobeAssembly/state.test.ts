@@ -36,7 +36,7 @@ describe('straight wardrobe assembly state', () => {
     while (config.sections.length > 1) config = updateWardrobeAssembly(config, { type: 'remove-section', id: config.sections[0].id })
     expect(updateWardrobeAssembly(config, { type: 'remove-section', id: config.sections[0].id })).toBe(config)
     for (let i = 0; i < 8; i++) config = updateWardrobeAssembly(config, { type: 'add-section', preset: 'empty' })
-    expect(config.sections).toHaveLength(6)
+    expect(config.sections).toHaveLength(7)
     expect(updateWardrobeAssembly(config, { type: 'add-section', preset: 'shelves' })).toBe(config)
     expect(updateWardrobeAssembly(config, { type: 'move-section', id: 'missing', direction: 1 })).toBe(config)
   })

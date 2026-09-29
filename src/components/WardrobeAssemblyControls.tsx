@@ -1,5 +1,5 @@
 import { WardrobeDrawerControls } from './WardrobeDrawerControls'
-import { DRAWER_HANDLES, getWardrobeDrawerHandle, isWardrobeDrawerHandle } from '../configurator/wardrobeAssembly/drawerHandles'
+import { drawerInnerHeight, DRAWER_HANDLES, getWardrobeDrawerHandle, isWardrobeDrawerHandle } from '../configurator/wardrobeAssembly/drawerHandles'
 import type { FurnitureMotionStore } from '../configurator/furnitureMotionStore'
 import { DRAWER_HEIGHTS, DRAWER_PLACEMENTS, wardrobeDrawerPlacementLabel, wardrobeSectionClosedDepth, wardrobeDrawerLimit, wardrobeFillingFloor } from '../configurator/wardrobeAssembly/state'
 import { useState } from 'react'
@@ -129,11 +129,13 @@ export function WardrobeAssemblyControls({ configuration, onAction, onFrame, mot
             onChange={value => { if (isWardrobeDrawerHandle(value)) update({ drawers: { ...selected.drawers!, handle: value } }) }} />
         </div>
         <p className="assembly-summary">{selected.drawers.placement === 'flush'
-          ? `Фасады вровень с передними краями боковин. ${handle.value === 'none' ? 'Закрытые ящики не выступают за глубину корпуса.' : `Ручки выступают на ${cm(handle.projection)} см; глубина секции с ручками — ${cm(wardrobeSectionClosedDepth(selected))} см.`}`
-          : `Фасады углублены на 2,9 см.${handle.value === 'none' ? '' : ' Ручки остаются внутри глубины корпуса.'}`}</p>
+          ? `Фасады вровень с передними краями боковин. ${handle.projection === 0 ? 'Закрытые ящики не выступают за глубину корпуса.' : `Ручки выступают на ${cm(handle.projection)} см; глубина секции с ручками — ${cm(wardrobeSectionClosedDepth(selected))} см.`}`
+          : `Фасады углублены на 2,9 см.${handle.projection === 0 ? '' : (handle.projection <= .029 ? ' Ручки остаются внутри глубины корпуса.' : ` Ручки выступают за корпус на ${cm(handle.projection - .029)} см.`)}`}</p>
+        {handle.value === 'top-grip' && <p className="assembly-summary">Зазор над фасадом — 4 см. Короб ниже, чтобы освободить место для пальцев.</p>}
+        {handle.value === 'finger-notch' && <p className="assembly-summary">Выемка по центру верхнего края: ширина 10 см, глубина 3 см. Материал тот же, что у фасада.</p>}
         {handle.value === 'none' && <p className="assembly-summary">Без выступающих ручек. В 3D нажмите на фасад, чтобы открыть ящик.</p>}
         <p className="assembly-summary">Ящики расположены снизу. Верх блока: {Number((wardrobeFillingFloor(selected) * 100).toFixed(1))} см от пола. Полки и штанга располагаются выше него. Крышка блока не входит в число полок.</p>
-        <p className="assembly-summary">Высота ряда включает фасад и зазоры. Внутренняя высота короба — {Number(((selected.drawers.height - .044) * 100).toFixed(1))} см. Фасады используют материал корпуса; {handle.value === 'none' ? 'направляющие' : 'ручки и направляющие'} — материал фурнитуры секции.</p>
+        <p className="assembly-summary">Высота ряда включает фасад и зазоры. Внутренняя высота короба — {Number(((drawerInnerHeight(selected.drawers.height, selected.drawers.handle)) * 100).toFixed(1))} см. Фасады используют материал корпуса; {handle.projection === 0 ? 'направляющие' : 'ручки и направляющие'} — материал фурнитуры секции.</p>
         <WardrobeDrawerControls section={selected} store={motionStore} />
       </>}
     </ConfigurationSection>

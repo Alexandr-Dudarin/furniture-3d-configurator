@@ -11,5 +11,6 @@ export const definition: FurnitureDefinition = {
     carcass: { ...catalogue.materialSlots!.carcass, targets: BOARD_MATERIAL_TARGETS.carcass },
     fronts: { ...catalogue.materialSlots!.fronts, targets: BOARD_MATERIAL_TARGETS.fronts },
     ...source.materialSlots,
+    hardware: { ...source.materialSlots!.hardware, allowedFinishes: catalogue.materialSlots!.hardware.allowedFinishes },
   },
 }

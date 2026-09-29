@@ -1,3 +1,4 @@
+import { isCatalogHandle, type CatalogHandle } from './handles'
 import type { FacadeStyleId } from '../three/facades/types'
 import type { FurnitureDefinition } from '../three/furniture/types'
 import type { MaterialSelections } from '../three/materials/types'
@@ -19,6 +20,7 @@ export type ModelConfiguration = {
   dimensions: ConfiguratorDimensions
   materials: MaterialSelections
   facadeStyle?: FacadeStyleId
+  handles?: Partial<Record<'doors' | 'drawers', CatalogHandle>>
 }
 
 export type ConfiguratorSession = {
@@ -96,6 +98,14 @@ export function normalizeModelConfiguration(definition: FurnitureDefinition, inp
     const fallback = aliases && Object.hasOwn(aliases, source.facadeStyle)
       ? aliases[source.facadeStyle as FacadeStyleId] : undefined
     if (fallback && definition.facades.styles.includes(fallback)) configuration.facadeStyle = fallback
+  }
+  if (definition.handles && isRecord(source.handles)) {
+    const handles: NonNullable<ModelConfiguration['handles']> = {}
+    for (const kind of ['doors', 'drawers'] as const) {
+      const value = source.handles[kind]
+      if (definition.handles.targets.some(t => t.kind === (kind === 'doors' ? 'door' : 'drawer')) && isCatalogHandle(value)) handles[kind] = value
+    }
+    if (Object.keys(handles).length) configuration.handles = handles
   }
   return configuration
 }
@@ -177,7 +187,8 @@ export function readSharedConfiguration(href: string): SharedConfigurationResult
       Object.entries(target).every(([key, value]) => Object.hasOwn(source, key) && source[key] === value)
     return {
       status: complete(input.dimensions, normalized.dimensions) && complete(input.materials, normalized.materials) &&
-        (input.facadeStyle === normalized.facadeStyle || input.facadeStyle === undefined)
+        (input.facadeStyle === normalized.facadeStyle || input.facadeStyle === undefined) &&
+        (input.handles === undefined || (isRecord(input.handles) && complete(input.handles, normalized.handles ?? {})))
         ? 'valid' : 'adjusted',
       configuration: { version: 3, modelId: definition.id, ...normalized },
     }
@@ -194,7 +205,8 @@ export function applySharedConfiguration(session: ConfiguratorSession, configura
     models: {
       ...session.models,
       [configuration.modelId]: { dimensions: configuration.dimensions, materials: configuration.materials,
-        ...(configuration.facadeStyle ? { facadeStyle: configuration.facadeStyle } : {}) },
+        ...(configuration.facadeStyle ? { facadeStyle: configuration.facadeStyle } : {}),
+        ...(configuration.handles ? { handles: configuration.handles } : {}) },
     },
   }
 }
@@ -222,6 +234,7 @@ export type ConfigurationAction =
   | { type: 'set-dimension'; name: string; value: number }
   | { type: 'set-material'; slot: string; finishId: string }
   | { type: 'set-facade-style'; style: string }
+  | { type: 'set-handles'; kind: 'doors' | 'drawers'; value: string }
   | { type: 'reset-model' }
 
 export function updateSession(session: ConfiguratorSession, action: ConfigurationAction): ConfiguratorSession {
@@ -251,6 +264,9 @@ export function updateSession(session: ConfiguratorSession, action: Configuratio
   let next: ModelConfiguration
   if (action.type === 'reset-model') {
     next = createModelConfiguration(definition)
+  } else if (action.type === 'set-handles') {
+    if (!definition.handles || !isCatalogHandle(action.value)) return session
+    next = normalizeModelConfiguration(definition, { ...current, handles: { ...current.handles, [action.kind]: action.value } })
   } else if (action.type === 'set-facade-style') {
     if (!definition.facades?.styles.includes(action.style as FacadeStyleId)) return session
     next = { ...current, facadeStyle: action.style as FacadeStyleId }

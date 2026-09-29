@@ -1,3 +1,4 @@
+import { getCatalogHandle } from './handles'
 import { getFacadeStyle } from './facades/catalog'
 import { getFurnitureDefinition } from './furnitureRegistry'
 import type { ConfiguratorSession } from './savedConfiguration'
@@ -28,7 +29,7 @@ export function getConfigurationSummary(session: ConfiguratorSession): Configura
           { label: `Секция ${index + 1}: ящики`, value: `${section.drawers.count} шт. · высота ряда ${size(section.drawers.height, 'см')} · верх блока ${size(wardrobeFillingFloor(section), 'см')}` },
           { label: `Секция ${index + 1}: положение фасадов ящиков`, value: wardrobeDrawerPlacementLabel(section.drawers) },
           { label: `Секция ${index + 1}: глубина с ручками (ящики закрыты)`, value: size(wardrobeSectionClosedDepth(section), 'см') },
-          { label: `Секция ${index + 1}: ручки`, value: section.drawers.handle === 'none' ? 'Без ручек' : `${getWardrobeDrawerHandle(section.drawers.handle).label} · ${getMaterialFinish(wardrobeSectionFinish(config, section, 'hardwareFinish')).label} · ${section.hardwareFinish ? 'свой' : 'общий'}` },
+          { label: `Секция ${index + 1}: ручки`, value: getWardrobeDrawerHandle(section.drawers.handle).projection === 0 ? getWardrobeDrawerHandle(section.drawers.handle).label : `${getWardrobeDrawerHandle(section.drawers.handle).label} · ${getMaterialFinish(wardrobeSectionFinish(config, section, 'hardwareFinish')).label} · ${section.hardwareFinish ? 'свой' : 'общий'}` },
           { label: `Секция ${index + 1}: направляющие`, value: `${getMaterialFinish(wardrobeSectionFinish(config, section, 'hardwareFinish')).label} · ${section.hardwareFinish ? 'свой' : 'общий'}` },
         ] : []),
         ...(section.layout ? [
@@ -60,6 +61,7 @@ export function getConfigurationSummary(session: ConfiguratorSession): Configura
     ...definition.dimensionOrder.map(name => ({ label: definition.dimensions[name].label,
       value: size(config.dimensions[name], definition.dimensions[name].displayUnit === 'mm' ? 'мм' : 'см') })),
     ...(definition.facades ? [{ label: 'Рисунок фасадов', value: getFacadeStyle(config.facadeStyle ?? definition.facades.defaultStyle).label }] : []),
+    ...(definition.handles ? (['doors', 'drawers'] as const).filter(kind => definition.handles!.targets.some(t => t.kind === (kind === 'doors' ? 'door' : 'drawer'))).map(kind => ({ label: kind === 'doors' ? 'Ручки дверей' : 'Ручки ящиков', value: getCatalogHandle(config.handles?.[kind], kind).label })) : []),
     ...Object.entries(definition.materialSlots ?? {}).map(([name, slot]) => ({ label: slot.label,
       value: getMaterialFinish(config.materials[name] ?? slot.defaultFinish).label })),
   ] }

@@ -1,16 +1,46 @@
 import { expect, it } from 'vitest'
 import { PerspectiveCamera, Vector3, MathUtils } from 'three'
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { combineFurnitureFrames, createFurnitureFraming, fitFurnitureFrame } from './furnitureFraming'
 import { getFurnitureDefinition, getFurnitureDefinitions } from '../../configurator/furnitureRegistry'
 
 const definitions = getFurnitureDefinitions().filter(model => model.category === 'wardrobes')
 const sharedFrame = combineFurnitureFrames(definitions.map(model => model.framing))!
 
+it('allows close assembly inspection and restores catalogue navigation and cached views', () => {
+  const camera = new PerspectiveCamera(45, 1.5, .1, 100)
+  const controls = new OrbitControls(camera)
+  controls.minDistance = 1.2; controls.maxDistance = 5; controls.screenSpacePanning = false
+  const framing = createFurnitureFraming(camera, controls)
+  framing.select('wardrobe', sharedFrame, 'wardrobes')
+  const catalogue = camera.position.clone()
+  const frame = { width: 7, height: 2.8, depth: .8 }
+  framing.select('row', frame, 'wardrobe-assembly')
+  controls.target.set(2, 1, .4)
+  camera.position.copy(controls.target).add(new Vector3(0, 0, .1))
+  controls.update()
+  expect(camera.position.distanceTo(controls.target)).toBeCloseTo(.35, 6)
+  expect(controls.zoomToCursor).toBe(true); expect(controls.screenSpacePanning).toBe(true)
+  const close = camera.position.clone(), target = controls.target.clone()
+  framing.select('wardrobe', sharedFrame, 'wardrobes')
+  expect(camera.position.distanceTo(catalogue)).toBeLessThan(1e-9)
+  expect(controls.minDistance).toBe(1.2)
+  expect(controls.zoomToCursor).toBe(false); expect(controls.screenSpacePanning).toBe(false)
+  framing.select('row', frame, 'wardrobe-assembly')
+  expect(camera.position.distanceTo(close)).toBeLessThan(1e-9)
+  expect(controls.target.distanceTo(target)).toBeLessThan(1e-9)
+  framing.reset()
+  expect(camera.position.distanceTo(controls.target)).toBeGreaterThan(5)
+  expect(controls.minDistance).toBe(.35)
+  framing.resize()
+  expect(controls.zoomToCursor).toBe(true)
+})
+
 it('fits all maximum wardrobe corners in desktop and portrait viewports', () => {
   for (const aspect of [1.8, 1.1, .6]) {
     const fov = MathUtils.radToDeg(2 * Math.atan(Math.tan(MathUtils.degToRad(45) / 2) / Math.min(1, aspect)))
     const camera = new PerspectiveCamera(fov, aspect, .1, 100)
-    const controls = { target: new Vector3(), maxDistance: 5, update: () => true }
+    const controls = { target: new Vector3(), maxDistance: 5, minDistance: 1.2, zoomToCursor: false, screenSpacePanning: false, update: () => true }
     fitFurnitureFrame(camera, controls, sharedFrame)
     camera.updateMatrixWorld()
     for (const { framing: frame } of definitions) {
@@ -27,7 +57,7 @@ it('fits all maximum wardrobe corners in desktop and portrait viewports', () => 
 it('uses the same initial scale regardless of which wardrobe is selected first', () => {
   const views = definitions.map(model => {
     const camera = new PerspectiveCamera(45, 1.4, .1, 100)
-    const controls = { target: new Vector3(), maxDistance: 5, update: () => true }
+    const controls = { target: new Vector3(), maxDistance: 5, minDistance: 1.2, zoomToCursor: false, screenSpacePanning: false, update: () => true }
     createFurnitureFraming(camera, controls).select(model.id, sharedFrame)
     return [camera.position.toArray(), controls.target.toArray(), controls.maxDistance]
   })
@@ -37,7 +67,7 @@ it('uses the same initial scale regardless of which wardrobe is selected first',
 it('preserves an adjusted orbit, zoom and pan across wardrobes, and restores the table view', () => {
   const camera = new PerspectiveCamera(45, 1.4, .1, 100)
   camera.position.set(1.2, 1.6, 2.6)
-  const controls = { target: new Vector3(0, .5, 0), maxDistance: 5, update: () => true }
+  const controls = { target: new Vector3(0, .5, 0), maxDistance: 5, minDistance: 1.2, zoomToCursor: false, screenSpacePanning: false, update: () => true }
   camera.lookAt(controls.target)
   const state = () => [camera.position.toArray(), camera.quaternion.toArray(), controls.target.toArray(), controls.maxDistance, camera.zoom]
   const tableView = state(), framing = createFurnitureFraming(camera, controls)
@@ -65,7 +95,7 @@ it('centres each dresser and keeps its bottom visible during a useful zoom', () 
   for (const model of getFurnitureDefinitions().filter(d => d.category === 'dressers')) {
     for (const aspect of [1.5, .65]) {
       const camera = new PerspectiveCamera(45, aspect, .1, 100)
-      const controls = { target: new Vector3(), maxDistance: 5, update: () => true }
+      const controls = { target: new Vector3(), maxDistance: 5, minDistance: 1.2, zoomToCursor: false, screenSpacePanning: false, update: () => true }
       const framing = createFurnitureFraming(camera, controls)
       const height = model.dimensions.height.base, width = model.dimensions.width.base, depth = model.dimensions.depth.base
       framing.select('wardrobe', sharedFrame, 'wardrobes')
@@ -86,7 +116,7 @@ it('centres each dresser and keeps its bottom visible during a useful zoom', () 
 
 it('remembers wardrobe and individual dresser views; height follows the body without changing zoom or pan', () => {
   const camera = new PerspectiveCamera(45, 1.5, .1, 100)
-  const controls = { target: new Vector3(), maxDistance: 5, update: () => true }
+  const controls = { target: new Vector3(), maxDistance: 5, minDistance: 1.2, zoomToCursor: false, screenSpacePanning: false, update: () => true }
   const framing = createFurnitureFraming(camera, controls)
   const dresser = getFurnitureDefinition('dresser-12-brooklyn-six-drawer')
   framing.select('chelsea', sharedFrame, 'wardrobes')
@@ -103,42 +133,42 @@ it('remembers wardrobe and individual dresser views; height follows the body wit
   framing.select('katania', sharedFrame, 'wardrobes')
   expect(camera.position).toEqual(wardPosition); expect(controls.target).toEqual(wardTarget)
   framing.select(dresser.id, dresser.framing, dresser.id, .45)
-  expect(camera.position).toEqual(dresserPosition); expect(controls.target).toEqual(target)
+  expect(camera.position).toEqual(dresserPosition); expect(controls.target.distanceTo(target)).toBeLessThan(1e-9)
   framing.select('baikal', { width: .6, height: 1.2, depth: .5 }, 'baikal', .515)
   expect(controls.target.y).toBe(.515)
   framing.select(dresser.id, dresser.framing, dresser.id, .45)
   expect(camera.position).toEqual(dresserPosition)
 })
 
-it('fits a six-metre wardrobe row and resets a user orbit without affecting the catalogue view', () => {
+it('fits a seven-metre wardrobe row and resets a user orbit without affecting the catalogue view', () => {
   for (const aspect of [2, .6]) {
     const camera = new PerspectiveCamera(45, aspect, .1, 100)
-    const controls = { target: new Vector3(), maxDistance: 5, update: () => true }
+    const controls = { target: new Vector3(), maxDistance: 5, minDistance: 1.2, zoomToCursor: false, screenSpacePanning: false, update: () => true }
     const framing = createFurnitureFraming(camera, controls)
     framing.select('catalogue', sharedFrame, 'wardrobes')
     const catalogue = camera.position.clone()
-    framing.select('row', { width: 6, height: 2.6, depth: .65 }, 'wardrobe-assembly', 1.3)
+    framing.select('row', { width: 7, height: 2.6, depth: .65 }, 'wardrobe-assembly', 1.3)
     const initial = camera.position.clone()
     camera.position.set(0, 1.3, 1)
     framing.reset()
     expect(camera.position).toEqual(initial)
     camera.updateMatrixWorld()
-    for (const x of [-3, 3]) for (const y of [0, 2.6]) for (const z of [-.325, .325]) {
+    for (const x of [-3.5, 3.5]) for (const y of [0, 2.6]) for (const z of [-.325, .325]) {
       const point = new Vector3(x, y, z).project(camera)
       expect(Math.abs(point.x)).toBeLessThan(.821); expect(Math.abs(point.y)).toBeLessThan(.821)
       expect(point.z).toBeLessThan(1)
     }
     framing.select('catalogue', sharedFrame, 'wardrobes')
-    expect(camera.position).toEqual(catalogue)
+    expect(camera.position.distanceTo(catalogue)).toBeLessThan(1e-9)
   }
 })
 
 it('fits low and tall assemblies on reset while keeping zoom stable during size edits', () => {
   for (const aspect of [2, .6]) {
     const camera = new PerspectiveCamera(45, aspect, .1, 100)
-    const controls = { target: new Vector3(), maxDistance: 5, update: () => true }
+    const controls = { target: new Vector3(), maxDistance: 5, minDistance: 1.2, zoomToCursor: false, screenSpacePanning: false, update: () => true }
     const framing = createFurnitureFraming(camera, controls)
-    for (const frame of [{ width: 2, height: 2.2, depth: .55 }, { width: .4, height: .8, depth: .4 }, { width: 6, height: 2.8, depth: .8 }]) {
+    for (const frame of [{ width: 2, height: 2.2, depth: .55 }, { width: .4, height: .8, depth: .4 }, { width: 7, height: 2.8, depth: .8 }]) {
       const distance = camera.position.distanceTo(controls.target)
       framing.select('row', frame, 'wardrobe-assembly', frame.height / 2)
       if (frame.width !== 2) expect(camera.position.distanceTo(controls.target)).toBeCloseTo(distance, 8)

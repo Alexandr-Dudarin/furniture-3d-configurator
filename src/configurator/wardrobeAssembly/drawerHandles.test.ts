@@ -68,9 +68,9 @@ it('enforces the existing section cap on actions, saved state and imported URLs 
   const raw = { ...config('none'), sections: Array.from({ length: 26 }, (_, i) => ({ ...config('none').sections[0], id: `section-${i + 1}` })) }
   const session = { ...createDefaultSession(), mode: 'wardrobe' as const, wardrobe: raw }
   const restored = readSavedSession(JSON.stringify(session))
-  expect(MAX_SECTIONS).toBe(6)
-  expect(restored.session.wardrobe.sections).toEqual(raw.sections.slice(0, 6))
-  expect(restored.notice).toContain('оставлены первые 6')
+  expect(MAX_SECTIONS).toBe(7)
+  expect(restored.session.wardrobe.sections).toEqual(raw.sections.slice(0, 7))
+  expect(restored.notice).toContain('оставлены первые 7')
   expect(updateWardrobeAssembly(restored.session.wardrobe, { type: 'add-section', preset: 'empty' })).toBe(restored.session.wardrobe)
   const url = new URL('https://example.test')
   url.searchParams.set('config', JSON.stringify({ version: 4, kind: 'wardrobe-assembly', wardrobe: raw }))

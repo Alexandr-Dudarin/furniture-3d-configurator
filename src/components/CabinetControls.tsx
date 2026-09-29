@@ -1,3 +1,5 @@
+import { CATALOG_HANDLES, DOOR_HANDLES, getCatalogHandle } from '../configurator/handles'
+import { CustomSelect } from './ui/CustomSelect/CustomSelect'
 import { FacadeControls } from './FacadeControls'
 import type { ModelConfiguration, ConfigurationAction } from '../configurator/savedConfiguration'
 import type { FurnitureMotionStore } from '../configurator/furnitureMotionStore'
@@ -35,6 +37,14 @@ export function CabinetControls({ definition, configuration, dispatch, motionSto
     </ConfigurationSection>
     {definition.facades && <FacadeControls spec={definition.facades} value={configuration.facadeStyle}
       onChange={style => dispatch({ type: 'set-facade-style', style })} />}
+    {definition.handles && <ConfigurationSection title="Ручки" summary={getCatalogHandle(configuration.handles?.doors, 'doors').label}>
+      {(['doors', 'drawers'] as const).filter(kind => definition.handles!.targets.some(t => t.kind === (kind === 'doors' ? 'door' : 'drawer'))).map(kind => <div className="assembly-field" key={kind}>
+        <span>{kind === 'doors' ? 'Ручки дверей' : 'Ручки ящиков'}</span>
+        <CustomSelect value={configuration.handles?.[kind] ?? 'original'} options={(kind === 'doors' ? DOOR_HANDLES : CATALOG_HANDLES).map(({ value, label }) => ({ value, label }))}
+          ariaLabel={kind === 'doors' ? 'Ручки дверей' : 'Ручки ящиков'} onChange={value => dispatch({ type: 'set-handles', kind, value })} />
+      </div>)}
+      <p className="assembly-summary">Исходный вариант сохраняет вид модели, в том числе отсутствие ручек. Цвет ручек и фурнитуры выбирается в материалах.</p>
+    </ConfigurationSection>}
     <ConfigurationSection title="Материалы" summary={slots.map(([name, slot]) => (
       <span className="catalog-material-summary" key={name}>
         {name === 'hardware' && definition.category === 'dressers' ? 'Ручки' : slotLabels[name] ?? slot.label}: {getMaterialFinish(materials[name] ?? slot.defaultFinish).label}

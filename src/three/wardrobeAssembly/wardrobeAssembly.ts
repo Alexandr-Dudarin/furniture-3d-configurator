@@ -2,13 +2,15 @@ import type { MotionPartState } from '../../configurator/furnitureMotionStore'
 import { createWardrobeDrawerMotion, type DrawerMotionEntry } from './wardrobeDrawerMotion'
 import { BufferGeometry, CylinderGeometry, Group, Mesh, MeshStandardMaterial } from 'three'
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
-import { DRAWER_BAR_HANDLE, DRAWER_KNOB_HANDLE, getWardrobeDrawerHandle } from '../../configurator/wardrobeAssembly/drawerHandles'
+import { createHandleGeometry, createNotchedFront } from '../handles/handleGeometry'
+import type { HardwareHandle } from '../../configurator/handles'
+import { DRAWER_BAR_HANDLE, DRAWER_KNOB_HANDLE, getWardrobeDrawerHandle, TOP_GRIP_CUT, drawerBoxHeightReduction } from '../../configurator/wardrobeAssembly/drawerHandles'
 import { BACK_THICKNESS as back, PANEL_THICKNESS as panel, PLINTH_HEIGHT as plinth, ROD_RADIUS, wardrobeBounds, wardrobeDrawerFrontInset, wardrobeRodY, wardrobeShelfYs, wardrobeSectionFinish, type WardrobeAssemblyConfiguration } from '../../configurator/wardrobeAssembly/state'
 import { createFinishMaterial } from '../materials/createMaterial'
 import { disposeMaterialResources } from '../materials/disposeMaterials'
 
 type Slot = 'body' | 'hardware'
-type Part = { sectionId: string; name: string; shape: 'panel' | 'rod'; size: [number, number, number]; position: [number, number, number]; slot: Slot; drawerId?: string; travel?: number; axis?: 'x' | 'y' | 'z' }
+type Part = { sectionId: string; name: string; shape: 'panel' | 'rod' | 'notched-front' | 'handle'; handle?: HardwareHandle; size: [number, number, number]; position: [number, number, number]; slot: Slot; drawerId?: string; travel?: number; axis?: 'x' | 'y' | 'z' }
 
 // Separate, closed panels. All dimensions are physical metres, floor is y=0,
 // back faces share z=-maxDepth/2. Adjacent sections retain both side boards.
@@ -33,6 +35,9 @@ export function planWardrobeParts(config: WardrobeAssemblyConfiguration): Part[]
     }
     if (section.drawers) {
       const { count, height: row } = section.drawers
+      const handle = getWardrobeDrawerHandle(section.drawers.handle)
+      const cut = handle.value === 'top-grip' ? TOP_GRIP_CUT : 0
+      const wallHeight = row - .04 - drawerBoxHeightReduction(handle.value)
       const floor = plinth + panel
       add('Drawers_Lid', [inside, panel, d - back], [0, floor + count * row + panel / 2, back / 2])
       const frontFace = d / 2 - wardrobeDrawerFrontInset(section.drawers)
@@ -42,19 +47,19 @@ export function planWardrobeParts(config: WardrobeAssemblyConfiguration): Part[]
         const name = `Drawer_${i + 1}`, drawerId = `${id}/${name}`, y = floor + i * row
         const mark = () => { Object.assign(parts.at(-1)!, { drawerId, travel: length * .72 }) }
         const board = (suffix: string, size: Part['size'], position: Part['position']) => { add(`${name}/${suffix}`, size, position); mark() }
-        board('Front', [inside - .004, row - .004, panel], [0, y + row / 2, frontBack + panel / 2])
+        board('Front', [inside - .004, row - .004 - cut, panel], [0, y + (row - cut) / 2, frontBack + panel / 2])
+        if (handle.value === 'finger-notch') parts.at(-1)!.shape = 'notched-front'
         // The front itself closes the box: sides and bottom end at its rear
         // surface. They travel together, without a floating decorative front.
         for (const side of [-1, 1]) {
-          board(`Side_${side}`, [panel, row - .04, length], [side * (boxWidth - panel) / 2, y + .012 + (row - .04) / 2, (boxBack + frontBack) / 2])
+          board(`Side_${side}`, [panel, wallHeight, length], [side * (boxWidth - panel) / 2, y + .012 + wallHeight / 2, (boxBack + frontBack) / 2])
           add(`${name}/FixedSlide_${side}`, [.008, .025, length], [side * (inside / 2 - .004), y + .065, (boxBack + frontBack) / 2])
           parts.at(-1)!.slot = 'hardware'
           board(`MovingSlide_${side}`, [.004, .025, length], [side * (boxWidth / 2 + .002), y + .065, (boxBack + frontBack) / 2])
           parts.at(-1)!.slot = 'hardware'
         }
-        board('Back', [boxWidth - 2 * panel, row - .04, panel], [0, y + .012 + (row - .04) / 2, boxBack + panel / 2])
+        board('Back', [boxWidth - 2 * panel, wallHeight, panel], [0, y + .012 + wallHeight / 2, boxBack + panel / 2])
         board('Bottom', [boxWidth - 2 * panel, back, length - panel], [0, y + .012 + back / 2, (boxBack + panel + frontBack) / 2])
-        const handle = getWardrobeDrawerHandle(section.drawers.handle)
         if (handle.value === 'bar') {
           const { radius, length, mountLength, mountSpacing } = DRAWER_BAR_HANDLE
           rod(`${name}/Handle`, radius, length, [0, y + row * .7, frontFace + mountLength + radius], 'x'); mark()
@@ -65,6 +70,10 @@ export function planWardrobeParts(config: WardrobeAssemblyConfiguration): Part[]
           const { radius, thickness, mountRadius, mountLength } = DRAWER_KNOB_HANDLE
           rod(`${name}/Handle`, radius, thickness, [0, y + row * .7, frontFace + mountLength + thickness / 2], 'z'); mark()
           rod(`${name}/HandleMount`, mountRadius, mountLength, [0, y + row * .7, frontFace + mountLength / 2], 'z'); mark()
+        } else if (handle.projection > 0) {
+          const edge = handle.value === 'edge-pull' || handle.value === 'profile' || handle.value === 'semicircle'
+          board('Handle', [0, 0, 0], [0, edge ? y + row - .002 : y + row * .7, frontFace])
+          Object.assign(parts.at(-1)!, { shape: 'handle', handle: handle.value, slot: 'hardware' })
         }
       }
     }
@@ -88,6 +97,9 @@ export function planWardrobeParts(config: WardrobeAssemblyConfiguration): Part[]
 
 function panelGeometry(size: Part['size']) {
   const geometry = new RoundedBoxGeometry(...size, 2, .00075)
+  return metricPanelUV(geometry, size)
+}
+function metricPanelUV(geometry: BufferGeometry, size: Part['size']) {
   const position = geometry.getAttribute('position'), normal = geometry.getAttribute('normal'), uv = geometry.getAttribute('uv')
   // Metric UVs: wood grain runs up the sides/back and along horizontal boards.
   // Material maps remain the same 2K PBR assets; resizing never stretches a tile.
@@ -130,9 +142,12 @@ export function createWardrobeAssembly(initial: WardrobeAssemblyConfiguration, o
     const nextGeometry = new Map<string, BufferGeometry>(), keep = new Set<string>()
     const moving = new Map<string, DrawerMotionEntry>()
     for (const part of planWardrobeParts(configuration)) {
-      const key = `${part.shape}:${part.size.join(',')}`
+      const key = `${part.shape}:${part.handle ?? ''}:${part.size.join(',')}`
       let geometry = nextGeometry.get(key) ?? geometries.get(key)
-      if (!geometry) geometry = part.shape === 'panel' ? panelGeometry(part.size) : new CylinderGeometry(part.size[0], part.size[0], part.size[1], 16)
+      if (!geometry) geometry = part.shape === 'panel' ? panelGeometry(part.size)
+        : part.shape === 'notched-front' ? metricPanelUV(createNotchedFront(...part.size), part.size)
+        : part.shape === 'handle' ? createHandleGeometry(part.handle!)
+        : new CylinderGeometry(part.size[0], part.size[0], part.size[1], 16)
       nextGeometry.set(key, geometry)
       let mesh = meshes.get(part.name)
       if (!mesh) {

@@ -24,7 +24,7 @@ export function wardrobeSectionClosedDepth(section: WardrobeSection) {
   const projection = section.drawers ? Math.max(0, getWardrobeDrawerHandle(section.drawers.handle).projection - wardrobeDrawerFrontInset(section.drawers)) : 0
   return Number((section.depth + projection).toFixed(8))
 }
-export const MAX_SECTIONS = 6
+export const MAX_SECTIONS = 7
 export function wardrobeFillingLabel(section: Pick<WardrobeSection, 'shelves' | 'rod' | 'drawers'>): string {
   const { shelves, rod } = section
   if (section.drawers) return `${wardrobeFillingLabel({ shelves, rod })} · ящиков: ${section.drawers.count}`

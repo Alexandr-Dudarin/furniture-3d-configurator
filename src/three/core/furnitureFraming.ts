@@ -3,7 +3,7 @@ import type { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import type { FurnitureDefinition } from '../furniture/types'
 
 type Frame = NonNullable<FurnitureDefinition['framing']>
-type FramingControls = Pick<OrbitControls, 'target' | 'maxDistance' | 'update'>
+type FramingControls = Pick<OrbitControls, 'target' | 'maxDistance' | 'minDistance' | 'zoomToCursor' | 'screenSpacePanning' | 'update'>
 
 // A shared envelope gives comparable objects the same initial camera, regardless
 // of which model is selected first. Catalogue metadata requires no GLB loading.
@@ -49,6 +49,7 @@ export function fitFurnitureFrame(camera: PerspectiveCamera, controls: FramingCo
 // Each view owns its orbit/zoom/pan. Wardrobes share one view for comparison;
 // dressers use a view per model with a target at the current body centre.
 export function createFurnitureFraming(camera: PerspectiveCamera, controls: FramingControls) {
+  const navigation = { minDistance: controls.minDistance, zoomToCursor: controls.zoomToCursor, screenSpacePanning: controls.screenSpacePanning }
   type View = { position: Vector3; target: Vector3; maxDistance: number; centerY: number }
   let key = 'tables', active: Frame | undefined, centerY = 0
   const views = new Map<string, View>()
@@ -63,6 +64,11 @@ export function createFurnitureFraming(camera: PerspectiveCamera, controls: Fram
       if (active) fitFurnitureFrame(camera, controls, active, centerY)
     },
     select(_id: string, frame?: Frame, viewKey = frame ? 'cabinets' : 'tables', targetY = frame?.height ? frame.height / 2 : 0) {
+      // Close inspection belongs to the assembly view; other categories keep
+      // their original navigation. Cursor zoom and vertical pan reach handles
+      // anywhere in a long row without changing its initial framing.
+      Object.assign(controls, viewKey === 'wardrobe-assembly'
+        ? { minDistance: .35, zoomToCursor: true, screenSpacePanning: true } : navigation)
       if (viewKey === key) { active = frame; moveCenter(targetY); return }
       views.set(key, capture())
       key = viewKey; active = frame
