@@ -3,7 +3,7 @@ import { getFurnitureDefinition } from './furnitureRegistry'
 import type { ConfiguratorSession } from './savedConfiguration'
 import { getTableBase, getTabletopEdgeProfile, TOP_SHAPES } from './tableAssembly/catalog'
 import { getMaterialFinish } from '../three/materials/materialRegistry'
-import { wardrobeBounds, wardrobeFillingLabel, wardrobeSectionFinish, wardrobeShelfLabel } from './wardrobeAssembly/state'
+import { wardrobeBounds, wardrobeFillingFloor, wardrobeFillingLabel, wardrobeSectionFinish, wardrobeShelfLabel } from './wardrobeAssembly/state'
 
 const number = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 3 })
 const size = (meters: number, unit: 'см' | 'мм') => `${number.format(meters * (unit === 'мм' ? 1000 : 100))} ${unit}`
@@ -19,9 +19,13 @@ export function getConfigurationSummary(session: ConfiguratorSession): Configura
       { label: 'Максимальная глубина', value: size(bounds.depth, 'см') },
       ...config.sections.map((section, index) => ({ label: `Секция ${index + 1}`, value: `${Math.round(section.width * 100)} × ${Math.round(section.height * 100)} × ${Math.round(section.depth * 100)} см · ${wardrobeFillingLabel(section)}${section.rod && section.depth < .5 ? ' · торцевая штанга' : ''}` })),
       { label: 'Общий материал корпуса', value: getMaterialFinish(config.bodyFinish).label },
-      { label: 'Общий материал штанг', value: getMaterialFinish(config.hardwareFinish).label },
+      { label: 'Общий материал фурнитуры', value: getMaterialFinish(config.hardwareFinish).label },
       ...config.sections.flatMap((section, index) => [
-        { label: `Секция ${index + 1}: корпус и полки`, value: `${getMaterialFinish(wardrobeSectionFinish(config, section, 'bodyFinish')).label} · ${section.bodyFinish ? 'свой' : 'общий'}` },
+        { label: `Секция ${index + 1}: ${section.drawers ? 'корпус, полки и ящики' : 'корпус и полки'}`, value: `${getMaterialFinish(wardrobeSectionFinish(config, section, 'bodyFinish')).label} · ${section.bodyFinish ? 'свой' : 'общий'}` },
+        ...(section.drawers ? [
+          { label: `Секция ${index + 1}: ящики`, value: `${section.drawers.count} шт. · высота ряда ${size(section.drawers.height, 'см')} · верх блока ${size(wardrobeFillingFloor(section), 'см')}` },
+          { label: `Секция ${index + 1}: ручки`, value: `${getMaterialFinish(wardrobeSectionFinish(config, section, 'hardwareFinish')).label} · ${section.hardwareFinish ? 'свой' : 'общий'}` },
+        ] : []),
         ...(section.layout ? [
           ...(section.shelves ? [{ label: `Секция ${index + 1}: низ полок от пола`, value: section.layout.shelves.map((y, i) => `${wardrobeShelfLabel(section, i)} — ${size(y, 'см')}`).join('; ') }] : []),
           ...(section.rod ? [{ label: `Секция ${index + 1}: ось штанги от пола`, value: size(section.layout.rod!, 'см') }] : []),

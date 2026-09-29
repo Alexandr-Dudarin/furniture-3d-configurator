@@ -1,4 +1,4 @@
-import { FILLING_POSITION_STEP, ROD_RADIUS, PANEL_THICKNESS, PLINTH_HEIGHT, fitWardrobeLayout, wardrobeShelfRange, wardrobeRodRange, wardrobeShelfLabel, wardrobeFreeSpaceBelow, type WardrobeAssemblyAction, type WardrobeSection } from '../configurator/wardrobeAssembly/state'
+import { FILLING_POSITION_STEP, ROD_RADIUS, PANEL_THICKNESS, wardrobeFillingFloor, fitWardrobeLayout, wardrobeShelfRange, wardrobeRodRange, wardrobeShelfLabel, wardrobeFreeSpaceBelow, type WardrobeAssemblyAction, type WardrobeSection } from '../configurator/wardrobeAssembly/state'
 import { SizeControl } from './assembly/SizeControl'
 
 export function WardrobeFillingPositions({ section, onAction }: { section: WardrobeSection; onAction: (action: WardrobeAssemblyAction) => void }) {
@@ -27,7 +27,7 @@ export function WardrobeFillingPositions({ section, onAction }: { section: Wardr
       {rodRange && <div className="wardrobe-position">
         <SizeControl name="Ось штанги" value={manual.rod!} config={{ label: 'Ось штанги', base: manual.rod!, ...rodRange, step: FILLING_POSITION_STEP }}
           onChange={height => onAction({ type: 'move-rod', id: section.id, height })} />
-        <p className="wardrobe-position-gap">Свободное место под штангой: {cm(manual.rod! - ROD_RADIUS - (section.shelves >= 2 ? manual.shelves[1] + PANEL_THICKNESS : PLINTH_HEIGHT + PANEL_THICKNESS))} см.</p>
+        <p className="wardrobe-position-gap">Свободное место под штангой: {cm(manual.rod! - ROD_RADIUS - (section.shelves >= 2 ? manual.shelves[1] + PANEL_THICKNESS : wardrobeFillingFloor(section)))} см.</p>
       </div>}
       <p className="assembly-summary">Новые детали занимают свободное место, сохраняя выбранные высоты, когда это возможно. Полки без штанги нумеруются снизу вверх, поэтому после добавления номера могут измениться. Подтверждение нужно, если существующие детали придётся сдвинуть или убрать при смене наполнения или уменьшении секции.</p>
     </>}

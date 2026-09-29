@@ -60,7 +60,7 @@ function App() {
           <button type="button" aria-pressed={session.mode === 'builder'} onClick={() => store.dispatch({ type: 'set-mode', mode: 'builder' })}>Собрать стол</button>
           <button type="button" aria-pressed={session.mode === 'wardrobe'} onClick={() => store.dispatch({ type: 'set-mode', mode: 'wardrobe' })}>Гардеробная</button>
         </div>
-        {session.mode === 'wardrobe' ? <WardrobeAssemblyControls configuration={session.wardrobe}
+        {session.mode === 'wardrobe' ? <WardrobeAssemblyControls configuration={session.wardrobe} motionStore={motionStore}
           onFrame={() => setWardrobeViewRevision(value => value + 1)}
           onAction={action => store.dispatch({ type: 'wardrobe-action', action })} /> : session.mode === 'builder' ? (
           <>

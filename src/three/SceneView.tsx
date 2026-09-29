@@ -75,7 +75,7 @@ export default function SceneView({ store, furnitureView, motionStore, pngExport
 
   const catalog = useCatalogScene(runtimeRef, anisotropyRef, store, session, furnitureView, motionStore)
   const assembly = useTableAssemblyScene(sceneRef, anisotropyRef, store, session.mode === 'builder', session.assembly)
-  const wardrobe = useWardrobeAssemblyScene(runtimeRef, anisotropyRef, store, session.mode === 'wardrobe', session.wardrobe)
+  const wardrobe = useWardrobeAssemblyScene(runtimeRef, anisotropyRef, store, session.mode === 'wardrobe', session.wardrobe, motionStore)
   const preview = session.mode === 'wardrobe' ? wardrobe : session.mode === 'builder' ? assembly : catalog
   useEffect(() => {
     const definition = getFurnitureDefinition(session.selectedModelId)

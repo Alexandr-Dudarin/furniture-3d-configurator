@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef } from 'react'
-import { wardrobeLayoutAdjustments, type WardrobeSection } from '../configurator/wardrobeAssembly/state'
+import { automaticLayout, wardrobeLayoutAdjustments, type WardrobeSection } from '../configurator/wardrobeAssembly/state'
 
 export function WardrobeHeightConfirmation({ current, next, number, onConfirm, onCancel }: {
   current: WardrobeSection; next: WardrobeSection; number: number
@@ -24,6 +24,10 @@ export function WardrobeHeightConfirmation({ current, next, number, onConfirm, o
       {removingRod && <p>Штанга будет удалена.{next.height < 1.5 && ' Она доступна только в секциях высотой от 150 см.'}</p>}
       {next.shelves < current.shelves && <p>Количество полок уменьшится: {current.shelves} → {next.shelves}, чтобы сохранить свободное место и зазоры.</p>}
       {removingRod && next.shelves > 0 && !next.layout && <p>Оставшиеся полки будут распределены равномерно по высоте.</p>}
+      {(next.drawers?.count ?? 0) < (current.drawers?.count ?? 0) && <p>Количество ящиков уменьшится: {current.drawers?.count} → {next.drawers?.count ?? 0}.</p>}
+      {!current.layout && JSON.stringify(current.drawers) !== JSON.stringify(next.drawers) &&
+        JSON.stringify(automaticLayout(current)) !== JSON.stringify(automaticLayout(next)) && (current.shelves > 0 || current.rod) &&
+        <p>Автоматическое расположение полок и штанги будет пересчитано с учётом высоты блока ящиков.</p>}
       {adjustments.length > 0 && <><p>Чтобы сохранить зазоры, изменятся высоты:</p><ul>
         {adjustments.map(item => <li key={item.label}>{item.label}: {cm(item.before)} → {cm(item.after)} см.</li>)}
       </ul><p>Для полок указана высота нижней поверхности от пола.</p></>}

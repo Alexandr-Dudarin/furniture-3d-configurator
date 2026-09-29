@@ -11,23 +11,39 @@ export const MIN_ROD_AXIS_HEIGHT = 1.2
 export const FILLING_POSITION_STEP = .05
 const ROD_TOP_CLEARANCE = .08
 const EPSILON = 1e-8
-const floor = PLINTH_HEIGHT + PANEL_THICKNESS
+const bottom = PLINTH_HEIGHT + PANEL_THICKNESS
 const round = (n: number) => Number(n.toFixed(8))
 const up = (n: number) => round(Math.ceil((n - EPSILON) / FILLING_POSITION_STEP) * FILLING_POSITION_STEP)
 const down = (n: number) => round(Math.floor((n + EPSILON) / FILLING_POSITION_STEP) * FILLING_POSITION_STEP)
 const nearest = (n: number) => round(Math.round(n / FILLING_POSITION_STEP) * FILLING_POSITION_STEP)
 export type WardrobeLayout = { shelves: number[]; rod?: number }
-export type WardrobeFilling = { height: number; shelves: number; rod: boolean; layout?: WardrobeLayout }
+export type WardrobeDrawers = { count: number; height: number }
+export const DRAWER_HEIGHTS = [.2, .25, .3] as const
+export const MAX_DRAWERS = 4
+export type WardrobeFilling = { height: number; shelves: number; rod: boolean; layout?: WardrobeLayout; drawers?: WardrobeDrawers }
+// Top surface of the fixed lid above the drawer block, or of the bottom board.
+export function wardrobeFillingFloor(section: { drawers?: WardrobeDrawers }): number {
+  return round(bottom + (section.drawers ? section.drawers.count * section.drawers.height + PANEL_THICKNESS : 0))
+}
+export function wardrobeDrawerLimit(height: number, rod: boolean, rowHeight: number): number {
+  // Reserve usable space above the lid. With a rod also reserve the 5 cm grid
+  // so entering manual mode never makes an otherwise empty hanging bay invalid.
+  const rodCeiling = down(height - PANEL_THICKNESS - ROD_TOP_CLEARANCE)
+  const maxFloor = rod ? rodCeiling - MIN_ROD_CLEARANCE - ROD_RADIUS : height - PANEL_THICKNESS - MIN_SHELF_CLEARANCE
+  return Math.max(0, Math.min(MAX_DRAWERS, Math.floor((maxFloor - bottom - PANEL_THICKNESS + EPSILON) / rowHeight)))
+}
 export type PositionRange = { min: number; max: number }
 export function wardrobeCanHaveRod(height: number) { return height >= MIN_ROD_SECTION_HEIGHT }
 export function wardrobeRodY(input: number | WardrobeFilling): number {
   const height = typeof input === 'number' ? input : input.height
   if (typeof input !== 'number' && input.layout?.rod !== undefined) return input.layout.rod
+  const floor = typeof input === 'number' ? bottom : wardrobeFillingFloor(input)
   return Math.max(height - .38, MIN_ROD_AXIS_HEIGHT, floor + MIN_ROD_CLEARANCE + ROD_RADIUS)
 }
-export function wardrobeShelfLimit(height: number, rod: boolean) {
+export function wardrobeShelfLimit(height: number, rod: boolean, drawers?: WardrobeDrawers) {
+  const floor = wardrobeFillingFloor({ drawers })
   if (rod) {
-    const y = wardrobeRodY(height)
+    const y = wardrobeRodY({ height, rod, shelves: 0, drawers })
     if (height - .26 - PANEL_THICKNESS / 2 - y < ROD_TOP_CLEARANCE - EPSILON) return 0
     const lowerTop = floor + MIN_SHELF_CLEARANCE + PANEL_THICKNESS
     return y - ROD_RADIUS - lowerTop >= MIN_ROD_CLEARANCE - EPSILON ? 2 : 1
@@ -37,14 +53,15 @@ export function wardrobeShelfLimit(height: number, rod: boolean) {
 }
 export function wardrobeShelfYs(section: WardrobeFilling): number[] {
   if (section.layout) return section.layout.shelves.map(y => y + PANEL_THICKNESS / 2)
-  const { height, rod } = section, count = Math.min(section.shelves, wardrobeShelfLimit(height, rod))
+  const floor = wardrobeFillingFloor(section)
+  const { height, rod } = section, count = Math.min(section.shelves, wardrobeShelfLimit(height, rod, section.drawers))
   if (rod) return count === 0 ? [] : count === 1 ? [height - .26] : [height - .26, floor + MIN_SHELF_CLEARANCE + PANEL_THICKNESS / 2]
   const gap = (height - PANEL_THICKNESS - floor - count * PANEL_THICKNESS) / (count + 1)
   return Array.from({ length: count }, (_, i) => floor + gap + PANEL_THICKNESS / 2 + i * (gap + PANEL_THICKNESS))
 }
 export function automaticLayout(section: WardrobeFilling): WardrobeLayout {
   return { shelves: wardrobeShelfYs({ ...section, layout: undefined }).map(y => round(y - PANEL_THICKNESS / 2)),
-    ...(section.rod ? { rod: wardrobeRodY(section.height) } : {}) }
+    ...(section.rod ? { rod: wardrobeRodY({ ...section, layout: undefined }) } : {}) }
 }
 export function wardrobeShelfLabel(section: WardrobeFilling, index: number) {
   return section.rod ? index === 0 ? 'Верхняя полка' : 'Нижняя полка' : `Полка ${index + 1}`
@@ -54,6 +71,7 @@ const within = (n: number, range: PositionRange) => Number.isFinite(n) && n >= r
 const onGrid = (n: number) => Number.isFinite(n) && Math.abs(n - nearest(n)) < EPSILON
 const clampGrid = (n: number, range: PositionRange) => round(Math.max(range.min, Math.min(range.max, nearest(n))))
 export function wardrobeShelfRange(section: WardrobeFilling, index: number): PositionRange {
+  const floor = wardrobeFillingFloor(section)
   const layout = section.layout ?? automaticLayout(section)
   let min = floor + MIN_SHELF_CLEARANCE, max = section.height - 2 * PANEL_THICKNESS - MIN_SHELF_CLEARANCE
   if (section.rod) {
@@ -67,6 +85,7 @@ export function wardrobeShelfRange(section: WardrobeFilling, index: number): Pos
   return gridRange(min, max)
 }
 export function wardrobeRodRange(section: WardrobeFilling): PositionRange {
+  const floor = wardrobeFillingFloor(section)
   const layout = section.layout ?? automaticLayout(section)
   const belowTop = section.shelves >= 2 ? layout.shelves[1] + PANEL_THICKNESS : floor
   const aboveBottom = section.shelves >= 1 ? layout.shelves[0] : section.height - PANEL_THICKNESS
@@ -89,6 +108,7 @@ export function readWardrobeLayout(input: unknown): WardrobeLayout | undefined {
 // Fit to the grid without collisions. Exact valid manual layouts remain exact.
 // The caller decides whether a required adjustment needs confirmation.
 export function fitWardrobeLayout(section: WardrobeFilling, targets = automaticLayout(section), preserve: { shelves: number[]; rod?: boolean } = { shelves: [] }): WardrobeLayout | null {
+  const floor = wardrobeFillingFloor(section)
   const defaults = automaticLayout(section)
   const wanted = defaults.shelves.map((y, i) => Math.max(0, Math.min(section.height, targets.shelves[i] ?? y)))
   if (!section.rod) {
@@ -123,19 +143,20 @@ export function fitWardrobeLayout(section: WardrobeFilling, targets = automaticL
   }
   return best
 }
-export function wardrobeManualShelfLimit(height: number, rod: boolean): number {
-  for (let count = wardrobeShelfLimit(height, rod); count >= 0; count--) {
-    if (fitWardrobeLayout({ height, shelves: count, rod })) return count
+export function wardrobeManualShelfLimit(height: number, rod: boolean, drawers?: WardrobeDrawers): number {
+  for (let count = wardrobeShelfLimit(height, rod, drawers); count >= 0; count--) {
+    if (fitWardrobeLayout({ height, shelves: count, rod, drawers })) return count
   }
   return 0
 }
 export function wardrobeSectionShelfLimit(section: WardrobeFilling) {
-  return section.layout ? wardrobeManualShelfLimit(section.height, section.rod) : wardrobeShelfLimit(section.height, section.rod)
+  return section.layout ? wardrobeManualShelfLimit(section.height, section.rod, section.drawers) : wardrobeShelfLimit(section.height, section.rod, section.drawers)
 }
 // Insert into any free interval, keeping every existing shelf in place. Check
 // remaining capacity before each choice: splitting a gap at its centre alone
 // can make the next shelf impossible even though the original gap could fit it.
 function insertShelves(section: WardrobeFilling, existing: number[]): number[] | null {
+  const floor = wardrobeFillingFloor(section)
   let shelves = [...existing].sort((a, b) => a - b)
   if (!isValidWardrobeLayout({ ...section, shelves: shelves.length, rod: false }, { shelves })) return null
   const spacing = up(PANEL_THICKNESS + MIN_SHELF_CLEARANCE)
@@ -196,6 +217,7 @@ export function wardrobeLayoutAdjustments(current: WardrobeFilling, next: Wardro
   return changes
 }
 export function wardrobeFreeSpaceBelow(section: WardrobeFilling, index: number): number {
+  const floor = wardrobeFillingFloor(section)
   const shelves = (section.layout ?? automaticLayout(section)).shelves
   const y = shelves[index], below = shelves.filter(value => value < y).sort((a, b) => a - b).at(-1)
   return round(y - (below === undefined ? floor : below + PANEL_THICKNESS))

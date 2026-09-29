@@ -25,7 +25,7 @@ export function createTapGesture() {
   }
 }
 
-export function bindFurnitureInteraction(canvas: HTMLCanvasElement, camera: Camera, root: Object3D, motion: FurnitureMotion) {
+export function bindFurnitureInteraction(canvas: HTMLCanvasElement, camera: Camera, root: Object3D, motion: Pick<FurnitureMotion, 'findPart' | 'toggle'>) {
   const raycaster = new Raycaster(), point = new Vector2(), gesture = createTapGesture()
   const previousCursor = canvas.style.cursor
   const capture = { capture: true }

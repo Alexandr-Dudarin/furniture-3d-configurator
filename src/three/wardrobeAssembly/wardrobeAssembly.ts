@@ -1,3 +1,5 @@
+import type { MotionPartState } from '../../configurator/furnitureMotionStore'
+import { createWardrobeDrawerMotion, type DrawerMotionEntry } from './wardrobeDrawerMotion'
 import { BufferGeometry, CylinderGeometry, Group, Mesh, MeshStandardMaterial } from 'three'
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
 import { BACK_THICKNESS as back, PANEL_THICKNESS as panel, PLINTH_HEIGHT as plinth, ROD_RADIUS, wardrobeBounds, wardrobeRodY, wardrobeShelfYs, wardrobeSectionFinish, type WardrobeAssemblyConfiguration } from '../../configurator/wardrobeAssembly/state'
@@ -5,7 +7,7 @@ import { createFinishMaterial } from '../materials/createMaterial'
 import { disposeMaterialResources } from '../materials/disposeMaterials'
 
 type Slot = 'body' | 'hardware'
-type Part = { sectionId: string; name: string; shape: 'panel' | 'rod'; size: [number, number, number]; position: [number, number, number]; slot: Slot; axis?: 'x' | 'y' | 'z' }
+type Part = { sectionId: string; name: string; shape: 'panel' | 'rod'; size: [number, number, number]; position: [number, number, number]; slot: Slot; drawerId?: string; travel?: number; axis?: 'x' | 'y' | 'z' }
 
 // Separate, closed panels. All dimensions are physical metres, floor is y=0,
 // back faces share z=-maxDepth/2. Adjacent sections retain both side boards.
@@ -27,6 +29,34 @@ export function planWardrobeParts(config: WardrobeAssemblyConfiguration): Part[]
     const shelfYs = wardrobeShelfYs(section)
     for (const [index, y] of shelfYs.entries()) {
       add(`Shelf_${index + 1}`, [inside - .002, panel, d - back - .025], [0, y, (back - .025) / 2])
+    }
+    if (section.drawers) {
+      const { count, height: row } = section.drawers
+      const floor = plinth + panel
+      add('Drawers_Lid', [inside, panel, d - back], [0, floor + count * row + panel / 2, back / 2])
+      const frontBack = d / 2 - .045, boxBack = -d / 2 + back + .02
+      const length = frontBack - boxBack, boxWidth = inside - .025
+      for (let i = 0; i < count; i++) {
+        const name = `Drawer_${i + 1}`, drawerId = `${id}/${name}`, y = floor + i * row
+        const mark = () => { Object.assign(parts.at(-1)!, { drawerId, travel: length * .72 }) }
+        const board = (suffix: string, size: Part['size'], position: Part['position']) => { add(`${name}/${suffix}`, size, position); mark() }
+        board('Front', [inside - .004, row - .004, panel], [0, y + row / 2, frontBack + panel / 2])
+        // The front itself closes the box: sides and bottom end at its rear
+        // surface. They travel together, without a floating decorative front.
+        for (const side of [-1, 1]) {
+          board(`Side_${side}`, [panel, row - .04, length], [side * (boxWidth - panel) / 2, y + .012 + (row - .04) / 2, (boxBack + frontBack) / 2])
+          add(`${name}/FixedSlide_${side}`, [.008, .025, length], [side * (inside / 2 - .004), y + .065, (boxBack + frontBack) / 2])
+          parts.at(-1)!.slot = 'hardware'
+          board(`MovingSlide_${side}`, [.004, .025, length], [side * (boxWidth / 2 + .002), y + .065, (boxBack + frontBack) / 2])
+          parts.at(-1)!.slot = 'hardware'
+        }
+        board('Back', [boxWidth - 2 * panel, row - .04, panel], [0, y + .012 + (row - .04) / 2, boxBack + panel / 2])
+        board('Bottom', [boxWidth - 2 * panel, back, length - panel], [0, y + .012 + back / 2, (boxBack + panel + frontBack) / 2])
+        rod(`${name}/Handle`, .004, .136, [0, y + row * .7, d / 2 - .005], 'x'); mark()
+        for (const side of [-1, 1]) {
+          rod(`${name}/HandleMount_${side}`, .004, .02, [side * .064, y + row * .7, d / 2 - .019], 'z'); mark()
+        }
+      }
     }
     if (section.rod) {
       const y = wardrobeRodY(section)
@@ -68,9 +98,12 @@ export function createWardrobeAssembly(initial: WardrobeAssemblyConfiguration, o
   maxAnisotropy?: number
   createMaterial?: typeof createFinishMaterial
   onChange?: () => void
+  onMotionChange?: (parts: MotionPartState[]) => void
 } = {}) {
   const group = new Group()
   group.name = 'WardrobeAssembly_Root'
+  const motion = createWardrobeDrawerMotion(group, parts => { options.onMotionChange?.(parts); options.onChange?.() })
+  const drawerGroups = new Map<string, Group>()
   let disposed = false, request = 0
   const fallback: Record<Slot, MeshStandardMaterial> = { body: new MeshStandardMaterial({ color: 0xcdbb9d, roughness: .65 }), hardware: new MeshStandardMaterial({ color: 0x16191c, roughness: .35 }) }
   // One owned PBR material per finish actually used, shared across sections.
@@ -82,9 +115,10 @@ export function createWardrobeAssembly(initial: WardrobeAssemblyConfiguration, o
   let geometries = new Map<string, BufferGeometry>()
   let previousGeometryKey = ''
   const update = (configuration: WardrobeAssemblyConfiguration) => {
-    const geometryKey = JSON.stringify(configuration.sections.map(({ id, width, height, depth, shelves, rod, layout }) => [id, width, height, depth, shelves, rod, layout]))
+    const geometryKey = JSON.stringify(configuration.sections.map(({ id, width, height, depth, shelves, rod, layout, drawers }) => [id, width, height, depth, shelves, rod, layout, drawers]))
     if (disposed || geometryKey === previousGeometryKey) return
     const nextGeometry = new Map<string, BufferGeometry>(), keep = new Set<string>()
+    const moving = new Map<string, DrawerMotionEntry>()
     for (const part of planWardrobeParts(configuration)) {
       const key = `${part.shape}:${part.size.join(',')}`
       let geometry = nextGeometry.get(key) ?? geometries.get(key)
@@ -94,8 +128,16 @@ export function createWardrobeAssembly(initial: WardrobeAssemblyConfiguration, o
       if (!mesh) {
         mesh = new Mesh(geometry, appliedMaterial(part.sectionId, part.slot)); mesh.name = part.name
         mesh.castShadow = mesh.receiveShadow = true
-        meshes.set(part.name, mesh); group.add(mesh)
+        meshes.set(part.name, mesh)
       }
+      let parent = group
+      if (part.drawerId) {
+        let drawer = drawerGroups.get(part.drawerId)
+        if (!drawer) { drawer = new Group(); drawer.name = part.drawerId; drawerGroups.set(part.drawerId, drawer); group.add(drawer) }
+        parent = drawer
+        moving.set(part.drawerId, { id: part.drawerId, node: drawer, travel: part.travel! })
+      }
+      if (mesh.parent !== parent) parent.add(mesh)
       mesh.userData.materialSlot = part.slot
       mesh.userData.sectionId = part.sectionId
       mesh.geometry = geometry; mesh.material = appliedMaterial(part.sectionId, part.slot)
@@ -103,7 +145,9 @@ export function createWardrobeAssembly(initial: WardrobeAssemblyConfiguration, o
       mesh.rotation.set(part.axis === 'z' ? Math.PI / 2 : 0, 0, part.axis === 'x' ? Math.PI / 2 : 0)
       keep.add(part.name)
     }
-    for (const [name, mesh] of meshes) if (!keep.has(name)) { group.remove(mesh); meshes.delete(name) }
+    for (const [name, mesh] of meshes) if (!keep.has(name)) { mesh.removeFromParent(); meshes.delete(name) }
+    for (const [id, drawer] of drawerGroups) if (!moving.has(id)) { drawer.removeFromParent(); drawerGroups.delete(id) }
+    motion.sync([...moving.values()])
     for (const [key, geometry] of geometries) if (!nextGeometry.has(key)) geometry.dispose()
     geometries = nextGeometry
     previousGeometryKey = geometryKey
@@ -116,7 +160,7 @@ export function createWardrobeAssembly(initial: WardrobeAssemblyConfiguration, o
     const selected = new Map<string, string>()
     for (const section of configuration.sections) {
       selected.set(bindingKey(section.id, 'body'), wardrobeSectionFinish(configuration, section, 'bodyFinish'))
-      if (section.rod) selected.set(bindingKey(section.id, 'hardware'), wardrobeSectionFinish(configuration, section, 'hardwareFinish'))
+      if (section.rod || section.drawers) selected.set(bindingKey(section.id, 'hardware'), wardrobeSectionFinish(configuration, section, 'hardwareFinish'))
     }
     if (selected.size === bindings.size && [...selected].every(([key, id]) => bindings.get(key) === id)) return
     const needed = new Set(selected.values())
@@ -139,9 +183,10 @@ export function createWardrobeAssembly(initial: WardrobeAssemblyConfiguration, o
     options.onChange?.()
   }
   update(initial)
-  return { group, update, setFinishes, dispose() {
+  return { group, motion, update, setFinishes, dispose() {
     if (disposed) return
     disposed = true; request++
+    motion.dispose(); drawerGroups.clear()
     geometries.forEach(geometry => geometry.dispose()); geometries.clear()
     materials.forEach(disposeMaterialResources); materials.clear()
     disposeMaterialResources(fallback.body); disposeMaterialResources(fallback.hardware)

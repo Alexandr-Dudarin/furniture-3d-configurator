@@ -1,3 +1,6 @@
+import { WardrobeDrawerControls } from './WardrobeDrawerControls'
+import type { FurnitureMotionStore } from '../configurator/furnitureMotionStore'
+import { DRAWER_HEIGHTS, wardrobeDrawerLimit, wardrobeFillingFloor } from '../configurator/wardrobeAssembly/state'
 import { useState } from 'react'
 import { BODY_FINISHES, HARDWARE_FINISHES, MAX_SECTIONS, SECTION_DIMENSIONS, SECTION_PRESETS, previewWardrobeSectionUpdate, wardrobeCanHaveRod, wardrobeSectionNeedsConfirmation, wardrobeBounds, wardrobeFillingLabel, wardrobeRodY, wardrobeSectionShelfLimit, wardrobeShelfYs, type WardrobeAssemblyAction, type WardrobeAssemblyConfiguration, type WardrobeSection } from '../configurator/wardrobeAssembly/state'
 import { ConfigurationSection } from './ConfigurationSection'
@@ -10,8 +13,8 @@ import { WardrobeFillingPositions } from './WardrobeFillingPositions'
 import { WardrobeSectionMaterials } from './WardrobeSectionMaterials'
 import { wardrobeSectionFinish } from '../configurator/wardrobeAssembly/state'
 
-export function WardrobeAssemblyControls({ configuration, onAction, onFrame }: {
-  configuration: WardrobeAssemblyConfiguration; onAction: (action: WardrobeAssemblyAction) => void; onFrame: () => void
+export function WardrobeAssemblyControls({ configuration, onAction, onFrame, motionStore }: {
+  motionStore: FurnitureMotionStore; configuration: WardrobeAssemblyConfiguration; onAction: (action: WardrobeAssemblyAction) => void; onFrame: () => void
 }) {
   const [selectedId, setSelectedId] = useState(configuration.sections[0].id)
   const [pendingHeight, setPendingHeight] = useState<{ current: WardrobeSection; next: WardrobeSection; patch: Partial<Omit<WardrobeSection, 'id'>> } | null>(null)
@@ -54,6 +57,9 @@ export function WardrobeAssemblyControls({ configuration, onAction, onFrame }: {
           <svg viewBox="0 0 56 72" aria-hidden="true">
             <path d="M8 68V5h40v63M8 64h40" fill="none" stroke="currentColor" strokeWidth="2" />
             {wardrobeShelfYs(section).map((y, i) => <path key={i} d={`M9 ${64 - y / section.height * 59}h38`} stroke="currentColor" />)}
+            {section.drawers && Array.from({ length: section.drawers.count }, (_, i) => <rect key={`drawer-${i}`} x="11" width="34"
+              y={64 - (.086 + (i + 1) * section.drawers!.height) / section.height * 59}
+              height={(section.drawers!.height - .035) / section.height * 59} fill="currentColor" opacity=".28" />)}
             {section.rod && <path d={`M12 ${64 - wardrobeRodY(section) / section.height * 59}h32`} stroke="currentColor" strokeWidth="3" />}
           </svg>
           <strong>Секция {order + 1}</strong><span>{cm(section.width)} см</span>
@@ -98,6 +104,23 @@ export function WardrobeAssemblyControls({ configuration, onAction, onFrame }: {
         : selected.layout ? 'Высоты полок настроены вручную. Свободное расстояние между ними — не меньше 20 см.' : 'Полки распределяются равномерно. Свободное расстояние между ними — не меньше 20 см.'}</p>
       {shelfLimit < (selected.rod ? 2 : 6) && <p className="assembly-summary">Варианты полок ограничены высотой секции и режимом расположения. Уменьшение высоты с удалением наполнения потребует подтверждения.</p>}
     </ConfigurationSection>
+    <ConfigurationSection title="Ящики внизу секции" summary={selected.drawers ? `${selected.drawers.count} шт. · ряд ${cm(selected.drawers.height)} см` : 'Без ящиков'} initialOpen>
+      <div className="assembly-field"><span>Количество ящиков</span>
+        <CustomSelect value={String(selected.drawers?.count ?? 0)} ariaLabel="Количество ящиков в выбранной секции"
+          options={Array.from({ length: wardrobeDrawerLimit(selected.height, selected.rod, selected.drawers?.height ?? .2) + 1 }, (_, count) => ({ value: String(count), label: count ? String(count) : 'Без ящиков' }))}
+          onChange={value => update({ drawers: Number(value) ? { count: Number(value), height: selected.drawers?.height ?? .2 } : undefined })} />
+      </div>
+      {selected.drawers && <>
+        <div className="assembly-field"><span>Высота ряда</span>
+          <CustomSelect value={String(selected.drawers.height)} ariaLabel="Высота ряда ящиков"
+            options={DRAWER_HEIGHTS.map(height => ({ value: String(height), label: `${cm(height)} см` }))}
+            onChange={value => update({ drawers: { count: selected.drawers!.count, height: Number(value) } })} />
+        </div>
+        <p className="assembly-summary">Ящики расположены снизу. Верх блока: {Number((wardrobeFillingFloor(selected) * 100).toFixed(1))} см от пола. Полки и штанга располагаются выше него. Крышка блока не входит в число полок.</p>
+        <p className="assembly-summary">Высота ряда включает фасад и зазоры. Внутренняя высота короба — {Number(((selected.drawers.height - .044) * 100).toFixed(1))} см. Фасады используют материал корпуса, ручки — материал фурнитуры секции.</p>
+        <WardrobeDrawerControls section={selected} store={motionStore} />
+      </>}
+    </ConfigurationSection>
     <ConfigurationSection title="Высоты полок и штанги" summary={selected.layout ? 'Настроены вручную · шаг 5 см' : 'Автоматическое расположение'}>
       <WardrobeFillingPositions key={selected.id} section={selected} onAction={onAction} />
     </ConfigurationSection>
@@ -106,8 +129,8 @@ export function WardrobeAssemblyControls({ configuration, onAction, onFrame }: {
     </ConfigurationSection>
     <ConfigurationSection title="Общие материалы сборки" summary={getMaterialFinish(configuration.bodyFinish).label}>
       <p className="assembly-summary">Применяются к секциям без своего материала. Отдельно выбранные покрытия сохраняются.</p>
-      <FinishPicker label="Корпус и полки" value={configuration.bodyFinish} ids={BODY_FINISHES} onChange={finishId => onAction({ type: 'set-wardrobe-finish', slot: 'bodyFinish', finishId })} />
-      <FinishPicker label="Штанги и крепления" value={configuration.hardwareFinish} ids={HARDWARE_FINISHES} onChange={finishId => onAction({ type: 'set-wardrobe-finish', slot: 'hardwareFinish', finishId })} />
+      <FinishPicker label="Корпус, полки и ящики" value={configuration.bodyFinish} ids={BODY_FINISHES} onChange={finishId => onAction({ type: 'set-wardrobe-finish', slot: 'bodyFinish', finishId })} />
+      <FinishPicker label="Фурнитура и ручки" value={configuration.hardwareFinish} ids={HARDWARE_FINISHES} onChange={finishId => onAction({ type: 'set-wardrobe-finish', slot: 'hardwareFinish', finishId })} />
     </ConfigurationSection>
   </div>
 }

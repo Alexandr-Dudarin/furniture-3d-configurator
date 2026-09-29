@@ -1,5 +1,5 @@
 import type { FurnitureDimensionConfig } from '../../three/furniture/types'
-import { MIN_ROD_SECTION_HEIGHT, fitWardrobeLayout, fitWardrobeLayoutChange, isValidWardrobeLayout, readWardrobeLayout, wardrobeCanHaveRod, wardrobeShelfLimit, wardrobeManualShelfLimit, wardrobeLayoutAdjustments, type WardrobeLayout } from './layout'
+import { MIN_ROD_SECTION_HEIGHT, DRAWER_HEIGHTS, wardrobeDrawerLimit, automaticLayout, type WardrobeDrawers, fitWardrobeLayout, fitWardrobeLayoutChange, isValidWardrobeLayout, readWardrobeLayout, wardrobeCanHaveRod, wardrobeShelfLimit, wardrobeManualShelfLimit, wardrobeLayoutAdjustments, type WardrobeLayout } from './layout'
 export * from './layout'
 
 // Prototype ranges. These are configurator limits, not production approval.
@@ -9,8 +9,9 @@ export const SECTION_DIMENSIONS: Record<'width' | 'height' | 'depth', FurnitureD
   depth: { label: 'Глубина секции', base: .55, min: .4, max: .8, step: .05 },
 }
 export const MAX_SECTIONS = 6
-export function wardrobeFillingLabel(section: Pick<WardrobeSection, 'shelves' | 'rod'>) {
+export function wardrobeFillingLabel(section: Pick<WardrobeSection, 'shelves' | 'rod' | 'drawers'>): string {
   const { shelves, rod } = section
+  if (section.drawers) return `${wardrobeFillingLabel({ shelves, rod })} · ящиков: ${section.drawers.count}`
   if (rod) return shelves === 2 ? 'Штанга · верхняя и нижняя полки' : shelves === 1 ? 'Штанга · верхняя полка' : 'Штанга · без полок'
   return shelves === 0 ? 'Без полок' : `${shelves} ${shelves === 1 ? 'полка' : shelves < 5 ? 'полки' : 'полок'}`
 }
@@ -24,7 +25,7 @@ export const SECTION_PRESETS = [
 export type SectionPreset = typeof SECTION_PRESETS[number]['id']
 export type WardrobeFinishSlot = 'bodyFinish' | 'hardwareFinish'
 // Omitted finish = live inheritance, not a copy of the assembly's current value.
-export type WardrobeSection = { id: string; width: number; height: number; depth: number; shelves: number; rod: boolean; bodyFinish?: string; hardwareFinish?: string; layout?: WardrobeLayout }
+export type WardrobeSection = { id: string; width: number; height: number; depth: number; shelves: number; rod: boolean; bodyFinish?: string; hardwareFinish?: string; layout?: WardrobeLayout; drawers?: WardrobeDrawers }
 export type WardrobeAssemblyConfiguration = { sections: WardrobeSection[]; bodyFinish: string; hardwareFinish: string }
 export function wardrobeSectionFinish(config: WardrobeAssemblyConfiguration, section: WardrobeSection, slot: WardrobeFinishSlot) {
   return section[slot] ?? config[slot]
@@ -52,12 +53,18 @@ function section(input: unknown, id: string): WardrobeSection {
   const height = size(raw.height, SECTION_DIMENSIONS.height)
   const rod = raw.rod === true && wardrobeCanHaveRod(height)
   const requestedShelves = typeof raw.shelves === 'number' && Number.isFinite(raw.shelves) ? Math.round(raw.shelves) : rod ? 1 : 4
+  const drawerInput = record(raw.drawers)
+  const drawerHeight = DRAWER_HEIGHTS.find(value => value === drawerInput.height) ?? .2
+  const drawerCount = typeof drawerInput.count === 'number' && Number.isFinite(drawerInput.count)
+    ? Math.max(0, Math.min(wardrobeDrawerLimit(height, rod, drawerHeight), Math.round(drawerInput.count))) : 0
+  const drawers = drawerCount ? { count: drawerCount, height: drawerHeight } : undefined
   const manual = readWardrobeLayout(raw.layout)
-  const limit = manual ? wardrobeManualShelfLimit(height, rod) : wardrobeShelfLimit(height, rod)
+  const limit = manual ? wardrobeManualShelfLimit(height, rod, drawers) : wardrobeShelfLimit(height, rod, drawers)
   const result: WardrobeSection = {
     id, width: size(raw.width, SECTION_DIMENSIONS.width), height, depth: size(raw.depth, SECTION_DIMENSIONS.depth),
     shelves: Math.max(0, Math.min(limit, requestedShelves)),
     rod,
+    ...(drawers ? { drawers } : {}),
     ...(typeof raw.bodyFinish === 'string' && BODY_FINISHES.includes(raw.bodyFinish) ? { bodyFinish: raw.bodyFinish } : {}),
     ...(typeof raw.hardwareFinish === 'string' && HARDWARE_FINISHES.includes(raw.hardwareFinish) ? { hardwareFinish: raw.hardwareFinish } : {}),
   }
@@ -74,7 +81,7 @@ export function previewWardrobeSectionUpdate(current: WardrobeSection, patch: Pa
   if (changes.rod && !current.rod && changes.shelves === undefined && wardrobeCanHaveRod(height)) changes.shelves = Math.min(current.shelves, 1)
   const next = section({ ...current, ...changes, layout: undefined }, current.id)
   if (current.layout && changes.layout === undefined) {
-    next.shelves = Math.min(next.shelves, wardrobeManualShelfLimit(next.height, next.rod))
+    next.shelves = Math.min(next.shelves, wardrobeManualShelfLimit(next.height, next.rod, next.drawers))
     const layout = fitWardrobeLayoutChange(current, next)
     if (layout) next.layout = layout
     return next
@@ -82,15 +89,24 @@ export function previewWardrobeSectionUpdate(current: WardrobeSection, patch: Pa
   return section({ ...next, layout: changes.layout }, current.id)
 }
 export function wardrobeHeightNeedsConfirmation(current: WardrobeSection, next: WardrobeSection) {
-  return next.height < current.height && ((current.rod && !next.rod) || next.shelves < current.shelves || wardrobeLayoutAdjustments(current, next).length > 0)
+  return next.height < current.height && ((current.rod && !next.rod) || next.shelves < current.shelves || (next.drawers?.count ?? 0) < (current.drawers?.count ?? 0) || wardrobeLayoutAdjustments(current, next).length > 0)
 }
 export function wardrobeSectionNeedsConfirmation(current: WardrobeSection, next: WardrobeSection) {
-  return wardrobeHeightNeedsConfirmation(current, next) || wardrobeLayoutAdjustments(current, next).length > 0
+  const drawersChanged = JSON.stringify(current.drawers) !== JSON.stringify(next.drawers)
+  const displacedByDrawers = drawersChanged && (next.drawers?.count ?? 0) * (next.drawers?.height ?? 0) > (current.drawers?.count ?? 0) * (current.drawers?.height ?? 0) && (next.shelves < current.shelves ||
+    (current.shelves > 0 || current.rod) && JSON.stringify(automaticLayout(current)) !== JSON.stringify(automaticLayout(next)) && !current.layout)
+  const drawersRemovedForRod = !current.rod && next.rod && (next.drawers?.count ?? 0) < (current.drawers?.count ?? 0)
+  const drawersRemovedForRow = !!current.drawers && !!next.drawers && current.drawers.height !== next.drawers.height && next.drawers.count < current.drawers.count
+  return drawersRemovedForRow || displacedByDrawers || drawersRemovedForRod || wardrobeHeightNeedsConfirmation(current, next) || wardrobeLayoutAdjustments(current, next).length > 0
     || (!current.rod && next.rod && next.shelves < current.shelves)
 }
 export function wardrobeAdjustmentNotice(input: unknown, normalized: WardrobeAssemblyConfiguration) {
   const raw = record(input)
   if (!Array.isArray(raw.sections)) return null
+  if (raw.sections.slice(0, MAX_SECTIONS).some((item, i) => {
+    const value = record(item).drawers
+    return value !== undefined && JSON.stringify(value) !== JSON.stringify(normalized.sections[i]?.drawers)
+  })) return 'Параметры ящиков скорректированы по размерам секций и допустимым зазорам. Проверьте восстановленное наполнение.'
   if (raw.sections.slice(0, MAX_SECTIONS).some((item, i) => record(item).rod === true && !normalized.sections[i]?.rod)) {
     return 'Штанги в секциях ниже 150 см удалены по новым правилам. Проверьте оставшиеся полки; размеры и материалы сохранены в допустимых пределах.'
   }
