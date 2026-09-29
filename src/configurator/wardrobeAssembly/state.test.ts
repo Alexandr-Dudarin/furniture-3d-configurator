@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { BODY_FINISHES, HARDWARE_FINISHES, MAX_SECTIONS, createDefaultWardrobe, createWardrobeSection, normalizeWardrobeAssembly, previewWardrobeSectionUpdate, updateWardrobeAssembly, wardrobeBounds, wardrobeHeightNeedsConfirmation } from './state'
+import { BODY_FINISHES, HARDWARE_FINISHES, MAX_SECTIONS, createDefaultWardrobe, createWardrobeSection, normalizeWardrobeAssembly, previewWardrobeSectionUpdate, updateWardrobeAssembly, wardrobeBounds, wardrobeHeightNeedsConfirmation, wardrobeSectionFinish } from './state'
 import { getMaterialFinish } from '../../three/materials/materialRegistry'
 
 describe('straight wardrobe assembly state', () => {
@@ -87,4 +87,50 @@ describe('straight wardrobe assembly state', () => {
       expect(normalizeWardrobeAssembly({ sections: [{ height, rod: true, shelves: 1 }] }).sections[0]).toMatchObject({ height, rod: false, shelves: 1 })
     }
   })
+})
+
+it('inherits each finish live while preserving explicit choices, even when equal to the common finish', () => {
+  const initial = createDefaultWardrobe()
+  let config = updateWardrobeAssembly(initial, { type: 'set-section-finish', id: 'section-1', slot: 'bodyFinish', finishId: initial.bodyFinish })
+  config = updateWardrobeAssembly(config, { type: 'set-section-finish', id: 'section-2', slot: 'hardwareFinish', finishId: 'metal-brass-satin' })
+  config = updateWardrobeAssembly(config, { type: 'set-wardrobe-finish', slot: 'bodyFinish', finishId: 'oak-natural' })
+  config = updateWardrobeAssembly(config, { type: 'set-wardrobe-finish', slot: 'hardwareFinish', finishId: 'metal-white-matte' })
+  expect(wardrobeSectionFinish(config, config.sections[0], 'bodyFinish')).toBe('board-grey-neutral')
+  expect(wardrobeSectionFinish(config, config.sections[1], 'bodyFinish')).toBe('oak-natural')
+  expect(wardrobeSectionFinish(config, config.sections[1], 'hardwareFinish')).toBe('metal-brass-satin')
+  expect(config.sections[2]).toBe(initial.sections[2])
+  config = updateWardrobeAssembly(config, { type: 'set-section-finish', id: 'section-1', slot: 'bodyFinish', finishId: null })
+  expect(config.sections[0]).not.toHaveProperty('bodyFinish')
+  expect(wardrobeSectionFinish(config, config.sections[0], 'bodyFinish')).toBe('oak-natural')
+  expect(config.sections[1].hardwareFinish).toBe('metal-brass-satin')
+})
+it('keeps section finishes with their ID through reorder, dimensions and filling changes; new sections inherit', () => {
+  let config = createDefaultWardrobe()
+  config = updateWardrobeAssembly(config, { type: 'set-section-finish', id: 'section-2', slot: 'bodyFinish', finishId: 'oak-black' })
+  config = updateWardrobeAssembly(config, { type: 'set-section-finish', id: 'section-2', slot: 'hardwareFinish', finishId: 'metal-brass-satin' })
+  config = updateWardrobeAssembly(config, { type: 'move-section', id: 'section-2', direction: 1 })
+  config = updateWardrobeAssembly(config, { type: 'update-section', id: 'section-2', patch: { width: .9, height: 1.4, depth: .8 }, confirmHeightChange: true })
+  expect(config.sections[2]).toMatchObject({ id: 'section-2', bodyFinish: 'oak-black', hardwareFinish: 'metal-brass-satin', rod: false })
+  config = updateWardrobeAssembly(config, { type: 'add-section', preset: 'hanging' })
+  expect(config.sections[3]).not.toHaveProperty('bodyFinish')
+  expect(config.sections[3]).not.toHaveProperty('hardwareFinish')
+  config = updateWardrobeAssembly(config, { type: 'update-section', id: 'section-2', patch: { height: 2, rod: true } })
+  expect(config.sections[2].hardwareFinish).toBe('metal-brass-satin')
+  const other = config.sections[3]
+  config = updateWardrobeAssembly(config, { type: 'remove-section', id: 'section-2' })
+  expect(config.sections[2]).toBe(other)
+})
+it('rejects wrong-slot and unknown finishes and normalizes invalid section overrides to inheritance', () => {
+  const config = createDefaultWardrobe()
+  for (const finishId of ['metal-black-matte', 'missing', '__proto__']) {
+    expect(updateWardrobeAssembly(config, { type: 'set-section-finish', id: 'section-1', slot: 'bodyFinish', finishId })).toBe(config)
+  }
+  expect(updateWardrobeAssembly(config, { type: 'set-section-finish', id: 'missing', slot: 'bodyFinish', finishId: 'oak-natural' })).toBe(config)
+  expect(updateWardrobeAssembly(config, { type: 'set-section-finish', id: 'section-1', slot: 'bodyFinish', finishId: null })).toBe(config)
+  for (const invalid of ['missing', 'metal-black-matte', 42, {}, false, null]) {
+    const normalized = normalizeWardrobeAssembly({ ...config, sections: [{ ...config.sections[0], bodyFinish: invalid, hardwareFinish: 'oak-natural' }] })
+    expect(normalized.sections[0]).not.toHaveProperty('bodyFinish')
+    expect(normalized.sections[0]).not.toHaveProperty('hardwareFinish')
+    expect(normalizeWardrobeAssembly(normalized)).toEqual(normalized)
+  }
 })

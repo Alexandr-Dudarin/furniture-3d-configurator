@@ -373,3 +373,8 @@
   .wardrobe-assembly-controls .dimension-value input { min-height: 44px; font-size: 16px; }
   .wardrobe-assembly-controls .dimension-control input[type="range"] { min-height: 28px; margin: 4px 0 2px; }
 }
+
+.wardrobe-section-material + .wardrobe-section-material { margin-top: 22px; padding-top: 18px; border-top: 1px solid #e1e8f1; }
+.wardrobe-inherited-finish { margin: 8px 0 0; color: #405570; font-size: 13px; line-height: 1.6; }
+.wardrobe-inherited-finish span { display: block; color: #61738d; font-size: 12px; }
+.wardrobe-sections .wardrobe-own-finish { color: #1765bd; font-size: 11px; }

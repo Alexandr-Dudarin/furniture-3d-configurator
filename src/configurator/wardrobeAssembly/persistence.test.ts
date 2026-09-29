@@ -113,3 +113,38 @@ it('opens a wardrobe link before saved state and updates that link after edits',
     disconnect()
   } finally { vi.useRealTimers() }
 })
+
+it('roundtrips inherited and explicit section finishes in storage, URL and the result summary', () => {
+  let session = example()
+  session = updateSession(session, { type: 'wardrobe-action', action: { type: 'set-section-finish', id: 'section-2', slot: 'bodyFinish', finishId: 'oak-natural' } })
+  session = updateSession(session, { type: 'wardrobe-action', action: { type: 'set-section-finish', id: 'section-2', slot: 'hardwareFinish', finishId: 'metal-brass-satin' } })
+  session = updateSession(session, { type: 'wardrobe-action', action: { type: 'set-section-finish', id: 'section-1', slot: 'bodyFinish', finishId: 'board-grey-neutral' } })
+  expect(readSavedSession(JSON.stringify(session))).toEqual({ session, notice: null })
+  expect(readSharedConfiguration(createConfigurationUrl(origin, session))).toEqual({ status: 'valid', wardrobe: session.wardrobe })
+  const summary = getConfigurationSummary(session)
+  expect(summary.rows.find(r => r.label === 'Секция 1: корпус и полки')?.value).toBe('Дуб натуральный · свой')
+  expect(summary.rows.find(r => r.label === 'Секция 1: штанга')?.value).toBe('Латунь сатиновая · свой')
+  expect(summary.rows.find(r => r.label === 'Секция 3: корпус и полки')?.value).toContain('общий')
+  const restored = readSavedSession(JSON.stringify(session)).session
+  const changed = updateSession(restored, { type: 'wardrobe-action', action: { type: 'set-wardrobe-finish', slot: 'bodyFinish', finishId: 'board-white-matte' } })
+  expect(changed.wardrobe.sections[1].bodyFinish).toBe('board-grey-neutral')
+  expect(changed.wardrobe.sections[2]).not.toHaveProperty('bodyFinish')
+  const reset = updateSession(changed, { type: 'reset-model' })
+  expect(reset.wardrobe).toEqual(createDefaultWardrobe())
+  expect(reset.models).toBe(changed.models)
+  expect(reset.assembly).toBe(changed.assembly)
+})
+it('reads old v4 assemblies without corrections and explains invalid section materials', () => {
+  const old = example()
+  expect(readSavedSession(JSON.stringify(old)).notice).toBeNull()
+  expect(readSharedConfiguration(createConfigurationUrl(origin, old)).status).toBe('valid')
+  const invalid = { ...old, wardrobe: { ...old.wardrobe, sections: old.wardrobe.sections.map((section, i) => i === 0 ? { ...section, bodyFinish: 'metal-white-matte', hardwareFinish: 'metal-brass-satin' } : section) } }
+  const result = readSavedSession(JSON.stringify(invalid))
+  expect(result.notice).toContain('материалы отдельных секций')
+  expect(result.session.wardrobe.sections[0]).not.toHaveProperty('bodyFinish')
+  expect(result.session.wardrobe.sections[0].hardwareFinish).toBe('metal-brass-satin')
+  const shared = readSharedConfiguration(createConfigurationUrl(origin, invalid))
+  expect(shared.status).toBe('adjusted')
+  expect(shared.notice).toBe(result.notice)
+  expect(readSharedConfiguration(createConfigurationUrl(origin, result.session)).status).toBe('valid')
+})

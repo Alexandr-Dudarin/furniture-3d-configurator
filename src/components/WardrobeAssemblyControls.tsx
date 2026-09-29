@@ -6,6 +6,8 @@ import { FinishPicker } from './assembly/FinishPicker'
 import { getMaterialFinish } from '../three/materials/materialRegistry'
 import { CustomSelect } from './ui/CustomSelect/CustomSelect'
 import { WardrobeHeightConfirmation } from './WardrobeHeightConfirmation'
+import { WardrobeSectionMaterials } from './WardrobeSectionMaterials'
+import { wardrobeSectionFinish } from '../configurator/wardrobeAssembly/state'
 
 export function WardrobeAssemblyControls({ configuration, onAction, onFrame }: {
   configuration: WardrobeAssemblyConfiguration; onAction: (action: WardrobeAssemblyAction) => void; onFrame: () => void
@@ -54,6 +56,7 @@ export function WardrobeAssemblyControls({ configuration, onAction, onFrame }: {
             {section.rod && <path d={`M12 ${64 - wardrobeRodY(section.height) / section.height * 59}h32`} stroke="currentColor" strokeWidth="3" />}
           </svg>
           <strong>Секция {order + 1}</strong><span>{cm(section.width)} см</span>
+          {(section.bodyFinish || section.hardwareFinish) && <span className="wardrobe-own-finish">Свой материал</span>}
         </button>)}
       </div>
       <div className="wardrobe-section-actions">
@@ -94,7 +97,11 @@ export function WardrobeAssemblyControls({ configuration, onAction, onFrame }: {
         : 'Полки распределяются равномерно. Свободное расстояние между ними — не меньше 20 см.'}</p>
       {shelfLimit < (selected.rod ? 2 : 6) && <p className="assembly-summary">Варианты полок ограничены высотой секции. Уменьшение высоты с удалением наполнения потребует подтверждения.</p>}
     </ConfigurationSection>
-    <ConfigurationSection title="Материалы сборки" summary={getMaterialFinish(configuration.bodyFinish).label}>
+    <ConfigurationSection title={`Секция ${index + 1}: материалы`} summary={`${getMaterialFinish(wardrobeSectionFinish(configuration, selected, 'bodyFinish')).label} · ${selected.bodyFinish ? 'свой' : 'общий'}`}>
+      <WardrobeSectionMaterials configuration={configuration} section={selected} onAction={onAction} />
+    </ConfigurationSection>
+    <ConfigurationSection title="Общие материалы сборки" summary={getMaterialFinish(configuration.bodyFinish).label}>
+      <p className="assembly-summary">Применяются к секциям без своего материала. Отдельно выбранные покрытия сохраняются.</p>
       <FinishPicker label="Корпус и полки" value={configuration.bodyFinish} ids={BODY_FINISHES} onChange={finishId => onAction({ type: 'set-wardrobe-finish', slot: 'bodyFinish', finishId })} />
       <FinishPicker label="Штанги и крепления" value={configuration.hardwareFinish} ids={HARDWARE_FINISHES} onChange={finishId => onAction({ type: 'set-wardrobe-finish', slot: 'hardwareFinish', finishId })} />
     </ConfigurationSection>

@@ -1,5 +1,5 @@
 import { expect, it, vi } from 'vitest'
-import { Box3, Mesh, MeshStandardMaterial, Vector3 } from 'three'
+import { Box3, Mesh, MeshStandardMaterial, Texture, Vector3 } from 'three'
 import { createDefaultWardrobe, createWardrobeSection, normalizeWardrobeAssembly, updateWardrobeAssembly, wardrobeBounds } from '../../configurator/wardrobeAssembly/state'
 import { createWardrobeAssembly, planWardrobeParts } from './wardrobeAssembly'
 
@@ -128,4 +128,90 @@ it('applies the latest material request atomically, disposing stale results and 
   pending[0].resolve(partial); pending[1].reject(new Error('offline')); await rejected
   expect(disposed).toHaveBeenCalledTimes(1); expect(body.material).toBe(newBody)
   assembly.dispose()
+})
+
+it('shares equal finishes across sections, isolates overrides and retains geometry/metric UVs on material edits', async () => {
+  const make = vi.fn(async (id: string) => { const m = new MeshStandardMaterial(); m.name = id; return m })
+  let config = createDefaultWardrobe()
+  const assembly = createWardrobeAssembly(config, { createMaterial: make })
+  await assembly.setFinishes(config)
+  expect(make).toHaveBeenCalledTimes(2)
+  const body = (id: string) => assembly.group.getObjectByName(`${id}/Side_Left`) as Mesh
+  const first = body('section-1'), last = body('section-3'), geometry = first.geometry, uv = geometry.getAttribute('uv')
+  const gray = first.material as MeshStandardMaterial, grayDispose = vi.spyOn(gray, 'dispose')
+  config = updateWardrobeAssembly(config, { type: 'set-section-finish', id: 'section-1', slot: 'bodyFinish', finishId: 'oak-natural' })
+  assembly.update(config); await assembly.setFinishes(config)
+  const oak = first.material as MeshStandardMaterial, oakDispose = vi.spyOn(oak, 'dispose')
+  expect(oak.name).toBe('oak-natural'); expect(last.material).toBe(gray)
+  for (const child of assembly.group.children) if (child.name.startsWith('section-1/')) expect((child as Mesh).material).toBe(oak)
+  expect(first.geometry).toBe(geometry); expect(first.geometry.getAttribute('uv')).toBe(uv)
+  config = updateWardrobeAssembly(config, { type: 'set-wardrobe-finish', slot: 'bodyFinish', finishId: 'oak-natural' })
+  assembly.update(config); await assembly.setFinishes(config)
+  expect(last.material).toBe(oak); expect(make).toHaveBeenCalledTimes(3)
+  expect(grayDispose).toHaveBeenCalledTimes(1)
+  config = updateWardrobeAssembly(config, { type: 'set-wardrobe-finish', slot: 'bodyFinish', finishId: 'board-white-matte' })
+  assembly.update(config); await assembly.setFinishes(config)
+  expect(first.material).toBe(oak); expect((last.material as MeshStandardMaterial).name).toBe('board-white-matte')
+  expect(oakDispose).not.toHaveBeenCalled()
+  config = updateWardrobeAssembly(config, { type: 'move-section', id: 'section-1', direction: 1 })
+  assembly.update(config); await assembly.setFinishes(config)
+  expect(first.material).toBe(oak); expect(first.geometry).toBe(geometry)
+  config = updateWardrobeAssembly(config, { type: 'set-section-finish', id: 'section-1', slot: 'bodyFinish', finishId: null })
+  assembly.update(config); await assembly.setFinishes(config)
+  expect(first.material).toBe(last.material); expect(oakDispose).toHaveBeenCalledTimes(1)
+  expect(make).toHaveBeenCalledTimes(4)
+  assembly.dispose(); assembly.dispose()
+  expect(oakDispose).toHaveBeenCalledTimes(1); expect(grayDispose).toHaveBeenCalledTimes(1)
+})
+it('uses individual hardware for rods and supports and releases materials only after the last user disappears', async () => {
+  const make = vi.fn(async (id: string) => { const m = new MeshStandardMaterial(); m.name = id; return m })
+  let config = createDefaultWardrobe()
+  config = updateWardrobeAssembly(config, { type: 'update-section', id: 'section-1', patch: { rod: true, depth: .4 } })
+  config = updateWardrobeAssembly(config, { type: 'set-section-finish', id: 'section-1', slot: 'hardwareFinish', finishId: 'metal-brass-satin' })
+  const assembly = createWardrobeAssembly(config, { createMaterial: make })
+  await assembly.setFinishes(config)
+  const rail = assembly.group.getObjectByName('section-1/Rail') as Mesh
+  const brass = rail.material as MeshStandardMaterial, dispose = vi.spyOn(brass, 'dispose')
+  for (const child of assembly.group.children) if (/section-1\/(Rail|Bracket_)/.test(child.name)) expect((child as Mesh).material).toBe(brass)
+  expect(((assembly.group.getObjectByName('section-2/Rail') as Mesh).material as MeshStandardMaterial).name).toBe('metal-black-matte')
+  config = updateWardrobeAssembly(config, { type: 'set-section-finish', id: 'section-2', slot: 'hardwareFinish', finishId: 'metal-brass-satin' })
+  assembly.update(config); await assembly.setFinishes(config)
+  expect(make.mock.calls.filter(([id]) => id === 'metal-brass-satin')).toHaveLength(1)
+  config = updateWardrobeAssembly(config, { type: 'remove-section', id: 'section-1' })
+  assembly.update(config); await assembly.setFinishes(config)
+  expect(dispose).not.toHaveBeenCalled()
+  config = updateWardrobeAssembly(config, { type: 'update-section', id: 'section-2', patch: { rod: false } })
+  assembly.update(config); await assembly.setFinishes(config)
+  expect(dispose).toHaveBeenCalledTimes(1)
+  expect(config.sections[0].hardwareFinish).toBe('metal-brass-satin')
+  config = updateWardrobeAssembly(config, { type: 'update-section', id: 'section-2', patch: { rod: true } })
+  assembly.update(config); await assembly.setFinishes(config)
+  expect(((assembly.group.getObjectByName('section-2/Rail') as Mesh).material as MeshStandardMaterial).name).toBe('metal-brass-satin')
+  expect(make.mock.calls.filter(([id]) => id === 'metal-brass-satin')).toHaveLength(2)
+  assembly.dispose()
+  expect(dispose).toHaveBeenCalledTimes(1)
+})
+it('cancels an in-flight individual finish on return to inheritance and disposes late textures after unmount', async () => {
+  const pending: { resolve: (m: MeshStandardMaterial) => void }[] = []
+  const config = createDefaultWardrobe()
+  const assembly = createWardrobeAssembly(config, { createMaterial: id => id.startsWith('oak-') ? new Promise(resolve => pending.push({ resolve })) : Promise.resolve(new MeshStandardMaterial()) })
+  await assembly.setFinishes(config)
+  const body = assembly.group.getObjectByName('section-1/Side_Left') as Mesh, original = body.material
+  const custom = updateWardrobeAssembly(config, { type: 'set-section-finish', id: 'section-1', slot: 'bodyFinish', finishId: 'oak-natural' })
+  assembly.update(custom)
+  const loading = assembly.setFinishes(custom)
+  assembly.update(config); await assembly.setFinishes(config)
+  const late = new MeshStandardMaterial(), texture = new Texture()
+  late.map = texture; late.normalMap = texture
+  const materialDispose = vi.spyOn(late, 'dispose'), textureDispose = vi.spyOn(texture, 'dispose')
+  pending.shift()!.resolve(late); await loading
+  expect(body.material).toBe(original)
+  expect(materialDispose).toHaveBeenCalledTimes(1); expect(textureDispose).toHaveBeenCalledTimes(1)
+  assembly.update(custom)
+  const afterUnmount = assembly.setFinishes(custom)
+  assembly.dispose()
+  const orphan = new MeshStandardMaterial(), orphanDispose = vi.spyOn(orphan, 'dispose')
+  pending.shift()!.resolve(orphan); await afterUnmount
+  expect(orphanDispose).toHaveBeenCalledTimes(1)
+  expect(assembly.group.children).toHaveLength(0)
 })

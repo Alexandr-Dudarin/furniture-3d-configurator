@@ -1,11 +1,11 @@
 import { BufferGeometry, CylinderGeometry, Group, Mesh, MeshStandardMaterial } from 'three'
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
-import { BACK_THICKNESS as back, PANEL_THICKNESS as panel, PLINTH_HEIGHT as plinth, ROD_RADIUS, wardrobeBounds, wardrobeRodY, wardrobeShelfYs, type WardrobeAssemblyConfiguration } from '../../configurator/wardrobeAssembly/state'
+import { BACK_THICKNESS as back, PANEL_THICKNESS as panel, PLINTH_HEIGHT as plinth, ROD_RADIUS, wardrobeBounds, wardrobeRodY, wardrobeShelfYs, wardrobeSectionFinish, type WardrobeAssemblyConfiguration } from '../../configurator/wardrobeAssembly/state'
 import { createFinishMaterial } from '../materials/createMaterial'
 import { disposeMaterialResources } from '../materials/disposeMaterials'
 
 type Slot = 'body' | 'hardware'
-type Part = { name: string; shape: 'panel' | 'rod'; size: [number, number, number]; position: [number, number, number]; slot: Slot; axis?: 'x' | 'y' | 'z' }
+type Part = { sectionId: string; name: string; shape: 'panel' | 'rod'; size: [number, number, number]; position: [number, number, number]; slot: Slot; axis?: 'x' | 'y' | 'z' }
 
 // Separate, closed panels. All dimensions are physical metres, floor is y=0,
 // back faces share z=-maxDepth/2. Adjacent sections retain both side boards.
@@ -15,8 +15,8 @@ export function planWardrobeParts(config: WardrobeAssemblyConfiguration): Part[]
   for (const section of config.sections) {
     const { id, width: w, height: h, depth: d } = section
     const x = left + w / 2, z = (d - bounds.depth) / 2
-    const add = (name: string, size: Part['size'], position: Part['position']) => parts.push({ name: `${id}/${name}`, shape: 'panel', size, position: [position[0] + x, position[1], position[2] + z], slot: 'body' })
-    const rod = (name: string, radius: number, length: number, position: Part['position'], axis: Part['axis']) => parts.push({ name: `${id}/${name}`, shape: 'rod', size: [radius, length, radius], position: [position[0] + x, position[1], position[2] + z], slot: 'hardware', axis })
+    const add = (name: string, size: Part['size'], position: Part['position']) => parts.push({ sectionId: id, name: `${id}/${name}`, shape: 'panel', size, position: [position[0] + x, position[1], position[2] + z], slot: 'body' })
+    const rod = (name: string, radius: number, length: number, position: Part['position'], axis: Part['axis']) => parts.push({ sectionId: id, name: `${id}/${name}`, shape: 'rod', size: [radius, length, radius], position: [position[0] + x, position[1], position[2] + z], slot: 'hardware', axis })
     const inside = w - 2 * panel
     add('Side_Left', [panel, h, d], [-w / 2 + panel / 2, h / 2, 0])
     add('Side_Right', [panel, h, d], [w / 2 - panel / 2, h / 2, 0])
@@ -72,13 +72,18 @@ export function createWardrobeAssembly(initial: WardrobeAssemblyConfiguration, o
   const group = new Group()
   group.name = 'WardrobeAssembly_Root'
   let disposed = false, request = 0
-  const material: Record<Slot, MeshStandardMaterial> = { body: new MeshStandardMaterial({ color: 0xcdbb9d, roughness: .65 }), hardware: new MeshStandardMaterial({ color: 0x16191c, roughness: .35 }) }
-  let finishes: { body: string; hardware: string } | null = null
+  const fallback: Record<Slot, MeshStandardMaterial> = { body: new MeshStandardMaterial({ color: 0xcdbb9d, roughness: .65 }), hardware: new MeshStandardMaterial({ color: 0x16191c, roughness: .35 }) }
+  // One owned PBR material per finish actually used, shared across sections.
+  const materials = new Map<string, MeshStandardMaterial>()
+  let bindings = new Map<string, string>()
+  const bindingKey = (sectionId: string, slot: Slot) => `${sectionId}/${slot}`
+  const appliedMaterial = (sectionId: string, slot: Slot) => materials.get(bindings.get(bindingKey(sectionId, slot)) ?? '') ?? fallback[slot]
   const meshes = new Map<string, Mesh<BufferGeometry, MeshStandardMaterial>>()
   let geometries = new Map<string, BufferGeometry>()
-  let previousSections: WardrobeAssemblyConfiguration['sections'] | null = null
+  let previousGeometryKey = ''
   const update = (configuration: WardrobeAssemblyConfiguration) => {
-    if (disposed || configuration.sections === previousSections) return
+    const geometryKey = JSON.stringify(configuration.sections.map(({ id, width, height, depth, shelves, rod }) => [id, width, height, depth, shelves, rod]))
+    if (disposed || geometryKey === previousGeometryKey) return
     const nextGeometry = new Map<string, BufferGeometry>(), keep = new Set<string>()
     for (const part of planWardrobeParts(configuration)) {
       const key = `${part.shape}:${part.size.join(',')}`
@@ -87,12 +92,13 @@ export function createWardrobeAssembly(initial: WardrobeAssemblyConfiguration, o
       nextGeometry.set(key, geometry)
       let mesh = meshes.get(part.name)
       if (!mesh) {
-        mesh = new Mesh(geometry, material[part.slot]); mesh.name = part.name
+        mesh = new Mesh(geometry, appliedMaterial(part.sectionId, part.slot)); mesh.name = part.name
         mesh.castShadow = mesh.receiveShadow = true
         meshes.set(part.name, mesh); group.add(mesh)
       }
       mesh.userData.materialSlot = part.slot
-      mesh.geometry = geometry; mesh.material = material[part.slot]
+      mesh.userData.sectionId = part.sectionId
+      mesh.geometry = geometry; mesh.material = appliedMaterial(part.sectionId, part.slot)
       mesh.position.set(...part.position)
       mesh.rotation.set(part.axis === 'z' ? Math.PI / 2 : 0, 0, part.axis === 'x' ? Math.PI / 2 : 0)
       keep.add(part.name)
@@ -100,30 +106,36 @@ export function createWardrobeAssembly(initial: WardrobeAssemblyConfiguration, o
     for (const [name, mesh] of meshes) if (!keep.has(name)) { group.remove(mesh); meshes.delete(name) }
     for (const [key, geometry] of geometries) if (!nextGeometry.has(key)) geometry.dispose()
     geometries = nextGeometry
-    previousSections = configuration.sections
+    previousGeometryKey = geometryKey
     group.updateMatrixWorld(true)
     options.onChange?.()
   }
   const setFinishes = async (configuration: WardrobeAssemblyConfiguration) => {
     const ticket = ++request
     if (disposed) return
-    const selected = { body: configuration.bodyFinish, hardware: configuration.hardwareFinish }
-    const changed = (['body', 'hardware'] as const).filter(slot => finishes?.[slot] !== selected[slot])
-    if (!changed.length) return
-    const prepared = await Promise.allSettled(changed.map(async slot => ({ slot, value: await (options.createMaterial ?? createFinishMaterial)(selected[slot], options.maxAnisotropy ?? 1) })))
+    const selected = new Map<string, string>()
+    for (const section of configuration.sections) {
+      selected.set(bindingKey(section.id, 'body'), wardrobeSectionFinish(configuration, section, 'bodyFinish'))
+      if (section.rod) selected.set(bindingKey(section.id, 'hardware'), wardrobeSectionFinish(configuration, section, 'hardwareFinish'))
+    }
+    if (selected.size === bindings.size && [...selected].every(([key, id]) => bindings.get(key) === id)) return
+    const needed = new Set(selected.values())
+    const missing = [...needed].filter(id => !materials.has(id))
+    const prepared = await Promise.allSettled(missing.map(async id => ({ id, value: await (options.createMaterial ?? createFinishMaterial)(id, options.maxAnisotropy ?? 1) })))
     const failure = prepared.find(result => result.status === 'rejected')
     if (disposed || ticket !== request || failure) {
       for (const result of prepared) if (result.status === 'fulfilled') disposeMaterialResources(result.value.value)
       if (!disposed && ticket === request && failure?.status === 'rejected') throw failure.reason
       return
     }
-    for (const result of prepared) if (result.status === 'fulfilled') {
-      const { slot, value } = result.value
-      const old = material[slot]; material[slot] = value
-      for (const mesh of meshes.values()) if (mesh.userData.materialSlot === slot) mesh.material = value
-      disposeMaterialResources(old)
+    for (const result of prepared) if (result.status === 'fulfilled') materials.set(result.value.id, result.value.value)
+    bindings = selected
+    for (const mesh of meshes.values()) mesh.material = appliedMaterial(mesh.userData.sectionId, mesh.userData.materialSlot)
+    // Release after rebinding all meshes; another section may still use the old finish.
+    for (const [id, value] of materials) if (!needed.has(id)) {
+      disposeMaterialResources(value)
+      materials.delete(id)
     }
-    finishes = selected
     options.onChange?.()
   }
   update(initial)
@@ -131,7 +143,8 @@ export function createWardrobeAssembly(initial: WardrobeAssemblyConfiguration, o
     if (disposed) return
     disposed = true; request++
     geometries.forEach(geometry => geometry.dispose()); geometries.clear()
-    disposeMaterialResources(material.body); disposeMaterialResources(material.hardware)
+    materials.forEach(disposeMaterialResources); materials.clear()
+    disposeMaterialResources(fallback.body); disposeMaterialResources(fallback.hardware)
     meshes.clear(); group.clear()
   } }
 }
