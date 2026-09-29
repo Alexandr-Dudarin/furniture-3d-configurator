@@ -1,4 +1,5 @@
 import type { FurnitureDimensionConfig } from '../../three/furniture/types'
+import { getWardrobeDrawerHandle, isWardrobeDrawerHandle } from './drawerHandles'
 import { MIN_ROD_SECTION_HEIGHT, DRAWER_HEIGHTS, wardrobeDrawerLimit, automaticLayout, type WardrobeDrawers, fitWardrobeLayout, fitWardrobeLayoutChange, isValidWardrobeLayout, readWardrobeLayout, wardrobeCanHaveRod, wardrobeShelfLimit, wardrobeManualShelfLimit, wardrobeLayoutAdjustments, type WardrobeLayout } from './layout'
 export * from './layout'
 
@@ -9,7 +10,6 @@ export const SECTION_DIMENSIONS: Record<'width' | 'height' | 'depth', FurnitureD
   depth: { label: 'Глубина корпуса', base: .55, min: .4, max: .8, step: .05 },
 }
 export const RECESSED_DRAWER_INSET = .029
-export const DRAWER_HANDLE_PROJECTION = .028
 export const DRAWER_PLACEMENTS = [
   { value: 'recessed', label: 'Утопленные' },
   { value: 'flush', label: 'Вровень с корпусом' },
@@ -21,7 +21,7 @@ export function wardrobeDrawerFrontInset(drawers?: WardrobeDrawers) {
   return drawers?.placement === 'flush' ? 0 : RECESSED_DRAWER_INSET
 }
 export function wardrobeSectionClosedDepth(section: WardrobeSection) {
-  const projection = section.drawers ? Math.max(0, DRAWER_HANDLE_PROJECTION - wardrobeDrawerFrontInset(section.drawers)) : 0
+  const projection = section.drawers ? Math.max(0, getWardrobeDrawerHandle(section.drawers.handle).projection - wardrobeDrawerFrontInset(section.drawers)) : 0
   return Number((section.depth + projection).toFixed(8))
 }
 export const MAX_SECTIONS = 6
@@ -76,7 +76,8 @@ function section(input: unknown, id: string): WardrobeSection {
   // Omitted placement retains the original recessed drawers without migrating
   // old v4 configurations. Preserve either explicitly selected valid choice.
   const drawers: WardrobeDrawers | undefined = drawerCount ? { count: drawerCount, height: drawerHeight,
-    ...(drawerInput.placement === 'flush' || drawerInput.placement === 'recessed' ? { placement: drawerInput.placement } : {}) } : undefined
+    ...(drawerInput.placement === 'flush' || drawerInput.placement === 'recessed' ? { placement: drawerInput.placement } : {}),
+    ...(isWardrobeDrawerHandle(drawerInput.handle) ? { handle: drawerInput.handle } : {}) } : undefined
   const manual = readWardrobeLayout(raw.layout)
   const limit = manual ? wardrobeManualShelfLimit(height, rod, drawers) : wardrobeShelfLimit(height, rod, drawers)
   const result: WardrobeSection = {
@@ -122,6 +123,7 @@ export function wardrobeSectionNeedsConfirmation(current: WardrobeSection, next:
 export function wardrobeAdjustmentNotice(input: unknown, normalized: WardrobeAssemblyConfiguration) {
   const raw = record(input)
   if (!Array.isArray(raw.sections)) return null
+  if (raw.sections.length > MAX_SECTIONS) return `В прямой сборке допускается до ${MAX_SECTIONS} секций. Из загруженного варианта оставлены первые ${MAX_SECTIONS}; проверьте состав сборки.`
   if (raw.sections.slice(0, MAX_SECTIONS).some((item, i) => {
     const value = record(item).drawers
     return value !== undefined && JSON.stringify(value) !== JSON.stringify(normalized.sections[i]?.drawers)

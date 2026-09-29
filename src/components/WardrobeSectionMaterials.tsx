@@ -11,7 +11,7 @@ export function WardrobeSectionMaterials({ configuration, section, onAction }: {
     {(['bodyFinish', 'hardwareFinish'] as const).filter(slot => slot === 'bodyFinish' || section.rod || section.drawers).map(slot => {
       const own = section[slot] !== undefined
       const value = wardrobeSectionFinish(configuration, section, slot)
-      const label = slot === 'bodyFinish' ? 'Корпус, полки и ящики' : 'Фурнитура и ручки'
+      const label = slot === 'bodyFinish' ? 'Корпус, полки и ящики' : section.drawers?.handle === 'none' ? 'Фурнитура' : 'Фурнитура и ручки'
       return <div className="wardrobe-section-material" key={slot}>
         <label className="wardrobe-toggle"><input type="checkbox" checked={own} onChange={event => onAction({
           type: 'set-section-finish', id: section.id, slot, finishId: event.target.checked ? value : null,

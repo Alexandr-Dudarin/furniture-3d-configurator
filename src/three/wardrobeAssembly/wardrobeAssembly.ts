@@ -2,6 +2,7 @@ import type { MotionPartState } from '../../configurator/furnitureMotionStore'
 import { createWardrobeDrawerMotion, type DrawerMotionEntry } from './wardrobeDrawerMotion'
 import { BufferGeometry, CylinderGeometry, Group, Mesh, MeshStandardMaterial } from 'three'
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
+import { DRAWER_BAR_HANDLE, DRAWER_KNOB_HANDLE, getWardrobeDrawerHandle } from '../../configurator/wardrobeAssembly/drawerHandles'
 import { BACK_THICKNESS as back, PANEL_THICKNESS as panel, PLINTH_HEIGHT as plinth, ROD_RADIUS, wardrobeBounds, wardrobeDrawerFrontInset, wardrobeRodY, wardrobeShelfYs, wardrobeSectionFinish, type WardrobeAssemblyConfiguration } from '../../configurator/wardrobeAssembly/state'
 import { createFinishMaterial } from '../materials/createMaterial'
 import { disposeMaterialResources } from '../materials/disposeMaterials'
@@ -53,9 +54,17 @@ export function planWardrobeParts(config: WardrobeAssemblyConfiguration): Part[]
         }
         board('Back', [boxWidth - 2 * panel, row - .04, panel], [0, y + .012 + (row - .04) / 2, boxBack + panel / 2])
         board('Bottom', [boxWidth - 2 * panel, back, length - panel], [0, y + .012 + back / 2, (boxBack + panel + frontBack) / 2])
-        rod(`${name}/Handle`, .004, .136, [0, y + row * .7, frontFace + .024], 'x'); mark()
-        for (const side of [-1, 1]) {
-          rod(`${name}/HandleMount_${side}`, .004, .02, [side * .064, y + row * .7, frontFace + .01], 'z'); mark()
+        const handle = getWardrobeDrawerHandle(section.drawers.handle)
+        if (handle.value === 'bar') {
+          const { radius, length, mountLength, mountSpacing } = DRAWER_BAR_HANDLE
+          rod(`${name}/Handle`, radius, length, [0, y + row * .7, frontFace + mountLength + radius], 'x'); mark()
+          for (const side of [-1, 1]) {
+            rod(`${name}/HandleMount_${side}`, radius, mountLength, [side * mountSpacing / 2, y + row * .7, frontFace + mountLength / 2], 'z'); mark()
+          }
+        } else if (handle.value === 'knob') {
+          const { radius, thickness, mountRadius, mountLength } = DRAWER_KNOB_HANDLE
+          rod(`${name}/Handle`, radius, thickness, [0, y + row * .7, frontFace + mountLength + thickness / 2], 'z'); mark()
+          rod(`${name}/HandleMount`, mountRadius, mountLength, [0, y + row * .7, frontFace + mountLength / 2], 'z'); mark()
         }
       }
     }

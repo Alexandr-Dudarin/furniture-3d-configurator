@@ -3,6 +3,7 @@ import { getFurnitureDefinition } from './furnitureRegistry'
 import type { ConfiguratorSession } from './savedConfiguration'
 import { getTableBase, getTabletopEdgeProfile, TOP_SHAPES } from './tableAssembly/catalog'
 import { getMaterialFinish } from '../three/materials/materialRegistry'
+import { getWardrobeDrawerHandle } from './wardrobeAssembly/drawerHandles'
 import { wardrobeBounds, wardrobeClosedBounds, wardrobeDrawerPlacementLabel, wardrobeSectionClosedDepth, wardrobeFillingFloor, wardrobeFillingLabel, wardrobeSectionFinish, wardrobeShelfLabel } from './wardrobeAssembly/state'
 
 const number = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 3 })
@@ -27,7 +28,8 @@ export function getConfigurationSummary(session: ConfiguratorSession): Configura
           { label: `Секция ${index + 1}: ящики`, value: `${section.drawers.count} шт. · высота ряда ${size(section.drawers.height, 'см')} · верх блока ${size(wardrobeFillingFloor(section), 'см')}` },
           { label: `Секция ${index + 1}: положение фасадов ящиков`, value: wardrobeDrawerPlacementLabel(section.drawers) },
           { label: `Секция ${index + 1}: глубина с ручками (ящики закрыты)`, value: size(wardrobeSectionClosedDepth(section), 'см') },
-          { label: `Секция ${index + 1}: ручки`, value: `${getMaterialFinish(wardrobeSectionFinish(config, section, 'hardwareFinish')).label} · ${section.hardwareFinish ? 'свой' : 'общий'}` },
+          { label: `Секция ${index + 1}: ручки`, value: section.drawers.handle === 'none' ? 'Без ручек' : `${getWardrobeDrawerHandle(section.drawers.handle).label} · ${getMaterialFinish(wardrobeSectionFinish(config, section, 'hardwareFinish')).label} · ${section.hardwareFinish ? 'свой' : 'общий'}` },
+          { label: `Секция ${index + 1}: направляющие`, value: `${getMaterialFinish(wardrobeSectionFinish(config, section, 'hardwareFinish')).label} · ${section.hardwareFinish ? 'свой' : 'общий'}` },
         ] : []),
         ...(section.layout ? [
           ...(section.shelves ? [{ label: `Секция ${index + 1}: низ полок от пола`, value: section.layout.shelves.map((y, i) => `${wardrobeShelfLabel(section, i)} — ${size(y, 'см')}`).join('; ') }] : []),

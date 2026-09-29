@@ -1,4 +1,5 @@
 import { WardrobeDrawerControls } from './WardrobeDrawerControls'
+import { DRAWER_HANDLES, getWardrobeDrawerHandle, isWardrobeDrawerHandle } from '../configurator/wardrobeAssembly/drawerHandles'
 import type { FurnitureMotionStore } from '../configurator/furnitureMotionStore'
 import { DRAWER_HEIGHTS, DRAWER_PLACEMENTS, wardrobeDrawerPlacementLabel, wardrobeSectionClosedDepth, wardrobeDrawerLimit, wardrobeFillingFloor } from '../configurator/wardrobeAssembly/state'
 import { useState } from 'react'
@@ -22,6 +23,7 @@ export function WardrobeAssemblyControls({ configuration, onAction, onFrame, mot
   const index = configuration.sections.indexOf(selected)
   const bounds = wardrobeClosedBounds(configuration)
   const shelfLimit = wardrobeSectionShelfLimit(selected)
+  const handle = getWardrobeDrawerHandle(selected.drawers?.handle)
   const cm = (value: number) => (value * 100).toLocaleString('ru-RU', { maximumFractionDigits: 1 })
   // If a reset/restore changes the source while the dialog is open, discard
   // the preview rather than applying an old decision to a different section.
@@ -42,7 +44,7 @@ export function WardrobeAssemblyControls({ configuration, onAction, onFrame, mot
     <h2 className="wardrobe-heading">Собрать гардеробную</h2>
     <p className="assembly-summary">Прямая открытая сборка. Выберите секцию слева направо, чтобы изменить её размеры и наполнение.</p>
     <p className="assembly-total"><span>Общие Ш × В × Г</span><strong>{cm(bounds.width)} × {cm(bounds.height)} × {cm(bounds.depth)} см</strong></p>
-    {configuration.sections.some(section => section.drawers?.placement === 'flush') && <p className="assembly-summary">Общая глубина учитывает выступающие ручки закрытых ящиков.</p>}
+    {configuration.sections.some(section => wardrobeSectionClosedDepth(section) > section.depth) && <p className="assembly-summary">Общая глубина учитывает выступающие ручки закрытых ящиков.</p>}
     <button type="button" className="wardrobe-frame-button" onClick={onFrame}
       title="Вернуть исходный ракурс и подобрать масштаб под текущие размеры сборки" aria-describedby="wardrobe-frame-hint">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
@@ -122,11 +124,16 @@ export function WardrobeAssemblyControls({ configuration, onAction, onFrame, mot
             options={[...DRAWER_PLACEMENTS]}
             onChange={value => update({ drawers: { ...selected.drawers!, placement: value === 'flush' ? 'flush' : 'recessed' } })} />
         </div>
+        <div className="assembly-field"><span>Ручки ящиков</span>
+          <CustomSelect value={handle.value} ariaLabel="Ручки ящиков выбранной секции" options={DRAWER_HANDLES.map(({ value, label }) => ({ value, label }))}
+            onChange={value => { if (isWardrobeDrawerHandle(value)) update({ drawers: { ...selected.drawers!, handle: value } }) }} />
+        </div>
         <p className="assembly-summary">{selected.drawers.placement === 'flush'
-          ? `Фасады вровень с передними краями боковин. Ручки выступают на 2,8 см; глубина секции с ручками — ${cm(wardrobeSectionClosedDepth(selected))} см.`
-          : 'Фасады углублены на 2,9 см. Ручки остаются внутри глубины корпуса.'}</p>
+          ? `Фасады вровень с передними краями боковин. ${handle.value === 'none' ? 'Закрытые ящики не выступают за глубину корпуса.' : `Ручки выступают на ${cm(handle.projection)} см; глубина секции с ручками — ${cm(wardrobeSectionClosedDepth(selected))} см.`}`
+          : `Фасады углублены на 2,9 см.${handle.value === 'none' ? '' : ' Ручки остаются внутри глубины корпуса.'}`}</p>
+        {handle.value === 'none' && <p className="assembly-summary">Без выступающих ручек. В 3D нажмите на фасад, чтобы открыть ящик.</p>}
         <p className="assembly-summary">Ящики расположены снизу. Верх блока: {Number((wardrobeFillingFloor(selected) * 100).toFixed(1))} см от пола. Полки и штанга располагаются выше него. Крышка блока не входит в число полок.</p>
-        <p className="assembly-summary">Высота ряда включает фасад и зазоры. Внутренняя высота короба — {Number(((selected.drawers.height - .044) * 100).toFixed(1))} см. Фасады используют материал корпуса, ручки — материал фурнитуры секции.</p>
+        <p className="assembly-summary">Высота ряда включает фасад и зазоры. Внутренняя высота короба — {Number(((selected.drawers.height - .044) * 100).toFixed(1))} см. Фасады используют материал корпуса; {handle.value === 'none' ? 'направляющие' : 'ручки и направляющие'} — материал фурнитуры секции.</p>
         <WardrobeDrawerControls section={selected} store={motionStore} />
       </>}
     </ConfigurationSection>
