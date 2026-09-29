@@ -215,3 +215,50 @@ it('cancels an in-flight individual finish on return to inheritance and disposes
   expect(orphanDispose).toHaveBeenCalledTimes(1)
   expect(assembly.group.children).toHaveLength(0)
 })
+
+it('keeps actual manual panel and rod clearances over all heights, both rail types and allowed shelf counts', () => {
+  for (let heightCm = 80; heightCm <= 280; heightCm += 10) for (const rod of [false, true]) for (const depth of [.4, .5, .8]) for (let shelves = 0; shelves <= 6; shelves++) {
+    let config = normalizeWardrobeAssembly({ sections: [{ height: heightCm / 100, rod, depth, shelves }] })
+    config = updateWardrobeAssembly(config, { type: 'set-layout-mode', id: config.sections[0].id, manual: true })
+    const section = config.sections[0]
+    if (!section.layout) continue
+    const parts = planWardrobeParts(config), rail = parts.find(p => p.name.endsWith('/Rail'))
+    const panels = parts.filter(p => /\/(Bottom|Top|Shelf_\d+)$/.test(p.name)).sort((a, b) => a.position[1] - b.position[1])
+    for (let i = 1; i < panels.length; i++) expect(panels[i].position[1] - panels[i].size[1] / 2 - panels[i - 1].position[1] - panels[i - 1].size[1] / 2).toBeGreaterThanOrEqual(.2 - 1e-8)
+    parts.filter(p => p.name.includes('/Shelf_')).forEach((part, i) => expect(part.position[1] - .008).toBeCloseTo(section.layout!.shelves[i], 8))
+    if (rail) {
+      expect(rail.position[1]).toBe(section.layout.rod)
+      expect(rail.position[1]).toBeGreaterThanOrEqual(1.2)
+      const below = panels.filter(p => p.position[1] < rail.position[1]).at(-1)!, above = panels.find(p => p.position[1] > rail.position[1])!
+      expect(rail.position[1] - rail.size[0] - below.position[1] - below.size[1] / 2).toBeGreaterThanOrEqual(.6 - 1e-8)
+      expect(above.position[1] - above.size[1] / 2 - rail.position[1]).toBeGreaterThanOrEqual(.08 - 1e-8)
+      for (const part of parts.filter(p => p.name.includes('/Bracket_'))) {
+        expect(part.position[1] - part.size[1] / 2).toBeCloseTo(rail.position[1], 8)
+        expect(part.position[1] + part.size[1] / 2).toBeCloseTo(above.position[1] - above.size[1] / 2, 8)
+      }
+    }
+  }
+})
+it('moves actual meshes at fixed carcass dimensions and reuses panel geometry, UVs and materials', async () => {
+  let config = updateWardrobeAssembly(createDefaultWardrobe(), { type: 'set-layout-mode', id: 'section-2', manual: true })
+  config = updateWardrobeAssembly(config, { type: 'update-section', id: 'section-2', patch: { depth: .4 } })
+  const assembly = createWardrobeAssembly(config, { createMaterial: async () => new MeshStandardMaterial() })
+  await assembly.setFinishes(config)
+  const shelf = assembly.group.getObjectByName('section-2/Shelf_1') as Mesh, rail = assembly.group.getObjectByName('section-2/Rail') as Mesh
+  const geometry = shelf.geometry, uv = geometry.getAttribute('uv'), material = shelf.material
+  const side = assembly.group.getObjectByName('section-2/Side_Left') as Mesh, oldBox = new Box3().setFromObject(assembly.group, true)
+  const sidePosition = side.position.clone(), shelfY = shelf.position.y
+  config = updateWardrobeAssembly(config, { type: 'move-rod', id: 'section-2', height: 1.5 })
+  assembly.update(config)
+  expect(rail.position.y).toBe(1.5); expect(shelf.position.y).toBe(shelfY)
+  config = updateWardrobeAssembly(config, { type: 'move-shelf', id: 'section-2', index: 0, height: 1.7 })
+  assembly.update(config)
+  expect(shelf.position.y).toBeCloseTo(1.708, 8)
+  expect(side.position).toEqual(sidePosition)
+  expect(shelf.geometry).toBe(geometry); expect(shelf.geometry.getAttribute('uv')).toBe(uv); expect(shelf.material).toBe(material)
+  expect(new Box3().setFromObject(assembly.group, true).equals(oldBox)).toBe(true)
+  const bracket = assembly.group.getObjectByName('section-2/Bracket_1') as Mesh
+  const box = new Box3().setFromObject(bracket, true)
+  expect(box.min.y).toBeCloseTo(1.5, 6); expect(box.max.y).toBeCloseTo(1.7, 6)
+  assembly.dispose()
+})

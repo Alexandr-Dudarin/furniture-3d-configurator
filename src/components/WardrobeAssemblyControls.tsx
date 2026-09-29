@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { BODY_FINISHES, HARDWARE_FINISHES, MAX_SECTIONS, SECTION_DIMENSIONS, SECTION_PRESETS, previewWardrobeSectionUpdate, wardrobeCanHaveRod, wardrobeHeightNeedsConfirmation, wardrobeBounds, wardrobeFillingLabel, wardrobeRodY, wardrobeShelfLimit, wardrobeShelfYs, type WardrobeAssemblyAction, type WardrobeAssemblyConfiguration, type WardrobeSection } from '../configurator/wardrobeAssembly/state'
+import { BODY_FINISHES, HARDWARE_FINISHES, MAX_SECTIONS, SECTION_DIMENSIONS, SECTION_PRESETS, previewWardrobeSectionUpdate, wardrobeCanHaveRod, wardrobeSectionNeedsConfirmation, wardrobeBounds, wardrobeFillingLabel, wardrobeRodY, wardrobeSectionShelfLimit, wardrobeShelfYs, type WardrobeAssemblyAction, type WardrobeAssemblyConfiguration, type WardrobeSection } from '../configurator/wardrobeAssembly/state'
 import { ConfigurationSection } from './ConfigurationSection'
 import { SizeControl } from './assembly/SizeControl'
 import { FinishPicker } from './assembly/FinishPicker'
 import { getMaterialFinish } from '../three/materials/materialRegistry'
 import { CustomSelect } from './ui/CustomSelect/CustomSelect'
 import { WardrobeHeightConfirmation } from './WardrobeHeightConfirmation'
+import { WardrobeFillingPositions } from './WardrobeFillingPositions'
 import { WardrobeSectionMaterials } from './WardrobeSectionMaterials'
 import { wardrobeSectionFinish } from '../configurator/wardrobeAssembly/state'
 
@@ -13,11 +14,11 @@ export function WardrobeAssemblyControls({ configuration, onAction, onFrame }: {
   configuration: WardrobeAssemblyConfiguration; onAction: (action: WardrobeAssemblyAction) => void; onFrame: () => void
 }) {
   const [selectedId, setSelectedId] = useState(configuration.sections[0].id)
-  const [pendingHeight, setPendingHeight] = useState<{ current: WardrobeSection; next: WardrobeSection } | null>(null)
+  const [pendingHeight, setPendingHeight] = useState<{ current: WardrobeSection; next: WardrobeSection; patch: Partial<Omit<WardrobeSection, 'id'>> } | null>(null)
   const selected = configuration.sections.find(section => section.id === selectedId) ?? configuration.sections[0]
   const index = configuration.sections.indexOf(selected)
   const bounds = wardrobeBounds(configuration)
-  const shelfLimit = wardrobeShelfLimit(selected.height, selected.rod)
+  const shelfLimit = wardrobeSectionShelfLimit(selected)
   const cm = (value: number) => Math.round(value * 100)
   // If a reset/restore changes the source while the dialog is open, discard
   // the preview rather than applying an old decision to a different section.
@@ -25,7 +26,7 @@ export function WardrobeAssemblyControls({ configuration, onAction, onFrame }: {
   const update = (patch: Partial<Omit<WardrobeSection, 'id'>>) => {
     if (pending) return
     const next = previewWardrobeSectionUpdate(selected, patch)
-    if (wardrobeHeightNeedsConfirmation(selected, next)) setPendingHeight({ current: selected, next })
+    if (wardrobeSectionNeedsConfirmation(selected, next)) setPendingHeight({ current: selected, next, patch })
     else onAction({ type: 'update-section', id: selected.id, patch })
   }
   return <div className="wardrobe-assembly-controls">
@@ -33,7 +34,7 @@ export function WardrobeAssemblyControls({ configuration, onAction, onFrame }: {
       number={configuration.sections.indexOf(pending.current) + 1} onCancel={() => setPendingHeight(null)} onConfirm={() => {
         setPendingHeight(null)
         if (configuration.sections.includes(pending.current)) onAction({ type: 'update-section', id: pending.current.id,
-          patch: { height: pending.next.height }, confirmHeightChange: true })
+          patch: pending.patch, confirmFillingChange: true })
       }} />}
     <h2 className="wardrobe-heading">Собрать гардеробную</h2>
     <p className="assembly-summary">Прямая открытая сборка. Выберите секцию слева направо, чтобы изменить её размеры и наполнение.</p>
@@ -53,7 +54,7 @@ export function WardrobeAssemblyControls({ configuration, onAction, onFrame }: {
           <svg viewBox="0 0 56 72" aria-hidden="true">
             <path d="M8 68V5h40v63M8 64h40" fill="none" stroke="currentColor" strokeWidth="2" />
             {wardrobeShelfYs(section).map((y, i) => <path key={i} d={`M9 ${64 - y / section.height * 59}h38`} stroke="currentColor" />)}
-            {section.rod && <path d={`M12 ${64 - wardrobeRodY(section.height) / section.height * 59}h32`} stroke="currentColor" strokeWidth="3" />}
+            {section.rod && <path d={`M12 ${64 - wardrobeRodY(section) / section.height * 59}h32`} stroke="currentColor" strokeWidth="3" />}
           </svg>
           <strong>Секция {order + 1}</strong><span>{cm(section.width)} см</span>
           {(section.bodyFinish || section.hardwareFinish) && <span className="wardrobe-own-finish">Свой материал</span>}
@@ -94,8 +95,11 @@ export function WardrobeAssemblyControls({ configuration, onAction, onFrame }: {
       </div>
       <p className="assembly-summary">{selected.rod
         ? `${selected.depth < .5 ? 'При глубине меньше 50 см используется торцевая штанга. ' : ''}Ось штанги — не ниже 120 см от пола. Под ней до полки или дна остаётся не меньше 60 см.`
-        : 'Полки распределяются равномерно. Свободное расстояние между ними — не меньше 20 см.'}</p>
-      {shelfLimit < (selected.rod ? 2 : 6) && <p className="assembly-summary">Варианты полок ограничены высотой секции. Уменьшение высоты с удалением наполнения потребует подтверждения.</p>}
+        : selected.layout ? 'Высоты полок настроены вручную. Свободное расстояние между ними — не меньше 20 см.' : 'Полки распределяются равномерно. Свободное расстояние между ними — не меньше 20 см.'}</p>
+      {shelfLimit < (selected.rod ? 2 : 6) && <p className="assembly-summary">Варианты полок ограничены высотой секции и режимом расположения. Уменьшение высоты с удалением наполнения потребует подтверждения.</p>}
+    </ConfigurationSection>
+    <ConfigurationSection title="Высоты полок и штанги" summary={selected.layout ? 'Настроены вручную · шаг 5 см' : 'Автоматическое расположение'}>
+      <WardrobeFillingPositions key={selected.id} section={selected} onAction={onAction} />
     </ConfigurationSection>
     <ConfigurationSection title={`Секция ${index + 1}: материалы`} summary={`${getMaterialFinish(wardrobeSectionFinish(configuration, selected, 'bodyFinish')).label} · ${selected.bodyFinish ? 'свой' : 'общий'}`}>
       <WardrobeSectionMaterials configuration={configuration} section={selected} onAction={onAction} />

@@ -1,4 +1,6 @@
 import type { FurnitureDimensionConfig } from '../../three/furniture/types'
+import { MIN_ROD_SECTION_HEIGHT, fitWardrobeLayout, isValidWardrobeLayout, readWardrobeLayout, wardrobeCanHaveRod, wardrobeShelfLimit, wardrobeManualShelfLimit, wardrobeLayoutTargets, wardrobeLayoutAdjustments, type WardrobeLayout } from './layout'
+export * from './layout'
 
 // Prototype ranges. These are configurator limits, not production approval.
 export const SECTION_DIMENSIONS: Record<'width' | 'height' | 'depth', FurnitureDimensionConfig> = {
@@ -7,45 +9,6 @@ export const SECTION_DIMENSIONS: Record<'width' | 'height' | 'depth', FurnitureD
   depth: { label: 'Глубина секции', base: .55, min: .4, max: .8, step: .05 },
 }
 export const MAX_SECTIONS = 6
-export const PANEL_THICKNESS = .016
-export const BACK_THICKNESS = .004
-export const PLINTH_HEIGHT = .07
-export const MIN_SHELF_CLEARANCE = .2
-export const MIN_ROD_CLEARANCE = .6
-export const ROD_RADIUS = .0125
-export const MIN_ROD_SECTION_HEIGHT = 1.5
-export const MIN_ROD_AXIS_HEIGHT = 1.2
-const ROD_TOP_CLEARANCE = .08
-
-export function wardrobeCanHaveRod(height: number) {
-  return height >= MIN_ROD_SECTION_HEIGHT
-}
-
-// Shared by state validation, the controls and the actual geometry. Clearances
-// are usable space between surfaces, never a distance between panel centres.
-export function wardrobeRodY(height: number) {
-  return Math.max(height - .38, MIN_ROD_AXIS_HEIGHT, PLINTH_HEIGHT + PANEL_THICKNESS + MIN_ROD_CLEARANCE + ROD_RADIUS)
-}
-export function wardrobeShelfLimit(height: number, rod: boolean) {
-  const floor = PLINTH_HEIGHT + PANEL_THICKNESS
-  if (rod) {
-    const y = wardrobeRodY(height)
-    if (height - .26 - PANEL_THICKNESS / 2 - y < ROD_TOP_CLEARANCE - 1e-9) return 0
-    const lowerTop = floor + MIN_SHELF_CLEARANCE + PANEL_THICKNESS
-    return y - ROD_RADIUS - lowerTop >= MIN_ROD_CLEARANCE - 1e-9 ? 2 : 1
-  }
-  const inside = height - PANEL_THICKNESS - floor
-  return Math.max(0, Math.min(6, Math.floor((inside - MIN_SHELF_CLEARANCE + 1e-9) / (MIN_SHELF_CLEARANCE + PANEL_THICKNESS))))
-}
-export function wardrobeShelfYs(section: Pick<WardrobeSection, 'height' | 'shelves' | 'rod'>) {
-  const { height, rod } = section
-  const count = Math.min(section.shelves, wardrobeShelfLimit(height, rod))
-  const floor = PLINTH_HEIGHT + PANEL_THICKNESS
-  if (rod) return count === 0 ? [] : count === 1 ? [height - .26] : [height - .26, floor + MIN_SHELF_CLEARANCE + PANEL_THICKNESS / 2]
-  const gap = (height - PANEL_THICKNESS - floor - count * PANEL_THICKNESS) / (count + 1)
-  return Array.from({ length: count }, (_, index) => floor + gap + PANEL_THICKNESS / 2 + index * (gap + PANEL_THICKNESS))
-}
-
 export function wardrobeFillingLabel(section: Pick<WardrobeSection, 'shelves' | 'rod'>) {
   const { shelves, rod } = section
   if (rod) return shelves === 2 ? 'Штанга · верхняя и нижняя полки' : shelves === 1 ? 'Штанга · верхняя полка' : 'Штанга · без полок'
@@ -61,7 +24,7 @@ export const SECTION_PRESETS = [
 export type SectionPreset = typeof SECTION_PRESETS[number]['id']
 export type WardrobeFinishSlot = 'bodyFinish' | 'hardwareFinish'
 // Omitted finish = live inheritance, not a copy of the assembly's current value.
-export type WardrobeSection = { id: string; width: number; height: number; depth: number; shelves: number; rod: boolean; bodyFinish?: string; hardwareFinish?: string }
+export type WardrobeSection = { id: string; width: number; height: number; depth: number; shelves: number; rod: boolean; bodyFinish?: string; hardwareFinish?: string; layout?: WardrobeLayout }
 export type WardrobeAssemblyConfiguration = { sections: WardrobeSection[]; bodyFinish: string; hardwareFinish: string }
 export function wardrobeSectionFinish(config: WardrobeAssemblyConfiguration, section: WardrobeSection, slot: WardrobeFinishSlot) {
   return section[slot] ?? config[slot]
@@ -70,8 +33,11 @@ export type WardrobeAssemblyAction =
   | { type: 'add-section'; preset: SectionPreset }
   | { type: 'remove-section'; id: string }
   | { type: 'move-section'; id: string; direction: -1 | 1 }
-  | { type: 'update-section'; id: string; patch: Partial<Omit<WardrobeSection, 'id'>>; confirmHeightChange?: boolean }
+  | { type: 'update-section'; id: string; patch: Partial<Omit<WardrobeSection, 'id'>>; confirmHeightChange?: boolean; confirmFillingChange?: boolean }
   | { type: 'set-wardrobe-finish'; slot: 'bodyFinish' | 'hardwareFinish'; finishId: string }
+  | { type: 'set-layout-mode'; id: string; manual: boolean }
+  | { type: 'move-shelf'; id: string; index: number; height: number }
+  | { type: 'move-rod'; id: string; height: number }
   | { type: 'set-section-finish'; id: string; slot: WardrobeFinishSlot; finishId: string | null }
 
 function record(input: unknown): Record<string, unknown> {
@@ -86,28 +52,46 @@ function section(input: unknown, id: string): WardrobeSection {
   const height = size(raw.height, SECTION_DIMENSIONS.height)
   const rod = raw.rod === true && wardrobeCanHaveRod(height)
   const requestedShelves = typeof raw.shelves === 'number' && Number.isFinite(raw.shelves) ? Math.round(raw.shelves) : rod ? 1 : 4
-  return {
+  const manual = readWardrobeLayout(raw.layout)
+  const limit = manual ? wardrobeManualShelfLimit(height, rod) : wardrobeShelfLimit(height, rod)
+  const result: WardrobeSection = {
     id, width: size(raw.width, SECTION_DIMENSIONS.width), height, depth: size(raw.depth, SECTION_DIMENSIONS.depth),
-    shelves: Math.max(0, Math.min(wardrobeShelfLimit(height, rod), requestedShelves)),
+    shelves: Math.max(0, Math.min(limit, requestedShelves)),
     rod,
     ...(typeof raw.bodyFinish === 'string' && BODY_FINISHES.includes(raw.bodyFinish) ? { bodyFinish: raw.bodyFinish } : {}),
     ...(typeof raw.hardwareFinish === 'string' && HARDWARE_FINISHES.includes(raw.hardwareFinish) ? { hardwareFinish: raw.hardwareFinish } : {}),
   }
+  if (manual) {
+    const targets = raw.rod === true && !rod ? { shelves: [...manual.shelves].sort((a, b) => a - b) } : manual
+    const layout = fitWardrobeLayout(result, targets)
+    if (layout) result.layout = layout
+  }
+  return result
 }
 export function previewWardrobeSectionUpdate(current: WardrobeSection, patch: Partial<Omit<WardrobeSection, 'id'>>) {
   const changes = { ...patch }
   const height = size(changes.height ?? current.height, SECTION_DIMENSIONS.height)
   if (changes.rod && !current.rod && changes.shelves === undefined && wardrobeCanHaveRod(height)) changes.shelves = Math.min(current.shelves, 1)
-  return section({ ...current, ...changes }, current.id)
+  const next = section({ ...current, ...changes, layout: undefined }, current.id)
+  if (current.layout && changes.layout === undefined) {
+    next.shelves = Math.min(next.shelves, wardrobeManualShelfLimit(next.height, next.rod))
+    const layout = fitWardrobeLayout(next, wardrobeLayoutTargets(current, next))
+    if (layout) next.layout = layout
+    return next
+  }
+  return section({ ...next, layout: changes.layout }, current.id)
 }
 export function wardrobeHeightNeedsConfirmation(current: WardrobeSection, next: WardrobeSection) {
-  return next.height < current.height && ((current.rod && !next.rod) || next.shelves < current.shelves)
+  return next.height < current.height && ((current.rod && !next.rod) || next.shelves < current.shelves || wardrobeLayoutAdjustments(current, next).length > 0)
+}
+export function wardrobeSectionNeedsConfirmation(current: WardrobeSection, next: WardrobeSection) {
+  return wardrobeHeightNeedsConfirmation(current, next) || wardrobeLayoutAdjustments(current, next).length > 0
 }
 export function wardrobeAdjustmentNotice(input: unknown, normalized: WardrobeAssemblyConfiguration) {
   const raw = record(input)
   if (!Array.isArray(raw.sections)) return null
   if (raw.sections.slice(0, MAX_SECTIONS).some((item, i) => record(item).rod === true && !normalized.sections[i]?.rod)) {
-    return 'Штанги в секциях ниже 150 см удалены по новым правилам. Оставшиеся полки распределены равномерно; размеры и материалы сохранены в допустимых пределах.'
+    return 'Штанги в секциях ниже 150 см удалены по новым правилам. Проверьте оставшиеся полки; размеры и материалы сохранены в допустимых пределах.'
   }
   if (raw.sections.slice(0, MAX_SECTIONS).some((item, i) => typeof record(item).shelves === 'number' && Number(record(item).shelves) > (normalized.sections[i]?.shelves ?? 0))) {
     return 'Количество полок скорректировано по высоте секций и допустимым зазорам. Проверьте наполнение восстановленной сборки.'
@@ -116,6 +100,10 @@ export function wardrobeAdjustmentNotice(input: unknown, normalized: WardrobeAss
     .some(slot => record(item)[slot] != null && record(item)[slot] !== normalized.sections[i]?.[slot]))) {
     return 'Недоступные материалы отдельных секций заменены общими материалами сборки.'
   }
+  if (raw.sections.slice(0, MAX_SECTIONS).some((item, i) => {
+    const value = record(item).layout
+    return value !== undefined && (!readWardrobeLayout(value) || JSON.stringify(readWardrobeLayout(value)) !== JSON.stringify(normalized.sections[i]?.layout))
+  })) return 'Положения полок и штанг скорректированы по размерам секций, шагу 5 см и допустимым зазорам. Проверьте наполнение.'
   return null
 }
 export function createWardrobeSection(id: string, preset: SectionPreset, dimensions?: Partial<WardrobeSection>) {
@@ -165,8 +153,28 @@ export function updateWardrobeAssembly(current: WardrobeAssemblyConfiguration, a
     next = { ...current, sections: current.sections.map(item => {
       if (item.id !== action.id) return item
       const candidate = previewWardrobeSectionUpdate(item, action.patch)
-      if (wardrobeHeightNeedsConfirmation(item, candidate) && !action.confirmHeightChange) return item
+      if (wardrobeSectionNeedsConfirmation(item, candidate) && !action.confirmFillingChange && !(action.confirmHeightChange && candidate.height !== item.height)) return item
       return candidate
+    }) }
+  } else if (action.type === 'set-layout-mode' || action.type === 'move-shelf' || action.type === 'move-rod') {
+    next = { ...current, sections: current.sections.map(item => {
+      if (item.id !== action.id) return item
+      if (action.type === 'set-layout-mode') {
+        if (!action.manual) return section({ ...item, layout: undefined }, item.id)
+        if (item.layout) return item
+        const layout = fitWardrobeLayout(item)
+        return layout ? { ...item, layout } : item
+      }
+      if (!item.layout || !Number.isFinite(action.height)) return item
+      const layout: WardrobeLayout = { ...item.layout, shelves: [...item.layout.shelves] }
+      if (action.type === 'move-rod') {
+        if (!item.rod) return item
+        layout.rod = action.height
+      } else {
+        if (!Number.isInteger(action.index) || action.index < 0 || action.index >= item.shelves) return item
+        layout.shelves[action.index] = action.height
+      }
+      return isValidWardrobeLayout(item, layout) ? { ...item, layout } : item
     }) }
   } else if (action.type === 'set-wardrobe-finish') {
     const allowed = action.slot === 'bodyFinish' ? BODY_FINISHES : HARDWARE_FINISHES

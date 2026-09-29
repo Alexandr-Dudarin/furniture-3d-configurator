@@ -378,3 +378,8 @@
 .wardrobe-inherited-finish { margin: 8px 0 0; color: #405570; font-size: 13px; line-height: 1.6; }
 .wardrobe-inherited-finish span { display: block; color: #61738d; font-size: 12px; }
 .wardrobe-sections .wardrobe-own-finish { color: #1765bd; font-size: 11px; }
+
+.wardrobe-position { margin-top: 18px; padding-top: 12px; border-top: 1px solid #e8edf2; }
+.wardrobe-position .dimension-control { margin-top: 0; }
+.wardrobe-position-gap { margin: 2px 0 0; font-size: 12px; line-height: 1.5; color: #526070; }
+.wardrobe-filling-positions input:disabled { cursor: not-allowed; }

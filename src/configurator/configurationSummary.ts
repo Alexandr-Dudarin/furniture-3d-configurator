@@ -3,7 +3,7 @@ import { getFurnitureDefinition } from './furnitureRegistry'
 import type { ConfiguratorSession } from './savedConfiguration'
 import { getTableBase, getTabletopEdgeProfile, TOP_SHAPES } from './tableAssembly/catalog'
 import { getMaterialFinish } from '../three/materials/materialRegistry'
-import { wardrobeBounds, wardrobeFillingLabel, wardrobeSectionFinish } from './wardrobeAssembly/state'
+import { wardrobeBounds, wardrobeFillingLabel, wardrobeSectionFinish, wardrobeShelfLabel } from './wardrobeAssembly/state'
 
 const number = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 3 })
 const size = (meters: number, unit: 'см' | 'мм') => `${number.format(meters * (unit === 'мм' ? 1000 : 100))} ${unit}`
@@ -22,6 +22,10 @@ export function getConfigurationSummary(session: ConfiguratorSession): Configura
       { label: 'Общий материал штанг', value: getMaterialFinish(config.hardwareFinish).label },
       ...config.sections.flatMap((section, index) => [
         { label: `Секция ${index + 1}: корпус и полки`, value: `${getMaterialFinish(wardrobeSectionFinish(config, section, 'bodyFinish')).label} · ${section.bodyFinish ? 'свой' : 'общий'}` },
+        ...(section.layout ? [
+          ...(section.shelves ? [{ label: `Секция ${index + 1}: низ полок от пола`, value: section.layout.shelves.map((y, i) => `${wardrobeShelfLabel(section, i)} — ${size(y, 'см')}`).join('; ') }] : []),
+          ...(section.rod ? [{ label: `Секция ${index + 1}: ось штанги от пола`, value: size(section.layout.rod!, 'см') }] : []),
+        ] : []),
         ...(section.rod ? [{ label: `Секция ${index + 1}: штанга`, value: `${getMaterialFinish(wardrobeSectionFinish(config, section, 'hardwareFinish')).label} · ${section.hardwareFinish ? 'свой' : 'общий'}` }] : []),
       ]),
     ] }

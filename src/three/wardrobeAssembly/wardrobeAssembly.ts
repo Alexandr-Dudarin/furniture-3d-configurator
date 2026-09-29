@@ -29,7 +29,7 @@ export function planWardrobeParts(config: WardrobeAssemblyConfiguration): Part[]
       add(`Shelf_${index + 1}`, [inside - .002, panel, d - back - .025], [0, y, (back - .025) / 2])
     }
     if (section.rod) {
-      const y = wardrobeRodY(h)
+      const y = wardrobeRodY(section)
       if (d >= .5) {
         rod('Rail', ROD_RADIUS, inside - .016, [0, y, 0], 'x')
         for (const side of [-1, 1]) rod(`Socket_${side}`, .018, .008, [side * (inside / 2 - .004), y, 0], 'x')
@@ -82,7 +82,7 @@ export function createWardrobeAssembly(initial: WardrobeAssemblyConfiguration, o
   let geometries = new Map<string, BufferGeometry>()
   let previousGeometryKey = ''
   const update = (configuration: WardrobeAssemblyConfiguration) => {
-    const geometryKey = JSON.stringify(configuration.sections.map(({ id, width, height, depth, shelves, rod }) => [id, width, height, depth, shelves, rod]))
+    const geometryKey = JSON.stringify(configuration.sections.map(({ id, width, height, depth, shelves, rod, layout }) => [id, width, height, depth, shelves, rod, layout]))
     if (disposed || geometryKey === previousGeometryKey) return
     const nextGeometry = new Map<string, BufferGeometry>(), keep = new Set<string>()
     for (const part of planWardrobeParts(configuration)) {
