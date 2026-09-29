@@ -57,12 +57,15 @@ it('keeps usable shelf and hanging clearances across all supported heights and d
         const gap = panels[i].position[1] - panels[i].size[1] / 2 - panels[i - 1].position[1] - panels[i - 1].size[1] / 2
         expect(gap).toBeGreaterThanOrEqual(.2 - 1e-8)
       }
-      if (rod) {
-        const rail = parts.find(p => p.name.endsWith('/Rail'))!
-        const below = panels.filter(p => p.position[1] < rail.position[1]).at(-1)!
-        expect(rail.position[1] - rail.size[0] - below.position[1] - below.size[1] / 2).toBeGreaterThanOrEqual(.6 - 1e-8)
-        const above = panels.find(p => p.position[1] > rail.position[1])!
-        expect(above.position[1] - above.size[1] / 2 - rail.position[1] - rail.size[0]).toBeGreaterThan(.05)
+      const rail = parts.find(p => p.name.endsWith('/Rail'))
+      if (heightCm < 150) expect(rail).toBeUndefined()
+      if (config.sections[0].rod) {
+        expect(rail).toBeDefined()
+        expect(rail!.position[1]).toBeGreaterThanOrEqual(1.2)
+        const below = panels.filter(p => p.position[1] < rail!.position[1]).at(-1)!
+        expect(rail!.position[1] - rail!.size[0] - below.position[1] - below.size[1] / 2).toBeGreaterThanOrEqual(.6 - 1e-8)
+        const above = panels.find(p => p.position[1] > rail!.position[1])!
+        expect(above.position[1] - above.size[1] / 2 - rail!.position[1] - rail!.size[0]).toBeGreaterThan(.05)
         for (const bracket of parts.filter(p => p.name.includes('/Bracket_'))) {
           expect(bracket.size[1]).toBeGreaterThan(0)
           expect(bracket.position[1] + bracket.size[1] / 2).toBeCloseTo(above.position[1] - above.size[1] / 2, 7)

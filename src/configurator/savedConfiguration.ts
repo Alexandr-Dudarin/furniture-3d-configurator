@@ -6,7 +6,7 @@ import { DEFAULT_FURNITURE_ID, getFurnitureDefinitions } from './furnitureRegist
 import { DEFAULT_EDGE_PROFILE } from './tableAssembly/catalog'
 
 import { createDefaultAssembly, normalizeTableAssembly, updateTableAssembly, type TableAssemblyConfiguration } from './tableAssembly/state'
-import { createDefaultWardrobe, normalizeWardrobeAssembly, updateWardrobeAssembly, type WardrobeAssemblyAction, type WardrobeAssemblyConfiguration } from './wardrobeAssembly/state'
+import { createDefaultWardrobe, normalizeWardrobeAssembly, updateWardrobeAssembly, wardrobeAdjustmentNotice, type WardrobeAssemblyAction, type WardrobeAssemblyConfiguration } from './wardrobeAssembly/state'
 
 export const CONFIGURATION_VERSION = 4
 export const CONFIGURATION_STORAGE_KEY = 'furniture-3d-configurator:configuration:v4'
@@ -122,7 +122,7 @@ export function readSavedSession(raw: string | null): { session: ConfiguratorSes
       session.wardrobe = normalizeWardrobeAssembly(input.wardrobe)
       if (input.mode === 'wardrobe') session.mode = 'wardrobe'
     }
-    return { session, notice: null }
+    return { session, notice: input.version >= 4 ? wardrobeAdjustmentNotice(input.wardrobe, session.wardrobe) : null }
   } catch {
     return { session, notice: 'Сохранённые настройки не удалось прочитать. Открыты начальные параметры.' }
   }
@@ -130,6 +130,7 @@ export function readSavedSession(raw: string | null): { session: ConfiguratorSes
 
 type SharedConfigurationResult = {
   status: 'absent' | 'invalid' | 'valid' | 'adjusted'
+  notice?: string
   configuration?: SharedConfiguration
   assembly?: TableAssemblyConfiguration
   wardrobe?: WardrobeAssemblyConfiguration
@@ -152,7 +153,8 @@ export function readSharedConfiguration(href: string): SharedConfigurationResult
         if (isRecord(a) && isRecord(b)) return Object.keys(a).length === Object.keys(b).length && Object.keys(b).every(key => Object.hasOwn(a, key) && equal(a[key], b[key]))
         return a === b
       }
-      return { status: equal(input.wardrobe, wardrobe) ? 'valid' : 'adjusted', wardrobe }
+      const notice = wardrobeAdjustmentNotice(input.wardrobe, wardrobe)
+      return { status: equal(input.wardrobe, wardrobe) ? 'valid' : 'adjusted', wardrobe, ...(notice ? { notice } : {}) }
     }
     if (input.kind === 'table-assembly' && input.version >= 2) {
       if (!isRecord(input.assembly)) return { status: 'invalid' }

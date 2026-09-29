@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { BODY_FINISHES, HARDWARE_FINISHES, MAX_SECTIONS, createDefaultWardrobe, createWardrobeSection, normalizeWardrobeAssembly, updateWardrobeAssembly, wardrobeBounds } from './state'
+import { BODY_FINISHES, HARDWARE_FINISHES, MAX_SECTIONS, createDefaultWardrobe, createWardrobeSection, normalizeWardrobeAssembly, previewWardrobeSectionUpdate, updateWardrobeAssembly, wardrobeBounds, wardrobeHeightNeedsConfirmation } from './state'
 import { getMaterialFinish } from '../../three/materials/materialRegistry'
 
 describe('straight wardrobe assembly state', () => {
@@ -53,12 +53,38 @@ describe('straight wardrobe assembly state', () => {
     let config = createDefaultWardrobe()
     config = updateWardrobeAssembly(config, { type: 'update-section', id: 'section-2', patch: { shelves: 2 } })
     expect(config.sections[1].shelves).toBe(2)
-    config = updateWardrobeAssembly(config, { type: 'update-section', id: 'section-2', patch: { height: 1.2 } })
-    expect(config.sections[1].shelves).toBe(1)
-    config = updateWardrobeAssembly(config, { type: 'update-section', id: 'section-2', patch: { height: .8 } })
-    expect(config.sections[1]).toMatchObject({ height: .8, rod: true, shelves: 0 })
+    config = updateWardrobeAssembly(config, { type: 'update-section', id: 'section-2', patch: { height: 1.5 }, confirmHeightChange: true })
+    expect(config.sections[1].shelves).toBe(0)
+    config = updateWardrobeAssembly(config, { type: 'update-section', id: 'section-2', patch: { height: .8 }, confirmHeightChange: true })
+    expect(config.sections[1]).toMatchObject({ height: .8, rod: false, shelves: 0 })
     config = updateWardrobeAssembly(config, { type: 'update-section', id: 'section-2', patch: { height: 2.8, depth: .8 } })
     expect(config.sections[1]).toMatchObject({ height: 2.8, depth: .8, shelves: 0 })
     expect(createWardrobeSection('section-4', 'shelves', { height: .8 }).shelves).toBe(2)
+  })
+  it('waits for explicit confirmation before removing a rod or shelves, with a pure cancellable preview', () => {
+    const config = createDefaultWardrobe(), current = config.sections[1]
+    const preview = previewWardrobeSectionUpdate(current, { height: 1.4 })
+    expect(preview).toMatchObject({ height: 1.4, rod: false, shelves: 1 })
+    expect(wardrobeHeightNeedsConfirmation(current, preview)).toBe(true)
+    expect(current).toMatchObject({ height: 2.2, rod: true, shelves: 1 })
+    expect(updateWardrobeAssembly(config, { type: 'update-section', id: current.id, patch: { height: 1.4 } })).toBe(config)
+    const accepted = updateWardrobeAssembly(config, { type: 'update-section', id: current.id, patch: { height: 1.4 }, confirmHeightChange: true })
+    expect(accepted.sections[1]).toEqual(preview)
+    expect(accepted.sections[0]).toBe(config.sections[0])
+    const taller = updateWardrobeAssembly(accepted, { type: 'update-section', id: current.id, patch: { height: 2.2 } })
+    expect(taller.sections[1].rod).toBe(false)
+    expect(updateWardrobeAssembly(config, { type: 'update-section', id: 'section-1', patch: { height: .8 } })).toBe(config)
+    expect(wardrobeHeightNeedsConfirmation(current, previewWardrobeSectionUpdate(current, { height: 1.6 }))).toBe(false)
+  })
+  it('rejects rods below 150 cm without dropping existing shelves and creates a valid new hanging section', () => {
+    const low = createWardrobeSection('section-1', 'shelves', { height: 1.4 })
+    const config = { ...createDefaultWardrobe(), sections: [low] }
+    expect(updateWardrobeAssembly(config, { type: 'update-section', id: low.id, patch: { rod: true } })).toBe(config)
+    const added = updateWardrobeAssembly(config, { type: 'add-section', preset: 'hanging' })
+    expect(added.sections[1]).toMatchObject({ height: 1.5, rod: true, shelves: 0 })
+    expect(added.sections[0]).toBe(low)
+    for (const height of [.8, 1, 1.4]) {
+      expect(normalizeWardrobeAssembly({ sections: [{ height, rod: true, shelves: 1 }] }).sections[0]).toMatchObject({ height, rod: false, shelves: 1 })
+    }
   })
 })

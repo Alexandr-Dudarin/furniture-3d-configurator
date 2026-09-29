@@ -164,6 +164,15 @@
 .wardrobe-assembly-controls button:focus-visible { outline: 2px solid #1767ca; outline-offset: 2px; }
 .wardrobe-toggle { display: flex; align-items: center; gap: 10px; min-height: 44px; font-size: 14px; }
 .wardrobe-toggle input { width: 18px; height: 18px; accent-color: #1767ca; }
+.wardrobe-height-dialog { box-sizing: border-box; width: min(440px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); overflow-y: auto; padding: 24px; border: 1px solid #d6dfea; border-radius: 16px; background: #fff; color: #243147; box-shadow: 0 16px 64px #182b4433; }
+.wardrobe-height-dialog::backdrop { background: #182b4470; }
+.wardrobe-height-dialog h2 { margin: 0 0 16px; font-size: 19px; line-height: 1.35; }
+.wardrobe-height-dialog p { margin: 10px 0; font-size: 14px; line-height: 1.5; }
+.wardrobe-height-dialog-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+.wardrobe-height-dialog-actions button { flex: 1 1 140px; min-height: 44px; padding: 10px 12px; border: 1px solid #cbd8e9; border-radius: 9px; font: inherit; font-size: 14px; background: #fff; color: #344b66; cursor: pointer; }
+.wardrobe-height-dialog-actions button:hover { background: #f2f6fc; }
+.wardrobe-height-dialog-actions .wardrobe-confirm-height { border-color: #edc2be; background: #fff3f2; color: #a73535; }
+.wardrobe-height-dialog-actions .wardrobe-confirm-height:hover { background: #ffe6e3; }
 
 .assembly-field {
   display: block;

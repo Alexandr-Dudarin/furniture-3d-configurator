@@ -44,7 +44,7 @@ export function createConfiguratorStore(environment: ConfiguratorEnvironment) {
     notice: shared.status === 'invalid'
       ? 'Конфигурация в ссылке недоступна. Открыты ваши последние или начальные настройки.'
       : shared.status === 'adjusted'
-        ? 'Некоторые параметры ссылки недоступны. Они заменены допустимыми значениями.'
+        ? shared.notice ?? 'Некоторые параметры ссылки недоступны. Они заменены допустимыми значениями.'
         : shared.status === 'valid' ? 'Конфигурация открыта по ссылке.' : restored.notice,
   }
   const listeners = new Set<() => void>()
