@@ -6,7 +6,23 @@ export * from './layout'
 export const SECTION_DIMENSIONS: Record<'width' | 'height' | 'depth', FurnitureDimensionConfig> = {
   width: { label: 'Ширина секции', base: .6, min: .4, max: 1, step: .05 },
   height: { label: 'Высота секции', base: 2.2, min: .8, max: 2.8, step: .1 },
-  depth: { label: 'Глубина секции', base: .55, min: .4, max: .8, step: .05 },
+  depth: { label: 'Глубина корпуса', base: .55, min: .4, max: .8, step: .05 },
+}
+export const RECESSED_DRAWER_INSET = .029
+export const DRAWER_HANDLE_PROJECTION = .028
+export const DRAWER_PLACEMENTS = [
+  { value: 'recessed', label: 'Утопленные' },
+  { value: 'flush', label: 'Вровень с корпусом' },
+] as const
+export function wardrobeDrawerPlacementLabel(drawers: WardrobeDrawers) {
+  return DRAWER_PLACEMENTS.find(option => option.value === (drawers.placement ?? 'recessed'))!.label
+}
+export function wardrobeDrawerFrontInset(drawers?: WardrobeDrawers) {
+  return drawers?.placement === 'flush' ? 0 : RECESSED_DRAWER_INSET
+}
+export function wardrobeSectionClosedDepth(section: WardrobeSection) {
+  const projection = section.drawers ? Math.max(0, DRAWER_HANDLE_PROJECTION - wardrobeDrawerFrontInset(section.drawers)) : 0
+  return Number((section.depth + projection).toFixed(8))
 }
 export const MAX_SECTIONS = 6
 export function wardrobeFillingLabel(section: Pick<WardrobeSection, 'shelves' | 'rod' | 'drawers'>): string {
@@ -57,7 +73,10 @@ function section(input: unknown, id: string): WardrobeSection {
   const drawerHeight = DRAWER_HEIGHTS.find(value => value === drawerInput.height) ?? .2
   const drawerCount = typeof drawerInput.count === 'number' && Number.isFinite(drawerInput.count)
     ? Math.max(0, Math.min(wardrobeDrawerLimit(height, rod, drawerHeight), Math.round(drawerInput.count))) : 0
-  const drawers = drawerCount ? { count: drawerCount, height: drawerHeight } : undefined
+  // Omitted placement retains the original recessed drawers without migrating
+  // old v4 configurations. Preserve either explicitly selected valid choice.
+  const drawers: WardrobeDrawers | undefined = drawerCount ? { count: drawerCount, height: drawerHeight,
+    ...(drawerInput.placement === 'flush' || drawerInput.placement === 'recessed' ? { placement: drawerInput.placement } : {}) } : undefined
   const manual = readWardrobeLayout(raw.layout)
   const limit = manual ? wardrobeManualShelfLimit(height, rod, drawers) : wardrobeShelfLimit(height, rod, drawers)
   const result: WardrobeSection = {
@@ -148,6 +167,11 @@ export function normalizeWardrobeAssembly(input: unknown): WardrobeAssemblyConfi
 export function wardrobeBounds(config: WardrobeAssemblyConfiguration) {
   return { width: Number(config.sections.reduce((sum, item) => sum + item.width, 0).toFixed(8)),
     height: Math.max(...config.sections.map(item => item.height)), depth: Math.max(...config.sections.map(item => item.depth)) }
+}
+// Rear panels stay aligned using carcass bounds; framing and overall dimensions
+// additionally include handles of the CLOSED drawers, even at mixed depths.
+export function wardrobeClosedBounds(config: WardrobeAssemblyConfiguration) {
+  return { ...wardrobeBounds(config), depth: Math.max(...config.sections.map(wardrobeSectionClosedDepth)) }
 }
 export function updateWardrobeAssembly(current: WardrobeAssemblyConfiguration, action: WardrobeAssemblyAction) {
   let next = current

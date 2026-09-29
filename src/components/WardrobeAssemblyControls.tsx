@@ -1,8 +1,8 @@
 import { WardrobeDrawerControls } from './WardrobeDrawerControls'
 import type { FurnitureMotionStore } from '../configurator/furnitureMotionStore'
-import { DRAWER_HEIGHTS, wardrobeDrawerLimit, wardrobeFillingFloor } from '../configurator/wardrobeAssembly/state'
+import { DRAWER_HEIGHTS, DRAWER_PLACEMENTS, wardrobeDrawerPlacementLabel, wardrobeSectionClosedDepth, wardrobeDrawerLimit, wardrobeFillingFloor } from '../configurator/wardrobeAssembly/state'
 import { useState } from 'react'
-import { BODY_FINISHES, HARDWARE_FINISHES, MAX_SECTIONS, SECTION_DIMENSIONS, SECTION_PRESETS, previewWardrobeSectionUpdate, wardrobeCanHaveRod, wardrobeSectionNeedsConfirmation, wardrobeBounds, wardrobeFillingLabel, wardrobeRodY, wardrobeSectionShelfLimit, wardrobeShelfYs, type WardrobeAssemblyAction, type WardrobeAssemblyConfiguration, type WardrobeSection } from '../configurator/wardrobeAssembly/state'
+import { BODY_FINISHES, HARDWARE_FINISHES, MAX_SECTIONS, SECTION_DIMENSIONS, SECTION_PRESETS, previewWardrobeSectionUpdate, wardrobeCanHaveRod, wardrobeSectionNeedsConfirmation, wardrobeClosedBounds, wardrobeFillingLabel, wardrobeRodY, wardrobeSectionShelfLimit, wardrobeShelfYs, type WardrobeAssemblyAction, type WardrobeAssemblyConfiguration, type WardrobeSection } from '../configurator/wardrobeAssembly/state'
 import { ConfigurationSection } from './ConfigurationSection'
 import { SizeControl } from './assembly/SizeControl'
 import { FinishPicker } from './assembly/FinishPicker'
@@ -20,9 +20,9 @@ export function WardrobeAssemblyControls({ configuration, onAction, onFrame, mot
   const [pendingHeight, setPendingHeight] = useState<{ current: WardrobeSection; next: WardrobeSection; patch: Partial<Omit<WardrobeSection, 'id'>> } | null>(null)
   const selected = configuration.sections.find(section => section.id === selectedId) ?? configuration.sections[0]
   const index = configuration.sections.indexOf(selected)
-  const bounds = wardrobeBounds(configuration)
+  const bounds = wardrobeClosedBounds(configuration)
   const shelfLimit = wardrobeSectionShelfLimit(selected)
-  const cm = (value: number) => Math.round(value * 100)
+  const cm = (value: number) => (value * 100).toLocaleString('ru-RU', { maximumFractionDigits: 1 })
   // If a reset/restore changes the source while the dialog is open, discard
   // the preview rather than applying an old decision to a different section.
   const pending = pendingHeight && configuration.sections.includes(pendingHeight.current) ? pendingHeight : null
@@ -42,6 +42,7 @@ export function WardrobeAssemblyControls({ configuration, onAction, onFrame, mot
     <h2 className="wardrobe-heading">Собрать гардеробную</h2>
     <p className="assembly-summary">Прямая открытая сборка. Выберите секцию слева направо, чтобы изменить её размеры и наполнение.</p>
     <p className="assembly-total"><span>Общие Ш × В × Г</span><strong>{cm(bounds.width)} × {cm(bounds.height)} × {cm(bounds.depth)} см</strong></p>
+    {configuration.sections.some(section => section.drawers?.placement === 'flush') && <p className="assembly-summary">Общая глубина учитывает выступающие ручки закрытых ящиков.</p>}
     <button type="button" className="wardrobe-frame-button" onClick={onFrame}
       title="Вернуть исходный ракурс и подобрать масштаб под текущие размеры сборки" aria-describedby="wardrobe-frame-hint">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
@@ -88,7 +89,7 @@ export function WardrobeAssemblyControls({ configuration, onAction, onFrame, mot
     <ConfigurationSection title={`Секция ${index + 1}: размеры`} summary={`${cm(selected.width)} × ${cm(selected.height)} × ${cm(selected.depth)} см`} initialOpen>
       {(['width', 'height', 'depth'] as const).map(dimension => <SizeControl key={`${selected.id}-${dimension}`} name={SECTION_DIMENSIONS[dimension].label}
         value={selected[dimension]} config={SECTION_DIMENSIONS[dimension]} onChange={value => update({ [dimension]: value })} />)}
-      <p className="assembly-summary">У каждой секции свой корпус. Задние стенки стоят на одной линии; при разной глубине передние края отличаются.</p>
+      <p className="assembly-summary">Здесь указаны размеры корпуса без выступающих ручек. Задние стенки секций стоят на одной линии; при разной глубине передние края отличаются.</p>
     </ConfigurationSection>
     <ConfigurationSection title="Наполнение секции" summary={wardrobeFillingLabel(selected)} initialOpen>
       {wardrobeCanHaveRod(selected.height)
@@ -104,18 +105,26 @@ export function WardrobeAssemblyControls({ configuration, onAction, onFrame, mot
         : selected.layout ? 'Высоты полок настроены вручную. Свободное расстояние между ними — не меньше 20 см.' : 'Полки распределяются равномерно. Свободное расстояние между ними — не меньше 20 см.'}</p>
       {shelfLimit < (selected.rod ? 2 : 6) && <p className="assembly-summary">Варианты полок ограничены высотой секции и режимом расположения. Уменьшение высоты с удалением наполнения потребует подтверждения.</p>}
     </ConfigurationSection>
-    <ConfigurationSection title="Ящики внизу секции" summary={selected.drawers ? `${selected.drawers.count} шт. · ряд ${cm(selected.drawers.height)} см` : 'Без ящиков'} initialOpen>
+    <ConfigurationSection title="Ящики внизу секции" summary={selected.drawers ? `${selected.drawers.count} шт. · ряд ${cm(selected.drawers.height)} см · ${wardrobeDrawerPlacementLabel(selected.drawers)}` : 'Без ящиков'} initialOpen>
       <div className="assembly-field"><span>Количество ящиков</span>
         <CustomSelect value={String(selected.drawers?.count ?? 0)} ariaLabel="Количество ящиков в выбранной секции"
           options={Array.from({ length: wardrobeDrawerLimit(selected.height, selected.rod, selected.drawers?.height ?? .2) + 1 }, (_, count) => ({ value: String(count), label: count ? String(count) : 'Без ящиков' }))}
-          onChange={value => update({ drawers: Number(value) ? { count: Number(value), height: selected.drawers?.height ?? .2 } : undefined })} />
+          onChange={value => update({ drawers: Number(value) ? { ...selected.drawers, count: Number(value), height: selected.drawers?.height ?? .2 } : undefined })} />
       </div>
       {selected.drawers && <>
         <div className="assembly-field"><span>Высота ряда</span>
           <CustomSelect value={String(selected.drawers.height)} ariaLabel="Высота ряда ящиков"
             options={DRAWER_HEIGHTS.map(height => ({ value: String(height), label: `${cm(height)} см` }))}
-            onChange={value => update({ drawers: { count: selected.drawers!.count, height: Number(value) } })} />
+            onChange={value => update({ drawers: { ...selected.drawers!, height: Number(value) } })} />
         </div>
+        <div className="assembly-field"><span>Положение фасадов</span>
+          <CustomSelect value={selected.drawers.placement ?? 'recessed'} ariaLabel="Положение фасадов ящиков"
+            options={[...DRAWER_PLACEMENTS]}
+            onChange={value => update({ drawers: { ...selected.drawers!, placement: value === 'flush' ? 'flush' : 'recessed' } })} />
+        </div>
+        <p className="assembly-summary">{selected.drawers.placement === 'flush'
+          ? `Фасады вровень с передними краями боковин. Ручки выступают на 2,8 см; глубина секции с ручками — ${cm(wardrobeSectionClosedDepth(selected))} см.`
+          : 'Фасады углублены на 2,9 см. Ручки остаются внутри глубины корпуса.'}</p>
         <p className="assembly-summary">Ящики расположены снизу. Верх блока: {Number((wardrobeFillingFloor(selected) * 100).toFixed(1))} см от пола. Полки и штанга располагаются выше него. Крышка блока не входит в число полок.</p>
         <p className="assembly-summary">Высота ряда включает фасад и зазоры. Внутренняя высота короба — {Number(((selected.drawers.height - .044) * 100).toFixed(1))} см. Фасады используют материал корпуса, ручки — материал фурнитуры секции.</p>
         <WardrobeDrawerControls section={selected} store={motionStore} />

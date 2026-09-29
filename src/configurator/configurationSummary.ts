@@ -3,7 +3,7 @@ import { getFurnitureDefinition } from './furnitureRegistry'
 import type { ConfiguratorSession } from './savedConfiguration'
 import { getTableBase, getTabletopEdgeProfile, TOP_SHAPES } from './tableAssembly/catalog'
 import { getMaterialFinish } from '../three/materials/materialRegistry'
-import { wardrobeBounds, wardrobeFillingFloor, wardrobeFillingLabel, wardrobeSectionFinish, wardrobeShelfLabel } from './wardrobeAssembly/state'
+import { wardrobeBounds, wardrobeClosedBounds, wardrobeDrawerPlacementLabel, wardrobeSectionClosedDepth, wardrobeFillingFloor, wardrobeFillingLabel, wardrobeSectionFinish, wardrobeShelfLabel } from './wardrobeAssembly/state'
 
 const number = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 3 })
 const size = (meters: number, unit: 'см' | 'мм') => `${number.format(meters * (unit === 'мм' ? 1000 : 100))} ${unit}`
@@ -11,19 +11,22 @@ export type ConfigurationSummary = { title: string; fileStem: string; rows: { la
 
 export function getConfigurationSummary(session: ConfiguratorSession): ConfigurationSummary {
   if (session.mode === 'wardrobe') {
-    const config = session.wardrobe, bounds = wardrobeBounds(config)
+    const config = session.wardrobe, bounds = wardrobeClosedBounds(config)
     return { title: 'Модульная гардеробная', fileStem: 'wardrobe-assembly', rows: [
       { label: 'Компоновка', value: `Прямая · ${config.sections.length} секций` },
       { label: 'Общая ширина', value: size(bounds.width, 'см') },
       { label: 'Максимальная высота', value: size(bounds.height, 'см') },
-      { label: 'Максимальная глубина', value: size(bounds.depth, 'см') },
-      ...config.sections.map((section, index) => ({ label: `Секция ${index + 1}`, value: `${Math.round(section.width * 100)} × ${Math.round(section.height * 100)} × ${Math.round(section.depth * 100)} см · ${wardrobeFillingLabel(section)}${section.rod && section.depth < .5 ? ' · торцевая штанга' : ''}` })),
+      { label: 'Максимальная глубина корпуса', value: size(wardrobeBounds(config).depth, 'см') },
+      { label: 'Глубина сборки с ручками (ящики закрыты)', value: size(bounds.depth, 'см') },
+      ...config.sections.map((section, index) => ({ label: `Секция ${index + 1}`, value: `${Math.round(section.width * 100)} × ${Math.round(section.height * 100)} × ${Math.round(section.depth * 100)} см (корпус) · ${wardrobeFillingLabel(section)}${section.rod && section.depth < .5 ? ' · торцевая штанга' : ''}` })),
       { label: 'Общий материал корпуса', value: getMaterialFinish(config.bodyFinish).label },
       { label: 'Общий материал фурнитуры', value: getMaterialFinish(config.hardwareFinish).label },
       ...config.sections.flatMap((section, index) => [
         { label: `Секция ${index + 1}: ${section.drawers ? 'корпус, полки и ящики' : 'корпус и полки'}`, value: `${getMaterialFinish(wardrobeSectionFinish(config, section, 'bodyFinish')).label} · ${section.bodyFinish ? 'свой' : 'общий'}` },
         ...(section.drawers ? [
           { label: `Секция ${index + 1}: ящики`, value: `${section.drawers.count} шт. · высота ряда ${size(section.drawers.height, 'см')} · верх блока ${size(wardrobeFillingFloor(section), 'см')}` },
+          { label: `Секция ${index + 1}: положение фасадов ящиков`, value: wardrobeDrawerPlacementLabel(section.drawers) },
+          { label: `Секция ${index + 1}: глубина с ручками (ящики закрыты)`, value: size(wardrobeSectionClosedDepth(section), 'см') },
           { label: `Секция ${index + 1}: ручки`, value: `${getMaterialFinish(wardrobeSectionFinish(config, section, 'hardwareFinish')).label} · ${section.hardwareFinish ? 'свой' : 'общий'}` },
         ] : []),
         ...(section.layout ? [

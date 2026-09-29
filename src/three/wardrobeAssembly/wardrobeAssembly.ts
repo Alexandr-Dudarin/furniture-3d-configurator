@@ -2,7 +2,7 @@ import type { MotionPartState } from '../../configurator/furnitureMotionStore'
 import { createWardrobeDrawerMotion, type DrawerMotionEntry } from './wardrobeDrawerMotion'
 import { BufferGeometry, CylinderGeometry, Group, Mesh, MeshStandardMaterial } from 'three'
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
-import { BACK_THICKNESS as back, PANEL_THICKNESS as panel, PLINTH_HEIGHT as plinth, ROD_RADIUS, wardrobeBounds, wardrobeRodY, wardrobeShelfYs, wardrobeSectionFinish, type WardrobeAssemblyConfiguration } from '../../configurator/wardrobeAssembly/state'
+import { BACK_THICKNESS as back, PANEL_THICKNESS as panel, PLINTH_HEIGHT as plinth, ROD_RADIUS, wardrobeBounds, wardrobeDrawerFrontInset, wardrobeRodY, wardrobeShelfYs, wardrobeSectionFinish, type WardrobeAssemblyConfiguration } from '../../configurator/wardrobeAssembly/state'
 import { createFinishMaterial } from '../materials/createMaterial'
 import { disposeMaterialResources } from '../materials/disposeMaterials'
 
@@ -34,7 +34,8 @@ export function planWardrobeParts(config: WardrobeAssemblyConfiguration): Part[]
       const { count, height: row } = section.drawers
       const floor = plinth + panel
       add('Drawers_Lid', [inside, panel, d - back], [0, floor + count * row + panel / 2, back / 2])
-      const frontBack = d / 2 - .045, boxBack = -d / 2 + back + .02
+      const frontFace = d / 2 - wardrobeDrawerFrontInset(section.drawers)
+      const frontBack = frontFace - panel, boxBack = -d / 2 + back + .02
       const length = frontBack - boxBack, boxWidth = inside - .025
       for (let i = 0; i < count; i++) {
         const name = `Drawer_${i + 1}`, drawerId = `${id}/${name}`, y = floor + i * row
@@ -52,9 +53,9 @@ export function planWardrobeParts(config: WardrobeAssemblyConfiguration): Part[]
         }
         board('Back', [boxWidth - 2 * panel, row - .04, panel], [0, y + .012 + (row - .04) / 2, boxBack + panel / 2])
         board('Bottom', [boxWidth - 2 * panel, back, length - panel], [0, y + .012 + back / 2, (boxBack + panel + frontBack) / 2])
-        rod(`${name}/Handle`, .004, .136, [0, y + row * .7, d / 2 - .005], 'x'); mark()
+        rod(`${name}/Handle`, .004, .136, [0, y + row * .7, frontFace + .024], 'x'); mark()
         for (const side of [-1, 1]) {
-          rod(`${name}/HandleMount_${side}`, .004, .02, [side * .064, y + row * .7, d / 2 - .019], 'z'); mark()
+          rod(`${name}/HandleMount_${side}`, .004, .02, [side * .064, y + row * .7, frontFace + .01], 'z'); mark()
         }
       }
     }

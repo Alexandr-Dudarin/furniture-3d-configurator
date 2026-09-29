@@ -17,7 +17,7 @@ const up = (n: number) => round(Math.ceil((n - EPSILON) / FILLING_POSITION_STEP)
 const down = (n: number) => round(Math.floor((n + EPSILON) / FILLING_POSITION_STEP) * FILLING_POSITION_STEP)
 const nearest = (n: number) => round(Math.round(n / FILLING_POSITION_STEP) * FILLING_POSITION_STEP)
 export type WardrobeLayout = { shelves: number[]; rod?: number }
-export type WardrobeDrawers = { count: number; height: number }
+export type WardrobeDrawers = { count: number; height: number; placement?: 'recessed' | 'flush' }
 export const DRAWER_HEIGHTS = [.2, .25, .3] as const
 export const MAX_DRAWERS = 4
 export type WardrobeFilling = { height: number; shelves: number; rod: boolean; layout?: WardrobeLayout; drawers?: WardrobeDrawers }

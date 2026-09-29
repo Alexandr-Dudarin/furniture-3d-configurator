@@ -14,7 +14,7 @@ import { useCatalogScene } from './furniture/useCatalogScene'
 import type { FurnitureView } from './furniture/furniturePresentation'
 import { useTableAssemblyScene } from './tableAssembly/useTableAssemblyScene'
 import { useWardrobeAssemblyScene } from './wardrobeAssembly/useWardrobeAssemblyScene'
-import { wardrobeBounds } from '../configurator/wardrobeAssembly/state'
+import { wardrobeClosedBounds } from '../configurator/wardrobeAssembly/state'
 
 const wardrobeFrame = combineFurnitureFrames(getFurnitureDefinitions().filter(model => model.category === 'wardrobes').map(model => model.framing))
 
@@ -51,7 +51,7 @@ export default function SceneView({ store, furnitureView, motionStore, pngExport
 
   const selectedHeight = session.models[session.selectedModelId].dimensions.height
   const sectionCount = session.wardrobe.sections.length
-  const { width: wardrobeWidth, height: wardrobeHeight, depth: wardrobeDepth } = wardrobeBounds(session.wardrobe)
+  const { width: wardrobeWidth, height: wardrobeHeight, depth: wardrobeDepth } = wardrobeClosedBounds(session.wardrobe)
   useEffect(() => {
     const definition = getFurnitureDefinition(session.selectedModelId)
     if (session.mode === 'wardrobe') {
