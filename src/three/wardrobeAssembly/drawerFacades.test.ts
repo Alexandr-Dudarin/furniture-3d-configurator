@@ -120,7 +120,7 @@ it.each(['fluted', 'fluted-wide'] as const)('%s retains opening, shared geometry
   const shaderData = front.geometry.getAttribute(RELIEF_ATTRIBUTE), positions = front.geometry.getAttribute('position')
   const activeWidths = new Set(Array.from({ length: shaderData.count }, (_, i) => shaderData.getZ(i)).filter(width => width > 0))
   expect(activeWidths.size).toBe(1)
-  expect([...activeWidths][0]).toBeCloseTo(style === 'fluted-wide' ? .014 : .004, 7)
+  expect([...activeWidths][0]).toBeCloseTo(style === 'fluted-wide' ? .006 : .004, 7)
   for (let i = 0; i < positions.count; i++) {
     expect(positions.getZ(i) + shaderData.getX(i)).toBeLessThanOrEqual(.00800001)
     if (positions.getY(i) > .196 / 2 - .031) expect(Math.abs(shaderData.getX(i))).toBeLessThan(1e-7)

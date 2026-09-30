@@ -4,13 +4,14 @@ import type { WardrobeSection } from '../configurator/wardrobeAssembly/state'
 
 export function WardrobeDrawerControls({ section, store }: { section: WardrobeSection; store: FurnitureMotionStore }) {
   const snapshot = useSyncExternalStore(store.subscribe, store.getSnapshot)
-  const states = snapshot.modelId === 'wardrobe-assembly' ? snapshot.parts.filter(p => p.id.startsWith(`${section.id}/`)) : []
+  const states = snapshot.modelId === 'wardrobe-assembly' ? snapshot.parts.filter(p => p.id.startsWith(`${section.id}/Drawer_`)) : []
   const opened = states.filter(p => p.open).length
-  const setSection = (open: boolean) => states.forEach(p => { if (p.open !== open) store.toggle('wardrobe-assembly', p.id) })
+  const setSection = (open: boolean) => states.forEach(p => { if (p.enabled && p.open !== open) store.toggle('wardrobe-assembly', p.id) })
   return <>
+    {states.find(p => p.reason)?.reason && <p className="assembly-summary" role="status">{states.find(p => p.reason)!.reason}</p>}
     <p className="motion-hint">Нажмите на ящик в 3D или на кнопку ниже. Нумерация снизу вверх.</p>
     <div className="motion-actions">
-      <button type="button" disabled={!states.length || opened === states.length} onClick={() => setSection(true)}>Открыть в секции</button>
+      <button type="button" disabled={!states.some(p => p.enabled && !p.open)} onClick={() => setSection(true)}>Открыть в секции</button>
       <button type="button" disabled={!opened} onClick={() => setSection(false)}>Закрыть в секции</button>
     </div>
     <div className="motion-parts">

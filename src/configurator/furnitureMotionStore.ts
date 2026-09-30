@@ -1,6 +1,6 @@
 // A transient bridge between the lazy 3D scene and ordinary UI buttons.
 // Opening a door never changes the saved configuration or its share URL.
-export type MotionPartState = { id: string; open: boolean; enabled: boolean }
+export type MotionPartState = { id: string; open: boolean; enabled: boolean; reason?: string }
 export type MotionSnapshot = { modelId: string | null; parts: readonly MotionPartState[] }
 export type MotionCommands = {
   toggle: (id: string) => void

@@ -12,6 +12,27 @@ export function facadeFlutingProfile(spec: FacadeVariants, style: FacadeStyleId)
   return style === 'fluted-wide' ? { ...spec.fluted, width: spec.fluted.width * 3.5 } : spec.fluted
 }
 
+// Wide channels have a flat floor and two rounded 2 mm walls, rather than
+// stretching a shallow cosine across the entire 14 mm width.
+export function wideGroove(offset: number, width: number, depth: number) {
+  const wall = Math.min(.002, width / 3)
+  const t = Math.max(0, Math.min(1, (width / 2 - Math.abs(offset)) / wall))
+  return { depth: depth * t * t * (3 - 2 * t),
+    slope: -Math.sign(offset) * depth * 6 * t * (1 - t) / wall }
+}
+export function flutingSamples(width: number, wide: boolean) {
+  if (!wide) return Array.from({ length: 9 }, (_, i) => width * (i / 8 - .5))
+  const wall = Math.min(.002, width / 3), half = width / 2
+  return [...Array.from({ length: 5 }, (_, i) => -half + wall * i / 4), 0,
+    ...Array.from({ length: 5 }, (_, i) => half - wall + wall * i / 4)]
+}
+// Filter by the smallest repeated band. Wide grooves retain their broad floor,
+// while their remaining 6 mm lands still fade before they become subpixel.
+export function flutingFilterProfile(spec: FacadeVariants, style: FacadeStyleId) {
+  const profile = facadeFlutingProfile(spec, style)
+  return { ...profile, width: style === 'fluted-wide' ? Math.min(profile.width, profile.pitch - profile.width) : profile.width }
+}
+
 export function grooveLayout(width: number, profile: FacadeVariants['fluted']) {
   // Add/remove whole pairs at the edges; the centre groove never shifts by half
   // a pitch when the count changes during a one-millimetre resize.
@@ -58,7 +79,7 @@ export function createFacadeGeometry(width: number, height: number, thickness: n
   if (Math.min(width, height, thickness) <= 2 * b || spec.frame.depth >= thickness || spec.fluted.depth >= thickness) {
     throw new Error('Facade profile exceeds its panel envelope')
   }
-  const positions: number[] = [], uv: number[] = [], indices: number[] = [], flatFront: number[] = []
+  const positions: number[] = [], uv: number[] = [], indices: number[] = [], flatFront: number[] = [], wideNormals: { id: number; x: number; y: number }[] = []
   const vertex = (p: Point, u = .5 + p[0], v = .5 + p[1]) => {
     const index = positions.length / 3; positions.push(...p); uv.push(u, v); return index
   }
@@ -113,7 +134,7 @@ export function createFacadeGeometry(width: number, height: number, thickness: n
     count = centers.length
     if (!count || height <= 2 * (profile.endMargin + profile.fade)) throw new Error('Facade is too small for its fluting')
     const xs = [-width / 2, -width / 2 + b]
-    for (const center of centers) for (let i = 0; i <= 8; i++) xs.push(center + profile.width * (i / 8 - .5))
+    for (const center of centers) for (const offset of flutingSamples(profile.width, style === 'fluted-wide')) xs.push(center + offset)
     xs.push(width / 2 - b, width / 2)
     const ys = [-height / 2, -height / 2 + b, -height / 2 + profile.endMargin]
     for (let i = 1; i <= 3; i++) ys.push(-height / 2 + profile.endMargin + profile.fade * i / 3)
@@ -121,7 +142,7 @@ export function createFacadeGeometry(width: number, height: number, thickness: n
     ys.push(height / 2 - b, height / 2)
     const points = ys.map(y => xs.map((x): Point => {
       const center = centers.find(c => Math.abs(x - c) <= profile.width / 2 + 1e-10)
-      const groove = center === undefined ? 0 : Math.cos(Math.PI * (x - center) / profile.width) ** 2 * profile.depth
+      const groove = center === undefined ? 0 : (style === 'fluted-wide' ? wideGroove(x - center, profile.width, profile.depth).depth : Math.cos(Math.PI * (x - center) / profile.width) ** 2 * profile.depth)
       const end = Math.max(0, Math.min(1, (height / 2 - Math.abs(y) - profile.endMargin) / profile.fade))
       const fade = Math.sin(end * Math.PI / 2) ** 2
       const edge = Math.max(0, Math.abs(x) - (width / 2 - b), Math.abs(y) - (height / 2 - b))
@@ -139,6 +160,12 @@ export function createFacadeGeometry(width: number, height: number, thickness: n
       const id = vertex(p, us[y][x], vs[x][y])
       // A cosine groove meets its flat land with zero slope. Keep that exact
       // normal so neighbouring grooves do not shade the wide centre like a bowl.
+      if (style === 'fluted-wide' && Math.abs(p[0]) < width / 2 - b - 1e-8 && Math.abs(p[1]) < height / 2 - b - 1e-8) {
+        const center = centers.find(c => Math.abs(p[0] - c) <= profile.width / 2 + 1e-10)
+        const g = center === undefined ? { depth: 0, slope: 0 } : wideGroove(p[0] - center, profile.width, profile.depth)
+        const t = Math.max(0, Math.min(1, (height / 2 - Math.abs(p[1]) - profile.endMargin) / profile.fade))
+        wideNormals.push({ id, x: g.slope * Math.sin(t * Math.PI / 2) ** 2, y: -Math.sign(p[1]) * g.depth * Math.PI / (2 * profile.fade) * Math.sin(t * Math.PI) })
+      }
       if (style === 'fluted-sides' && Math.abs(p[2] - front) < 1e-10) flatFront.push(id)
       return id
     }))
@@ -154,6 +181,9 @@ export function createFacadeGeometry(width: number, height: number, thickness: n
   geometry.setIndex(indices)
   geometry.computeVertexNormals(); geometry.computeBoundingBox(); geometry.computeBoundingSphere()
   for (const id of flatFront) geometry.getAttribute('normal').setXYZ(id, 0, 0, 1)
+  for (const { id, x, y } of wideNormals) {
+    const length = Math.hypot(x, y, 1); geometry.getAttribute('normal').setXYZ(id, x / length, y / length, 1 / length)
+  }
   geometry.userData.facade = { style, width, height, thickness, grooveCount: count }
   return geometry
 }

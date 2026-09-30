@@ -41,7 +41,7 @@ it('bounds a mixed-depth assembly by its actual deepest closed handle or carcass
   expect(wardrobeClosedBounds(wardrobe).depth).toBe(.828)
   const rows = getConfigurationSummary({ ...createDefaultSession(), mode: 'wardrobe', wardrobe }).rows
   expect(rows.find(r => r.label === 'Максимальная глубина корпуса')?.value).toBe('80 см')
-  expect(rows.find(r => r.label === 'Глубина сборки с ручками (ящики закрыты)')?.value).toBe('82,8 см')
+  expect(rows.find(r => r.label === 'Глубина сборки с дверями и ручками (всё закрыто)')?.value).toBe('82,8 см')
   expect(rows.find(r => r.label === 'Секция 1: положение фасадов ящиков')?.value).toBe('Вровень с корпусом')
 })
 it('explains invalid imported placement and preserves the valid choice across session edits', () => {

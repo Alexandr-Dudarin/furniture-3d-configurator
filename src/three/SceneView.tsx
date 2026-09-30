@@ -80,7 +80,7 @@ export default function SceneView({ store, furnitureView, motionStore, pngExport
   useEffect(() => {
     const definition = getFurnitureDefinition(session.selectedModelId)
     const style = session.models[session.selectedModelId].facadeStyle ?? definition.facades?.defaultStyle
-    const detail = session.mode === 'wardrobe' && session.wardrobe.sections.some(section => section.drawers?.facadeStyle === 'fluted' || section.drawers?.facadeStyle === 'fluted-wide') || session.mode === 'catalog' && !!definition.facades &&
+    const detail = session.mode === 'wardrobe' && session.wardrobe.sections.some(section => [section.drawers?.facadeStyle, section.doors?.facadeStyle].some(style => style === 'fluted' || style === 'fluted-wide')) || session.mode === 'catalog' && !!definition.facades &&
       (style === 'fluted' || style === 'fluted-wide' || style === 'fluted-sides' || style === 'diagonal' || style === 'herringbone' || style === 'herringbone-wide' || style === 'diamonds' || style === 'original')
     runtimeRef.current?.setDetailRefinement(detail)
     // Session edits can change geometry immediately; async finish/model readiness

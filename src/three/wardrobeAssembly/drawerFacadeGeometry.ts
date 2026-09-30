@@ -1,7 +1,7 @@
 import { BufferGeometry, Float32BufferAttribute, ShapeUtils, Vector2 } from 'three'
 import type { WardrobeDrawerFacade } from '../../configurator/wardrobeAssembly/drawerFacades'
 import type { WardrobeDrawerHandle } from '../../configurator/wardrobeAssembly/drawerHandles'
-import { createFacadeGeometry, facadeFlutingProfile, grooveLayout } from '../facades/facadeGeometry'
+import { createFacadeGeometry, facadeFlutingProfile, grooveLayout, flutingSamples, wideGroove } from '../facades/facadeGeometry'
 import type { FacadeVariants } from '../facades/types'
 
 export const DRAWER_FACADE_PROFILE: FacadeVariants = {
@@ -31,6 +31,7 @@ function notchedFacade(width: number, height: number, thickness: number, style: 
     return [.05 * Math.cos(angle), top - .030 * Math.sin(angle)]
   })
   const positions: number[] = [], uvs: number[] = [], indices: number[] = []
+  const wideNormals: { id: number; x: number; y: number }[] = []
   const vertex = (p: Point, u = .5 + p[0], v = .5 + p[1]) => {
     const id = positions.length / 3; positions.push(...p); uvs.push(u, v); return id
   }
@@ -72,7 +73,7 @@ function notchedFacade(width: number, height: number, thickness: number, style: 
     const centers = grooveLayout(width, profile).centers
     count = centers.length
     const samples = [-width / 2, width / 2, ...arc.map(p => p[0])]
-    for (const c of centers) for (let i = 0; i <= 8; i++) samples.push(c + profile.width * (i / 8 - .5))
+    for (const c of centers) for (const offset of flutingSamples(profile.width, style === 'fluted-wide')) samples.push(c + offset)
     const xs = samples.sort((a, b) => a - b).filter((x, i, a) => !i || x - a[i - 1] > 1e-9)
     const end = .040, fade = profile.fade
     const ys = [-top, -top + end, -top + end + fade / 3, -top + end + 2 * fade / 3, -top + end + fade,
@@ -85,7 +86,7 @@ function notchedFacade(width: number, height: number, thickness: number, style: 
     }
     const rows = [...ys.map(y => xs.map((x): Point => {
       const c = centers.find(c => Math.abs(x - c) <= profile.width / 2 + 1e-10)
-      const groove = c === undefined ? 0 : Math.cos(Math.PI * (x - c) / profile.width) ** 2 * profile.depth
+      const groove = c === undefined ? 0 : (style === 'fluted-wide' ? wideGroove(x - c, profile.width, profile.depth).depth : Math.cos(Math.PI * (x - c) / profile.width) ** 2 * profile.depth)
       const taper = Math.max(0, Math.min(1, (top - Math.abs(y) - end) / fade))
       return [x, y, front - groove * Math.sin(taper * Math.PI / 2) ** 2]
     })), xs.map((x): Point => [x, cutY(x), front])]
@@ -93,7 +94,17 @@ function notchedFacade(width: number, height: number, thickness: number, style: 
     const grid = rows.map(row => {
       const u = [0]
       for (let i = 1; i < row.length; i++) u.push(u[i - 1] + Math.hypot(row[i][0] - row[i - 1][0], row[i][2] - row[i - 1][2]))
-      return row.map((p, i) => vertex(p, .5 + u[i] - u.at(-1)! / 2, .5 + p[1]))
+      return row.map((p, i) => {
+        const id = vertex(p, .5 + u[i] - u.at(-1)! / 2, .5 + p[1])
+        if (style === 'fluted-wide') {
+          const c = centers.find(c => Math.abs(p[0] - c) <= profile.width / 2 + 1e-10)
+          const g = c === undefined ? { depth: 0, slope: 0 } : wideGroove(p[0] - c, profile.width, profile.depth)
+          const t = Math.max(0, Math.min(1, (top - Math.abs(p[1]) - end) / fade))
+          wideNormals.push({ id, x: g.slope * Math.sin(t * Math.PI / 2) ** 2,
+            y: -Math.sign(p[1]) * g.depth * Math.PI / (2 * fade) * Math.sin(t * Math.PI) })
+        }
+        return id
+      })
     })
     const rear = rows.map(row => row.map(p => vertex([p[0], p[1], back])))
     for (let y = 0; y < rows.length - 1; y++) for (let x = 0; x < xs.length - 1; x++) {
@@ -108,6 +119,9 @@ function notchedFacade(width: number, height: number, thickness: number, style: 
   geometry.setAttribute('position', new Float32BufferAttribute(positions, 3))
   geometry.setAttribute('uv', new Float32BufferAttribute(uvs, 2)); geometry.setIndex(indices)
   geometry.computeVertexNormals(); geometry.computeBoundingBox(); geometry.computeBoundingSphere()
+  for (const { id, x, y } of wideNormals) {
+    const length = Math.hypot(x, y, 1); geometry.getAttribute('normal').setXYZ(id, x / length, y / length, 1 / length)
+  }
   geometry.userData.facade = { style, width, height, thickness, grooveCount: count, notch: true, bevel: 0 }
   return geometry
 }

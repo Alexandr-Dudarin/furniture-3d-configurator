@@ -1,3 +1,4 @@
+import { DOOR_BODY_GAP, DOOR_THICKNESS, normalizeWardrobeDoors, wardrobeDoorHandleProjection, type WardrobeDoors } from './doors'
 import { isWardrobeDrawerFacade } from './drawerFacades'
 import type { FurnitureDimensionConfig } from '../../three/furniture/types'
 import { getWardrobeDrawerHandle, isWardrobeDrawerHandle } from './drawerHandles'
@@ -21,7 +22,12 @@ export function wardrobeDrawerPlacementLabel(drawers: WardrobeDrawers) {
 export function wardrobeDrawerFrontInset(drawers?: WardrobeDrawers) {
   return drawers?.placement === 'flush' ? 0 : RECESSED_DRAWER_INSET
 }
+export function wardrobeSectionDrawerInset(section: WardrobeSection) {
+  const inset = wardrobeDrawerFrontInset(section.drawers)
+  return section.doors && section.drawers ? Math.max(RECESSED_DRAWER_INSET, getWardrobeDrawerHandle(section.drawers.handle).projection + .004) : inset
+}
 export function wardrobeSectionClosedDepth(section: WardrobeSection) {
+  if (section.doors) return Number((section.depth + DOOR_BODY_GAP + DOOR_THICKNESS + wardrobeDoorHandleProjection(section.doors.handle)).toFixed(8))
   const projection = section.drawers ? Math.max(0, getWardrobeDrawerHandle(section.drawers.handle).projection - wardrobeDrawerFrontInset(section.drawers)) : 0
   return Number((section.depth + projection).toFixed(8))
 }
@@ -42,7 +48,7 @@ export const SECTION_PRESETS = [
 export type SectionPreset = typeof SECTION_PRESETS[number]['id']
 export type WardrobeFinishSlot = 'bodyFinish' | 'hardwareFinish'
 // Omitted finish = live inheritance, not a copy of the assembly's current value.
-export type WardrobeSection = { id: string; width: number; height: number; depth: number; shelves: number; rod: boolean; bodyFinish?: string; hardwareFinish?: string; layout?: WardrobeLayout; drawers?: WardrobeDrawers }
+export type WardrobeSection = { id: string; width: number; height: number; depth: number; shelves: number; rod: boolean; bodyFinish?: string; hardwareFinish?: string; layout?: WardrobeLayout; drawers?: WardrobeDrawers; doors?: WardrobeDoors }
 export type WardrobeAssemblyConfiguration = { sections: WardrobeSection[]; bodyFinish: string; hardwareFinish: string }
 export function wardrobeSectionFinish(config: WardrobeAssemblyConfiguration, section: WardrobeSection, slot: WardrobeFinishSlot) {
   return section[slot] ?? config[slot]
@@ -67,6 +73,8 @@ function size(input: unknown, config: FurnitureDimensionConfig) {
 }
 function section(input: unknown, id: string): WardrobeSection {
   const raw = record(input)
+  const width = size(raw.width, SECTION_DIMENSIONS.width)
+  const doors = normalizeWardrobeDoors(raw.doors, width, BODY_FINISHES)
   const height = size(raw.height, SECTION_DIMENSIONS.height)
   const rod = raw.rod === true && wardrobeCanHaveRod(height)
   const requestedShelves = typeof raw.shelves === 'number' && Number.isFinite(raw.shelves) ? Math.round(raw.shelves) : rod ? 1 : 4
@@ -79,14 +87,16 @@ function section(input: unknown, id: string): WardrobeSection {
   const drawers: WardrobeDrawers | undefined = drawerCount ? { count: drawerCount, height: drawerHeight,
     ...(drawerInput.placement === 'flush' || drawerInput.placement === 'recessed' ? { placement: drawerInput.placement } : {}),
     ...(isWardrobeDrawerHandle(drawerInput.handle) ? { handle: drawerInput.handle } : {}),
-    ...(isWardrobeDrawerFacade(drawerInput.facadeStyle) ? { facadeStyle: drawerInput.facadeStyle } : {}) } : undefined
+    ...(isWardrobeDrawerFacade(drawerInput.facadeStyle) ? { facadeStyle: drawerInput.facadeStyle } : {}),
+    ...(doors ? { placement: 'recessed' as const } : {}) } : undefined
   const manual = readWardrobeLayout(raw.layout)
   const limit = manual ? wardrobeManualShelfLimit(height, rod, drawers) : wardrobeShelfLimit(height, rod, drawers)
   const result: WardrobeSection = {
-    id, width: size(raw.width, SECTION_DIMENSIONS.width), height, depth: size(raw.depth, SECTION_DIMENSIONS.depth),
+    id, width, height, depth: size(raw.depth, SECTION_DIMENSIONS.depth),
     shelves: Math.max(0, Math.min(limit, requestedShelves)),
     rod,
     ...(drawers ? { drawers } : {}),
+    ...(doors ? { doors } : {}),
     ...(typeof raw.bodyFinish === 'string' && BODY_FINISHES.includes(raw.bodyFinish) ? { bodyFinish: raw.bodyFinish } : {}),
     ...(typeof raw.hardwareFinish === 'string' && HARDWARE_FINISHES.includes(raw.hardwareFinish) ? { hardwareFinish: raw.hardwareFinish } : {}),
   }
@@ -119,13 +129,18 @@ export function wardrobeSectionNeedsConfirmation(current: WardrobeSection, next:
     (current.shelves > 0 || current.rod) && JSON.stringify(automaticLayout(current)) !== JSON.stringify(automaticLayout(next)) && !current.layout)
   const drawersRemovedForRod = !current.rod && next.rod && (next.drawers?.count ?? 0) < (current.drawers?.count ?? 0)
   const drawersRemovedForRow = !!current.drawers && !!next.drawers && current.drawers.height !== next.drawers.height && next.drawers.count < current.drawers.count
-  return drawersRemovedForRow || displacedByDrawers || drawersRemovedForRod || wardrobeHeightNeedsConfirmation(current, next) || wardrobeLayoutAdjustments(current, next).length > 0
+  const recessForDoors = !!next.doors && current.drawers?.placement === 'flush' && next.drawers?.placement === 'recessed'
+  return recessForDoors || drawersRemovedForRow || displacedByDrawers || drawersRemovedForRod || wardrobeHeightNeedsConfirmation(current, next) || wardrobeLayoutAdjustments(current, next).length > 0
     || (!current.rod && next.rod && next.shelves < current.shelves)
 }
 export function wardrobeAdjustmentNotice(input: unknown, normalized: WardrobeAssemblyConfiguration) {
   const raw = record(input)
   if (!Array.isArray(raw.sections)) return null
   if (raw.sections.length > MAX_SECTIONS) return `В прямой сборке допускается до ${MAX_SECTIONS} секций. Из загруженного варианта оставлены первые ${MAX_SECTIONS}; проверьте состав сборки.`
+  if (raw.sections.slice(0, MAX_SECTIONS).some((item, i) => {
+    const value = record(item).doors
+    return value !== undefined && JSON.stringify(value) !== JSON.stringify(normalized.sections[i]?.doors)
+  })) return 'Параметры дверей скорректированы: ширина одной створки — до 60 см. Проверьте двери и наполнение восстановленной сборки.'
   if (raw.sections.slice(0, MAX_SECTIONS).some((item, i) => {
     const value = record(item).drawers
     return value !== undefined && JSON.stringify(value) !== JSON.stringify(normalized.sections[i]?.drawers)

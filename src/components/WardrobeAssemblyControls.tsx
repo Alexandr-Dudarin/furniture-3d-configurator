@@ -1,3 +1,5 @@
+import { WardrobeDoorControls } from './WardrobeDoorControls'
+import { wardrobeSectionDrawerInset } from '../configurator/wardrobeAssembly/state'
 import { WardrobeDrawerFacadeControls } from './WardrobeDrawerFacadeControls'
 import { WardrobeDrawerControls } from './WardrobeDrawerControls'
 import { drawerInnerHeight, DRAWER_HANDLES, getWardrobeDrawerHandle, isWardrobeDrawerHandle } from '../configurator/wardrobeAssembly/drawerHandles'
@@ -43,9 +45,9 @@ export function WardrobeAssemblyControls({ configuration, onAction, onFrame, mot
           patch: pending.patch, confirmFillingChange: true })
       }} />}
     <h2 className="wardrobe-heading">Собрать гардеробную</h2>
-    <p className="assembly-summary">Прямая открытая сборка. Выберите секцию слева направо, чтобы изменить её размеры и наполнение.</p>
+    <p className="assembly-summary">Прямая сборка с открытыми секциями или дверями. Выберите секцию слева направо, чтобы изменить её размеры и наполнение.</p>
     <p className="assembly-total"><span>Общие Ш × В × Г</span><strong>{cm(bounds.width)} × {cm(bounds.height)} × {cm(bounds.depth)} см</strong></p>
-    {configuration.sections.some(section => wardrobeSectionClosedDepth(section) > section.depth) && <p className="assembly-summary">Общая глубина учитывает выступающие ручки закрытых ящиков.</p>}
+    {configuration.sections.some(section => wardrobeSectionClosedDepth(section) > section.depth) && <p className="assembly-summary">Общая глубина учитывает двери и выступающие ручки при закрытом наполнении.</p>}
     <button type="button" className="wardrobe-frame-button" onClick={onFrame}
       title="Вернуть исходный ракурс и подобрать масштаб под текущие размеры сборки" aria-describedby="wardrobe-frame-hint">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
@@ -67,6 +69,7 @@ export function WardrobeAssemblyControls({ configuration, onAction, onFrame, mot
             {section.rod && <path d={`M12 ${64 - wardrobeRodY(section) / section.height * 59}h32`} stroke="currentColor" strokeWidth="3" />}
           </svg>
           <strong>Секция {order + 1}</strong><span>{cm(section.width)} см</span>
+          {section.doors && <span>{section.doors.count === 1 ? 'Одна дверь' : 'Две двери'}</span>}
           {(section.bodyFinish || section.hardwareFinish) && <span className="wardrobe-own-finish">Свой материал</span>}
         </button>)}
       </div>
@@ -92,8 +95,9 @@ export function WardrobeAssemblyControls({ configuration, onAction, onFrame, mot
     <ConfigurationSection title={`Секция ${index + 1}: размеры`} summary={`${cm(selected.width)} × ${cm(selected.height)} × ${cm(selected.depth)} см`} initialOpen>
       {(['width', 'height', 'depth'] as const).map(dimension => <SizeControl key={`${selected.id}-${dimension}`} name={SECTION_DIMENSIONS[dimension].label}
         value={selected[dimension]} config={SECTION_DIMENSIONS[dimension]} onChange={value => update({ [dimension]: value })} />)}
-      <p className="assembly-summary">Здесь указаны размеры корпуса без выступающих ручек. Задние стенки секций стоят на одной линии; при разной глубине передние края отличаются.</p>
+      <p className="assembly-summary">Здесь указаны размеры корпуса без накладных дверей и выступающих ручек. Задние стенки секций стоят на одной линии; при разной глубине передние края отличаются.</p>
     </ConfigurationSection>
+    <WardrobeDoorControls section={selected} configuration={configuration} store={motionStore} onChange={update} />
     <ConfigurationSection title="Наполнение секции" summary={wardrobeFillingLabel(selected)} initialOpen>
       {wardrobeCanHaveRod(selected.height)
         ? <label className="wardrobe-toggle"><input type="checkbox" checked={selected.rod} onChange={event => update({ rod: event.target.checked })} />Штанга для одежды</label>
@@ -122,7 +126,7 @@ export function WardrobeAssemblyControls({ configuration, onAction, onFrame, mot
         </div>
         <div className="assembly-field"><span>Положение фасадов</span>
           <CustomSelect value={selected.drawers.placement ?? 'recessed'} ariaLabel="Положение фасадов ящиков"
-            options={[...DRAWER_PLACEMENTS]}
+            options={DRAWER_PLACEMENTS.filter(option => !selected.doors || option.value === 'recessed')}
             onChange={value => update({ drawers: { ...selected.drawers!, placement: value === 'flush' ? 'flush' : 'recessed' } })} />
         </div>
         <WardrobeDrawerFacadeControls value={selected.drawers.facadeStyle} notch={handle.value === 'finger-notch'}
@@ -133,7 +137,7 @@ export function WardrobeAssemblyControls({ configuration, onAction, onFrame, mot
         </div>
         <p className="assembly-summary">{selected.drawers.placement === 'flush'
           ? `Фасады вровень с передними краями боковин. ${handle.projection === 0 ? 'Закрытые ящики не выступают за глубину корпуса.' : `Ручки выступают на ${cm(handle.projection)} см; глубина секции с ручками — ${cm(wardrobeSectionClosedDepth(selected))} см.`}`
-          : `Фасады углублены на 2,9 см.${handle.projection === 0 ? '' : (handle.projection <= .029 ? ' Ручки остаются внутри глубины корпуса.' : ` Ручки выступают за корпус на ${cm(handle.projection - .029)} см.`)}`}</p>
+          : `Фасады углублены на ${cm(wardrobeSectionDrawerInset(selected))} см.${handle.projection === 0 ? '' : (handle.projection <= wardrobeSectionDrawerInset(selected) ? ' Ручки остаются внутри глубины корпуса.' : ` Ручки выступают за корпус на ${cm(handle.projection - wardrobeSectionDrawerInset(selected))} см.`)}`}</p>
         {handle.value === 'top-grip' && <p className="assembly-summary">Зазор над фасадом — 4 см. Короб ниже, чтобы освободить место для пальцев.</p>}
         {handle.value === 'semicircle' && <p className="assembly-summary">Верх полукруглой ручки — на 3 см ниже верхнего края фасада.</p>}
         {handle.value === 'finger-notch' && <p className="assembly-summary">Выемка по центру верхнего края: ширина 10 см, глубина 3 см. Материал тот же, что у фасада.</p>}

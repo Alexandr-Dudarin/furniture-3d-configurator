@@ -21,6 +21,8 @@ export function WardrobeHeightConfirmation({ current, next, number, onConfirm, o
     <h2 id={titleId}>Изменить {heightChanged ? 'высоту' : 'наполнение'} секции {number}?</h2>
     <div id={descriptionId}>
       {heightChanged && <p>Высота: {cm(current.height)} → {cm(next.height)} см.</p>}
+      {next.doors && current.drawers?.placement === 'flush' && next.drawers?.placement === 'recessed' &&
+        <p>Для установки дверей ящики будут утоплены в корпус. Их количество, высота и рисунок сохранятся; глубина коробов уменьшится, чтобы ручки не задевали закрытые двери.</p>}
       {removingRod && <p>Штанга будет удалена.{next.height < 1.5 && ' Она доступна только в секциях высотой от 150 см.'}</p>}
       {next.shelves < current.shelves && <p>Количество полок уменьшится: {current.shelves} → {next.shelves}, чтобы сохранить свободное место и зазоры.</p>}
       {removingRod && next.shelves > 0 && !next.layout && <p>Оставшиеся полки будут распределены равномерно по высоте.</p>}
