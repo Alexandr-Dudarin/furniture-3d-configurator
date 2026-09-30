@@ -1,3 +1,7 @@
+import { createDrawerFacadeGeometry, DRAWER_FACADE_PROFILE } from './drawerFacadeGeometry'
+import { createReliefFilter, prepareReliefGeometry, RELIEF_ATTRIBUTE } from '../facades/reliefFilter'
+import type { WardrobeDrawerFacade } from '../../configurator/wardrobeAssembly/drawerFacades'
+import type { WardrobeDrawerHandle } from '../../configurator/wardrobeAssembly/drawerHandles'
 import type { MotionPartState } from '../../configurator/furnitureMotionStore'
 import { createWardrobeDrawerMotion, type DrawerMotionEntry } from './wardrobeDrawerMotion'
 import { Box3, BufferGeometry, CylinderGeometry, Group, Mesh, MeshStandardMaterial } from 'three'
@@ -10,7 +14,7 @@ import { createFinishMaterial } from '../materials/createMaterial'
 import { disposeMaterialResources } from '../materials/disposeMaterials'
 
 type Slot = 'body' | 'hardware'
-type Part = { sectionId: string; name: string; shape: 'panel' | 'rod' | 'notched-front' | 'handle'; handle?: HardwareHandle; size: [number, number, number]; position: [number, number, number]; slot: Slot; drawerId?: string; travel?: number; axis?: 'x' | 'y' | 'z' }
+type Part = { sectionId: string; name: string; shape: 'panel' | 'rod' | 'notched-front' | 'handle' | 'facade'; facadeStyle?: Exclude<WardrobeDrawerFacade, 'smooth'>; facadeHandle?: WardrobeDrawerHandle; handle?: HardwareHandle; size: [number, number, number]; position: [number, number, number]; slot: Slot; drawerId?: string; travel?: number; axis?: 'x' | 'y' | 'z' }
 
 // Separate, closed panels. All dimensions are physical metres, floor is y=0,
 // back faces share z=-maxDepth/2. Adjacent sections retain both side boards.
@@ -49,6 +53,9 @@ export function planWardrobeParts(config: WardrobeAssemblyConfiguration): Part[]
         const board = (suffix: string, size: Part['size'], position: Part['position']) => { add(`${name}/${suffix}`, size, position); mark() }
         board('Front', [inside - .004, row - .004 - cut, panel], [0, y + (row - cut) / 2, frontBack + panel / 2])
         if (handle.value === 'finger-notch') parts.at(-1)!.shape = 'notched-front'
+        if (section.drawers.facadeStyle && section.drawers.facadeStyle !== 'smooth') Object.assign(parts.at(-1)!, {
+          shape: 'facade', facadeStyle: section.drawers.facadeStyle, facadeHandle: handle.value,
+        })
         // The front itself closes the box: sides and bottom end at its rear
         // surface. They travel together, without a floating decorative front.
         for (const side of [-1, 1]) {
@@ -127,6 +134,7 @@ export function createWardrobeAssembly(initial: WardrobeAssemblyConfiguration, o
   group.name = 'WardrobeAssembly_Root'
   const motion = createWardrobeDrawerMotion(group, parts => { options.onMotionChange?.(parts); options.onChange?.() })
   const drawerGroups = new Map<string, Group>()
+  const relief = createReliefFilter()
   let disposed = false, request = 0
   const fallback: Record<Slot, MeshStandardMaterial> = { body: new MeshStandardMaterial({ color: 0xcdbb9d, roughness: .65 }), hardware: new MeshStandardMaterial({ color: 0x16191c, roughness: .35 }) }
   // One owned PBR material per finish actually used, shared across sections.
@@ -146,12 +154,19 @@ export function createWardrobeAssembly(initial: WardrobeAssemblyConfiguration, o
     const moving = new Map<string, DrawerMotionEntry>()
     const volumes = new Map<string, { local: Box3; world: Box3; node: Group }>()
     for (const part of planWardrobeParts(configuration)) {
-      const key = `${part.shape}:${part.handle ?? ''}:${part.size.join(',')}`
+      const key = `${part.shape}:${part.handle ?? ''}:${part.facadeStyle ?? ''}:${part.facadeHandle ?? ''}:${part.size.join(',')}`
       let geometry = nextGeometry.get(key) ?? geometries.get(key)
-      if (!geometry) geometry = part.shape === 'panel' ? panelGeometry(part.size)
+      if (!geometry) geometry = part.shape === 'facade' ? createDrawerFacadeGeometry(...part.size, part.facadeStyle!, part.facadeHandle)
+        : part.shape === 'panel' ? panelGeometry(part.size)
         : part.shape === 'notched-front' ? metricPanelUV(createNotchedFront(...part.size), part.size)
         : part.shape === 'handle' ? createHandleGeometry(part.handle!)
         : new CylinderGeometry(part.size[0], part.size[0], part.size[1], 16)
+      if (part.facadeStyle === 'fluted' && !geometry.hasAttribute(RELIEF_ATTRIBUTE)) {
+        // Prepare once in PANEL coordinates, not at the section's world offset.
+        prepareReliefGeometry(new Mesh(geometry, fallback.body), ...part.size,
+          part.facadeHandle === 'finger-notch' ? 0 : DRAWER_FACADE_PROFILE.bevel,
+          { ...DRAWER_FACADE_PROFILE.fluted, vertical: true })
+      }
       if (!geometry.boundingBox) geometry.computeBoundingBox()
       nextGeometry.set(key, geometry)
       let mesh = meshes.get(part.name)
@@ -171,6 +186,7 @@ export function createWardrobeAssembly(initial: WardrobeAssemblyConfiguration, o
       mesh.userData.materialSlot = part.slot
       mesh.userData.sectionId = part.sectionId
       mesh.geometry = geometry; mesh.material = appliedMaterial(part.sectionId, part.slot)
+      if (geometry.hasAttribute(RELIEF_ATTRIBUTE)) relief.attach(mesh)
       mesh.position.set(...part.position)
       mesh.rotation.set(part.axis === 'z' ? Math.PI / 2 : 0, 0, part.axis === 'x' ? Math.PI / 2 : 0)
       mesh.updateMatrix()
@@ -212,7 +228,10 @@ export function createWardrobeAssembly(initial: WardrobeAssemblyConfiguration, o
     }
     for (const result of prepared) if (result.status === 'fulfilled') materials.set(result.value.id, result.value.value)
     bindings = selected
-    for (const mesh of meshes.values()) mesh.material = appliedMaterial(mesh.userData.sectionId, mesh.userData.materialSlot)
+    for (const mesh of meshes.values()) {
+      mesh.material = appliedMaterial(mesh.userData.sectionId, mesh.userData.materialSlot)
+      if (mesh.geometry.hasAttribute(RELIEF_ATTRIBUTE)) relief.attach(mesh)
+    }
     // Release after rebinding all meshes; another section may still use the old finish.
     for (const [id, value] of materials) if (!needed.has(id)) {
       disposeMaterialResources(value)
@@ -232,7 +251,7 @@ export function createWardrobeAssembly(initial: WardrobeAssemblyConfiguration, o
     dispose() {
     if (disposed) return
     disposed = true; request++
-    motion.dispose(); drawerGroups.clear()
+    motion.dispose(); drawerGroups.clear(); relief.dispose()
     geometries.forEach(geometry => geometry.dispose()); geometries.clear()
     materials.forEach(disposeMaterialResources); materials.clear()
     disposeMaterialResources(fallback.body); disposeMaterialResources(fallback.hardware)

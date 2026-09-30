@@ -1,3 +1,4 @@
+import { getWardrobeDrawerFacade } from './wardrobeAssembly/drawerFacades'
 import { getCatalogHandle } from './handles'
 import { getFacadeStyle } from './facades/catalog'
 import { getFurnitureDefinition } from './furnitureRegistry'
@@ -29,6 +30,7 @@ export function getConfigurationSummary(session: ConfiguratorSession): Configura
           { label: `Секция ${index + 1}: ящики`, value: `${section.drawers.count} шт. · высота ряда ${size(section.drawers.height, 'см')} · верх блока ${size(wardrobeFillingFloor(section), 'см')}` },
           { label: `Секция ${index + 1}: положение фасадов ящиков`, value: wardrobeDrawerPlacementLabel(section.drawers) },
           { label: `Секция ${index + 1}: глубина с ручками (ящики закрыты)`, value: size(wardrobeSectionClosedDepth(section), 'см') },
+          { label: `Секция ${index + 1}: рисунок фасадов ящиков`, value: getWardrobeDrawerFacade(section.drawers.facadeStyle).label },
           { label: `Секция ${index + 1}: ручки`, value: getWardrobeDrawerHandle(section.drawers.handle).projection === 0 ? getWardrobeDrawerHandle(section.drawers.handle).label : `${getWardrobeDrawerHandle(section.drawers.handle).label} · ${getMaterialFinish(wardrobeSectionFinish(config, section, 'hardwareFinish')).label} · ${section.hardwareFinish ? 'свой' : 'общий'}` },
           { label: `Секция ${index + 1}: направляющие`, value: `${getMaterialFinish(wardrobeSectionFinish(config, section, 'hardwareFinish')).label} · ${section.hardwareFinish ? 'свой' : 'общий'}` },
         ] : []),

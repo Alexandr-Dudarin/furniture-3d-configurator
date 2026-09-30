@@ -3,7 +3,7 @@ import { FACADE_STYLES, getFacadeStyle } from '../configurator/facades/catalog'
 import { ConfigurationSection } from './ConfigurationSection'
 import { ChoiceGrid } from './assembly/ChoiceGrid'
 
-function FacadePreview({ style }: { style: FacadeStyleId }) {
+export function FacadePreview({ style }: { style: FacadeStyleId }) {
   return <svg viewBox="0 0 100 68" fill="none" aria-hidden="true">
     <rect x="10" y="8" width="80" height="52" rx="2" fill="#e5dac8" stroke="#8d7b64" />
     {style === 'original' && <><path d="M36 8v52M36 34h54" stroke="#8d7b64" />{[17, 23, 29].map(x => <path key={x} d={`M${x} 15v38`} stroke="#9b876d" />)}</>}

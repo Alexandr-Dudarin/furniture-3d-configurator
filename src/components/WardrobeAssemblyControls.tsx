@@ -1,3 +1,4 @@
+import { WardrobeDrawerFacadeControls } from './WardrobeDrawerFacadeControls'
 import { WardrobeDrawerControls } from './WardrobeDrawerControls'
 import { drawerInnerHeight, DRAWER_HANDLES, getWardrobeDrawerHandle, isWardrobeDrawerHandle } from '../configurator/wardrobeAssembly/drawerHandles'
 import type { FurnitureMotionStore } from '../configurator/furnitureMotionStore'
@@ -124,6 +125,8 @@ export function WardrobeAssemblyControls({ configuration, onAction, onFrame, mot
             options={[...DRAWER_PLACEMENTS]}
             onChange={value => update({ drawers: { ...selected.drawers!, placement: value === 'flush' ? 'flush' : 'recessed' } })} />
         </div>
+        <WardrobeDrawerFacadeControls value={selected.drawers.facadeStyle} notch={handle.value === 'finger-notch'}
+          onChange={facadeStyle => update({ drawers: { ...selected.drawers!, facadeStyle } })} />
         <div className="assembly-field"><span>Ручки ящиков</span>
           <CustomSelect value={handle.value} ariaLabel="Ручки ящиков выбранной секции" options={DRAWER_HANDLES.map(({ value, label }) => ({ value, label }))}
             onChange={value => { if (isWardrobeDrawerHandle(value)) update({ drawers: { ...selected.drawers!, handle: value } }) }} />

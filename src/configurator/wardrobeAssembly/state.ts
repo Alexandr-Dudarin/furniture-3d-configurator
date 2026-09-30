@@ -1,3 +1,4 @@
+import { isWardrobeDrawerFacade } from './drawerFacades'
 import type { FurnitureDimensionConfig } from '../../three/furniture/types'
 import { getWardrobeDrawerHandle, isWardrobeDrawerHandle } from './drawerHandles'
 import { MIN_ROD_SECTION_HEIGHT, DRAWER_HEIGHTS, wardrobeDrawerLimit, automaticLayout, type WardrobeDrawers, fitWardrobeLayout, fitWardrobeLayoutChange, isValidWardrobeLayout, readWardrobeLayout, wardrobeCanHaveRod, wardrobeShelfLimit, wardrobeManualShelfLimit, wardrobeLayoutAdjustments, type WardrobeLayout } from './layout'
@@ -77,7 +78,8 @@ function section(input: unknown, id: string): WardrobeSection {
   // old v4 configurations. Preserve either explicitly selected valid choice.
   const drawers: WardrobeDrawers | undefined = drawerCount ? { count: drawerCount, height: drawerHeight,
     ...(drawerInput.placement === 'flush' || drawerInput.placement === 'recessed' ? { placement: drawerInput.placement } : {}),
-    ...(isWardrobeDrawerHandle(drawerInput.handle) ? { handle: drawerInput.handle } : {}) } : undefined
+    ...(isWardrobeDrawerHandle(drawerInput.handle) ? { handle: drawerInput.handle } : {}),
+    ...(isWardrobeDrawerFacade(drawerInput.facadeStyle) ? { facadeStyle: drawerInput.facadeStyle } : {}) } : undefined
   const manual = readWardrobeLayout(raw.layout)
   const limit = manual ? wardrobeManualShelfLimit(height, rod, drawers) : wardrobeShelfLimit(height, rod, drawers)
   const result: WardrobeSection = {

@@ -115,11 +115,13 @@ export function createReliefFilter() {
   const viewport = new Vector2(), shadowViewport = new Vector2(), rect = new Vector4()
   let depth: MeshDepthMaterial | null = null, distance: MeshDistanceMaterial | null = null
   const bound = new WeakSet<Mesh>()
+  let disposed = false
   const updateViewport = (renderer: WebGLRenderer, target: Vector2) => {
     renderer.getCurrentViewport(rect); target.set(rect.z, rect.w)
   }
   return {
     attach(mesh: Mesh) {
+      if (disposed) return
       // Existing specialised shadow casters need their own integration.
       if (!bound.has(mesh) && (mesh.customDepthMaterial || mesh.customDistanceMaterial)) return
       if (!(mesh.material instanceof MeshStandardMaterial) || !patchMaterial(mesh.material, viewport)) return
@@ -137,6 +139,12 @@ export function createReliefFilter() {
       mesh.onBeforeShadow = function (...args) {
         shadow.apply(this, args); updateViewport(args[0], shadowViewport)
       }
+    },
+    // Procedural assemblies dispose resources explicitly; catalogue models
+    // already release these shared shadow materials through their model owner.
+    dispose() {
+      if (disposed) return
+      disposed = true; depth?.dispose(); distance?.dispose()
     },
   }
 }
