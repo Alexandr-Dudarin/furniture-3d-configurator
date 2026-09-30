@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { createProgressiveRenderer } from './progressiveRenderer'
 import { createFurnitureFraming } from './furnitureFraming'
+import { createCameraClearance } from './cameraClearance'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 
 type Vector3Tuple =
@@ -40,6 +41,8 @@ export type ThreeRuntime = {
   framing: ReturnType<typeof createFurnitureFraming>
 
   addFrameListener: (listener: (deltaSeconds: number) => boolean | void) => () => void
+
+  attachCameraObstacles: (provider: () => readonly THREE.Box3[]) => () => void
 
   invalidate: () => void
 
@@ -203,7 +206,8 @@ export function createThreeRuntime(
    * --------------------------------
    */
 
-  const framing = createFurnitureFraming(camera, controls)
+  const clearance = createCameraClearance(camera, controls)
+  const framing = createFurnitureFraming(camera, controls, clearance.reset)
 
   const debugParams = import.meta.env.DEV ? new URLSearchParams(window.location.search) : null
   const rendering = createProgressiveRenderer(renderer, scene, camera, {
@@ -302,6 +306,7 @@ export function createThreeRuntime(
       lastFrameTime = now
       frameListeners.forEach(listener => { if (listener(deltaSeconds)) rendering.invalidate() })
       controls.update()
+      if (clearance.update()) rendering.invalidate(false)
 
       rendering.render(now)
 
@@ -361,6 +366,7 @@ export function createThreeRuntime(
     // Render and request the snapshot in the same task. No permanent
     // preserveDrawingBuffer cost, camera changes or UI layers in the image.
     try {
+      if (clearance.update()) rendering.invalidate(false)
       rendering.prepareCapture()
       if (renderer.getContext().isContextLost()) throw new Error('3D preview unavailable')
       renderer.domElement.toBlob(blob => {
@@ -380,6 +386,7 @@ export function createThreeRuntime(
     controls,
     framing,
     addFrameListener,
+    attachCameraObstacles: clearance.attach,
     dispose,
   }
 }

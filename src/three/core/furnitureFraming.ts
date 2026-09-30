@@ -48,7 +48,7 @@ export function fitFurnitureFrame(camera: PerspectiveCamera, controls: FramingCo
 
 // Each view owns its orbit/zoom/pan. Wardrobes share one view for comparison;
 // dressers use a view per model with a target at the current body centre.
-export function createFurnitureFraming(camera: PerspectiveCamera, controls: FramingControls) {
+export function createFurnitureFraming(camera: PerspectiveCamera, controls: FramingControls, onReframe: () => void = () => {}) {
   const navigation = { minDistance: controls.minDistance, zoomToCursor: controls.zoomToCursor, screenSpacePanning: controls.screenSpacePanning }
   type View = { position: Vector3; target: Vector3; maxDistance: number; centerY: number }
   let key = 'tables', active: Frame | undefined, centerY = 0
@@ -62,13 +62,14 @@ export function createFurnitureFraming(camera: PerspectiveCamera, controls: Fram
   return {
     reset() {
       if (active) fitFurnitureFrame(camera, controls, active, centerY)
+      onReframe()
     },
     select(_id: string, frame?: Frame, viewKey = frame ? 'cabinets' : 'tables', targetY = frame?.height ? frame.height / 2 : 0) {
       // Close inspection belongs to the assembly view; other categories keep
       // their original navigation. Cursor zoom and vertical pan reach handles
       // anywhere in a long row without changing its initial framing.
       Object.assign(controls, viewKey === 'wardrobe-assembly'
-        ? { minDistance: .35, zoomToCursor: true, screenSpacePanning: true } : navigation)
+        ? { minDistance: .65, zoomToCursor: true, screenSpacePanning: true } : navigation)
       if (viewKey === key) { active = frame; moveCenter(targetY); return }
       views.set(key, capture())
       key = viewKey; active = frame
@@ -81,12 +82,14 @@ export function createFurnitureFraming(camera: PerspectiveCamera, controls: Fram
         centerY = targetY
         fitFurnitureFrame(camera, controls, frame, centerY)
       }
+      onReframe()
     },
     resize() {
       // Cached projections belong to the old viewport. Refit other views when
       // revisited; keep the table view usable and fit the active category now.
       for (const cached of views.keys()) if (cached !== 'tables') views.delete(cached)
       if (active) fitFurnitureFrame(camera, controls, active, centerY)
+      onReframe()
     },
   }
 }

@@ -19,7 +19,8 @@ export function useWardrobeAssemblyScene(runtimeRef: RefObject<ThreeRuntime | nu
     const restoreStudio = configureWardrobeStudio(runtime.scene)
     let binding: ReturnType<FurnitureMotionStore['attach']> | undefined
     let stopFrames: (() => void) | undefined, stopInteraction: (() => void) | undefined, stopPreference: (() => void) | undefined
-    const detach = () => { stopInteraction?.(); stopFrames?.(); stopPreference?.(); binding?.detach() }
+    let stopCamera: (() => void) | undefined
+    const detach = () => { stopCamera?.(); stopInteraction?.(); stopFrames?.(); stopPreference?.(); binding?.detach() }
     let moduleLoaded = false
     const prepare = async () => {
       try {
@@ -45,6 +46,7 @@ export function useWardrobeAssemblyScene(runtimeRef: RefObject<ThreeRuntime | nu
         stopInteraction = bindFurnitureInteraction(runtime.renderer.domElement, runtime.camera, assembly.group, motion)
         active.current = assembly
         runtime.scene.add(assembly.group)
+        stopCamera = runtime.attachCameraObstacles(assembly.getCameraObstacles)
         runtime.invalidate()
         setStatus({ token, configuration: applied, error: null })
       } catch (error) {

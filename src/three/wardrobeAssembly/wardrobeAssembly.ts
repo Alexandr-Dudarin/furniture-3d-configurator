@@ -1,6 +1,6 @@
 import type { MotionPartState } from '../../configurator/furnitureMotionStore'
 import { createWardrobeDrawerMotion, type DrawerMotionEntry } from './wardrobeDrawerMotion'
-import { BufferGeometry, CylinderGeometry, Group, Mesh, MeshStandardMaterial } from 'three'
+import { Box3, BufferGeometry, CylinderGeometry, Group, Mesh, MeshStandardMaterial } from 'three'
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
 import { createHandleGeometry, createNotchedFront } from '../handles/handleGeometry'
 import type { HardwareHandle } from '../../configurator/handles'
@@ -71,8 +71,9 @@ export function planWardrobeParts(config: WardrobeAssemblyConfiguration): Part[]
           rod(`${name}/Handle`, radius, thickness, [0, y + row * .7, frontFace + mountLength + thickness / 2], 'z'); mark()
           rod(`${name}/HandleMount`, mountRadius, mountLength, [0, y + row * .7, frontFace + mountLength / 2], 'z'); mark()
         } else if (handle.projection > 0) {
-          const edge = handle.value === 'edge-pull' || handle.value === 'profile' || handle.value === 'semicircle'
-          board('Handle', [0, 0, 0], [0, edge ? y + row - .002 : y + row * .7, frontFace])
+          const edge = handle.value === 'profile' || handle.value === 'semicircle'
+          const handleY = handle.value === 'edge-pull' ? y + row - .002 - .035 : edge ? y + row - .002 : y + row * .7
+          board('Handle', [0, 0, 0], [0, handleY, frontFace])
           Object.assign(parts.at(-1)!, { shape: 'handle', handle: handle.value, slot: 'hardware' })
         }
       }
@@ -135,12 +136,15 @@ export function createWardrobeAssembly(initial: WardrobeAssemblyConfiguration, o
   const appliedMaterial = (sectionId: string, slot: Slot) => materials.get(bindings.get(bindingKey(sectionId, slot)) ?? '') ?? fallback[slot]
   const meshes = new Map<string, Mesh<BufferGeometry, MeshStandardMaterial>>()
   let geometries = new Map<string, BufferGeometry>()
+  let cameraVolumes: { local: Box3; world: Box3; node: Group }[] = []
+  let cameraBoxes: Box3[] = []
   let previousGeometryKey = ''
   const update = (configuration: WardrobeAssemblyConfiguration) => {
     const geometryKey = JSON.stringify(configuration.sections.map(({ id, width, height, depth, shelves, rod, layout, drawers }) => [id, width, height, depth, shelves, rod, layout, drawers]))
     if (disposed || geometryKey === previousGeometryKey) return
     const nextGeometry = new Map<string, BufferGeometry>(), keep = new Set<string>()
     const moving = new Map<string, DrawerMotionEntry>()
+    const volumes = new Map<string, { local: Box3; world: Box3; node: Group }>()
     for (const part of planWardrobeParts(configuration)) {
       const key = `${part.shape}:${part.handle ?? ''}:${part.size.join(',')}`
       let geometry = nextGeometry.get(key) ?? geometries.get(key)
@@ -148,6 +152,7 @@ export function createWardrobeAssembly(initial: WardrobeAssemblyConfiguration, o
         : part.shape === 'notched-front' ? metricPanelUV(createNotchedFront(...part.size), part.size)
         : part.shape === 'handle' ? createHandleGeometry(part.handle!)
         : new CylinderGeometry(part.size[0], part.size[0], part.size[1], 16)
+      if (!geometry.boundingBox) geometry.computeBoundingBox()
       nextGeometry.set(key, geometry)
       let mesh = meshes.get(part.name)
       if (!mesh) {
@@ -168,6 +173,13 @@ export function createWardrobeAssembly(initial: WardrobeAssemblyConfiguration, o
       mesh.geometry = geometry; mesh.material = appliedMaterial(part.sectionId, part.slot)
       mesh.position.set(...part.position)
       mesh.rotation.set(part.axis === 'z' ? Math.PI / 2 : 0, 0, part.axis === 'x' ? Math.PI / 2 : 0)
+      mesh.updateMatrix()
+      const volumeId = part.drawerId ?? part.sectionId
+      let volume = volumes.get(volumeId)
+      if (!volume) { volume = { local: new Box3(), world: new Box3(), node: parent }; volumes.set(volumeId, volume) }
+      // Section bounds include their empty interior; drawer bounds include
+      // the grip and move with the drawer. Calculate only when geometry edits.
+      volume.local.union(geometry.boundingBox!.clone().applyMatrix4(mesh.matrix))
       keep.add(part.name)
     }
     for (const [name, mesh] of meshes) if (!keep.has(name)) { mesh.removeFromParent(); meshes.delete(name) }
@@ -175,6 +187,7 @@ export function createWardrobeAssembly(initial: WardrobeAssemblyConfiguration, o
     motion.sync([...moving.values()])
     for (const [key, geometry] of geometries) if (!nextGeometry.has(key)) geometry.dispose()
     geometries = nextGeometry
+    cameraVolumes = [...volumes.values()]; cameraBoxes = cameraVolumes.map(v => v.world)
     previousGeometryKey = geometryKey
     group.updateMatrixWorld(true)
     options.onChange?.()
@@ -208,7 +221,15 @@ export function createWardrobeAssembly(initial: WardrobeAssemblyConfiguration, o
     options.onChange?.()
   }
   update(initial)
-  return { group, motion, update, setFinishes, dispose() {
+  return { group, motion, update, setFinishes,
+    getCameraObstacles() {
+      for (const volume of cameraVolumes) {
+        volume.node.updateWorldMatrix(true, false)
+        volume.world.copy(volume.local).applyMatrix4(volume.node.matrixWorld)
+      }
+      return cameraBoxes
+    },
+    dispose() {
     if (disposed) return
     disposed = true; request++
     motion.dispose(); drawerGroups.clear()
@@ -216,6 +237,7 @@ export function createWardrobeAssembly(initial: WardrobeAssemblyConfiguration, o
     materials.forEach(disposeMaterialResources); materials.clear()
     disposeMaterialResources(fallback.body); disposeMaterialResources(fallback.hardware)
     meshes.clear(); group.clear()
+    cameraVolumes = []; cameraBoxes = []
   } }
 }
 export type WardrobeAssembly = ReturnType<typeof createWardrobeAssembly>

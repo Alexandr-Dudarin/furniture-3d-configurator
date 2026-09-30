@@ -3,7 +3,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 import type { HardwareHandle } from '../../configurator/handles'
 
 // Local X follows the handle length. Z=0 is the FRONT of the facade;
-// edge profiles wrap its full thickness, with the upper edge at Y=0.
+// The U profile wraps the panel edge. Gamma planks start at their own top Y=0.
 // Only the owning controller disposes the shared result.
 export function createHandleGeometry(style: HardwareHandle | 'long-bar', lengthOverride?: number, panelThickness = .016, faceScale = 1): BufferGeometry {
   const pieces: BufferGeometry[] = []
@@ -27,13 +27,12 @@ export function createHandleGeometry(style: HardwareHandle | 'long-bar', lengthO
   } else if (style === 'edge-pull' || style === 'profile') {
     const length = lengthOverride ?? (style === 'profile' ? .220 : .110)
     const rear = -panelThickness
-    // A thin bridge fits the existing 2 mm reveal. The grip is thicker and
-    // stands away from the front so fingers can pull it from below.
-    // U: rear mounting leg INSIDE the drawer + outside grip. Gamma: top
-    // mounting flange + outside hook, without the U's second vertical leg.
+    // U wraps the top edge. The thick Gamma is instead mounted on the FACE:
+    // a 12 mm horizontal root joins the panel, with 24 mm finger clearance
+    // under it and a 12 mm outer hook. No part lies on the panel's top edge.
     const section = style === 'profile'
       ? [[rear - .002, .0015], [.028, .0015], [.028, -.040], [.025, -.040], [.025, 0], [rear, 0], [rear, -.026], [rear - .002, -.026]]
-      : [[rear, .0015], [.028, .0015], [.028, -.028], [.024, -.028], [.024, 0], [rear, 0]]
+      : [[0, 0], [.036, 0], [.036, -.032], [.024, -.032], [.024, -.012], [0, -.012]]
     const s = new Shape()
     for (const [i, [z, y]] of section.entries()) {
       if (i === 0) s.moveTo(z, y); else s.lineTo(z, y)

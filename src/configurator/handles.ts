@@ -3,7 +3,7 @@ export const HARDWARE_HANDLES = [
   { value: 'bar', label: 'Скоба', projection: .028, length: .136 },
   { value: 'knob', label: 'Круглая кнопка', projection: .020, length: .028 },
   { value: 'semicircle', label: 'Полукруглая', projection: .020, length: .078 },
-  { value: 'edge-pull', label: 'Планка · 11 см', projection: .028, length: .110 },
+  { value: 'edge-pull', label: 'Планка · 11 см', projection: .036, length: .110 },
   { value: 'profile', label: 'Широкий профиль · 22 см', projection: .028, length: .220 },
   { value: 'classic', label: 'Декоративная скоба', projection: .033, length: .178 },
   { value: 'flat-bar', label: 'Прямоугольная скоба', projection: .028, length: .160 },

@@ -38,12 +38,12 @@ export function createCatalogHandleController(root: Object3D, definition: Furnit
         const length = style === 'long-bar' ? Math.min(door ? .600 : .320, (door ? height : width) - .040)
           : style === 'profile' ? (door ? .330 : .220) : style === 'edge-pull' ? (door ? .170 : .110) : undefined
         const faceScale = door && (style === 'knob' || style === 'semicircle') ? 1.75 : 1
-        const wrap = style === 'profile' || style === 'edge-pull'
+        const wrap = style === 'profile'
         const key = `${style}:${length ?? ''}:${wrap ? spec.thickness : ''}:${faceScale}`
         let geometry = next.get(key) ?? geometries.get(key)
         if (!geometry) geometry = createHandleGeometry(style as Exclude<CatalogHandle, 'original' | 'none'>, length, spec.thickness, faceScale)
         next.set(key, geometry); mesh.geometry = geometry
-        const edge = style === 'profile' || style === 'edge-pull' || style === 'semicircle'
+        const edge = style === 'profile' || style === 'semicircle'
         if (door) {
           const side = target.side!
           const center = new Vector3().setFromMatrixPosition(new Matrix4().multiplyMatrices(inverse, node.matrixWorld))
@@ -51,25 +51,25 @@ export function createCatalogHandleController(root: Object3D, definition: Furnit
           const margin = Math.min(height / 2, halfLength + .025)
           // Reachable floor height, clamped to this leaf; neighbouring leaves align.
           const y = Math.max(-height / 2 + margin, Math.min(height / 2 - margin, 1.05 - center.y))
-          const inset = wrap ? 0 : style === 'semicircle' ? .020 : style === 'knob' ? .050 : .026
+          const inset = wrap ? 0 : style === 'semicircle' || style === 'edge-pull' ? .020 : style === 'knob' ? .050 : .026
           mesh.position.set(side * (width / 2 - inset), y, spec.thickness / 2)
           mesh.rotation.set(0, 0, -side * Math.PI / 2)
-          if (style === 'knob') {
-            // Moving the knob inward can put its foot on a recessed frame
-            // field. Seat it on the actual surface, including source GLBs.
-            const surfaces: Object3D[] = []
-            for (const child of node.children) if (child !== mesh) child.traverseVisible(part => {
-              if (part instanceof Mesh) surfaces.push(part)
-            })
-            const origin = node.localToWorld(new Vector3(mesh.position.x, y, spec.thickness / 2 + .01))
-            const direction = new Vector3(0, 0, -1).transformDirection(node.matrixWorld)
-            const hit = new Raycaster(origin, direction, 0, spec.thickness + .02).intersectObjects(surfaces, false)[0]
-            if (hit) mesh.position.z = node.worldToLocal(hit.point).z
-          }
         } else {
-          // Feet sit on the upper frame rail, not above its recessed field.
-          mesh.position.set(0, height / 2 - (wrap ? 0 : edge ? .002 : .018), spec.thickness / 2)
+          mesh.position.set(0, height / 2 - (wrap ? 0 : style === 'edge-pull' ? .035 : edge ? .002 : .018), spec.thickness / 2)
           mesh.rotation.set(0, 0, 0)
+        }
+        if ((door && style === 'knob') || style === 'edge-pull') {
+          // Face-mounted hardware follows the real surface, including a
+          // recessed frame field. Sample the centre of the mounting root.
+          const surfaces: Object3D[] = []
+          for (const child of node.children) if (child !== mesh) child.traverseVisible(part => {
+            if (part instanceof Mesh) surfaces.push(part)
+          })
+          const mount = new Vector3(0, style === 'edge-pull' ? -.006 : 0, 0).applyEuler(mesh.rotation).add(mesh.position)
+          const origin = node.localToWorld(new Vector3(mount.x, mount.y, spec.thickness / 2 + .01))
+          const direction = new Vector3(0, 0, -1).transformDirection(node.matrixWorld)
+          const hit = new Raycaster(origin, direction, 0, spec.thickness + .02).intersectObjects(surfaces, false)[0]
+          if (hit) mesh.position.z = node.worldToLocal(hit.point).z
         }
       }
       const retained = new Set(entries.map(e => e.mesh.geometry))
