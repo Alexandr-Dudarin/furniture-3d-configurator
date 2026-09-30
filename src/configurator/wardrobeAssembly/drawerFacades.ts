@@ -1,7 +1,7 @@
 import type { FacadeStyleId } from '../../three/facades/types'
 import { getFacadeStyle } from '../facades/catalog'
 
-export const DRAWER_FACADE_STYLES = ['smooth', 'frame', 'fluted'] as const satisfies readonly FacadeStyleId[]
+export const DRAWER_FACADE_STYLES = ['smooth', 'frame', 'fluted', 'fluted-wide'] as const satisfies readonly FacadeStyleId[]
 export type WardrobeDrawerFacade = typeof DRAWER_FACADE_STYLES[number]
 export function isWardrobeDrawerFacade(value: unknown): value is WardrobeDrawerFacade {
   return DRAWER_FACADE_STYLES.some(style => style === value)

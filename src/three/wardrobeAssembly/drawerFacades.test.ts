@@ -4,8 +4,8 @@ import { DRAWER_FACADE_STYLES, type WardrobeDrawerFacade } from '../../configura
 import { DRAWER_HANDLES, type WardrobeDrawerHandle } from '../../configurator/wardrobeAssembly/drawerHandles'
 import { normalizeWardrobeAssembly, wardrobeClosedBounds } from '../../configurator/wardrobeAssembly/state'
 import { createWardrobeAssembly } from './wardrobeAssembly'
-import { createDrawerFacadeGeometry, DRAWER_FACADE_PROFILE, drawerHandleClearWidth } from './drawerFacadeGeometry'
-import { grooveLayout } from '../facades/facadeGeometry'
+import { createDrawerFacadeGeometry, DRAWER_FACADE_PROFILE, drawerHandleMountDepth } from './drawerFacadeGeometry'
+import { grooveLayout, facadeFlutingProfile } from '../facades/facadeGeometry'
 import { hasReliefShader, RELIEF_ATTRIBUTE } from '../facades/reliefFilter'
 
 const config = (facadeStyle?: WardrobeDrawerFacade, handle: WardrobeDrawerHandle = 'bar', width = .6, depth = .55, height = .2, placement: 'flush' | 'recessed' = 'flush') => normalizeWardrobeAssembly({
@@ -42,11 +42,18 @@ it.each(DRAWER_FACADE_STYLES)('%s keeps envelope, box contacts, handle mounts an
     const sampleMounts: [number, number][] = handle === 'bar' || handle === 'classic' ? [[-.064, mountYs], [.064, mountYs]]
       : handle === 'knob' ? [[0, mountYs]] : handle === 'flat-bar' ? [[-.068, mountYs], [.068, mountYs]]
         : handle === 'edge-pull' ? [[-.045, bounds.max.y - .041], [0, bounds.max.y - .041], [.045, bounds.max.y - .041]]
-          : handle === 'semicircle' ? [[0, bounds.max.y - .0015]] : []
+          : handle === 'semicircle' ? [[0, bounds.max.y - .0315]] : []
     for (const [x, y] of sampleMounts) {
       const face = hit(x, y)[0]
       expect(face, `${style}/${handle} mount`).toBeDefined()
-      expect(face.distance, `${style}/${handle} floating mount`).toBeCloseTo(.01, 6)
+      const roots: Mesh[] = []
+      front.parent!.traverse(node => { if (node instanceof Mesh && node.name.includes('/Handle')) roots.push(node) })
+      // The relief remains under the footprint. The mounting root reaches into
+      // its depth, instead of deleting a stripe of the customer's pattern.
+      const fromBack = new Raycaster(new Vector3(x, y, bounds.max.z - .012), new Vector3(0, 0, 1), 0, .06).intersectObjects(roots, false)[0]
+      expect(fromBack, `${style}/${handle} mount root`).toBeDefined()
+      expect(fromBack.point.z).toBeLessThanOrEqual(face.point.z + 1e-6)
+      expect(fromBack.point.z).toBeGreaterThanOrEqual(bounds.max.z - drawerHandleMountDepth(style, handle) - 1e-6)
     }
     a.dispose()
   }
@@ -62,7 +69,7 @@ it('preserves the accepted smooth and notched geometry byte for byte when the ne
   }
 })
 
-it.each(['frame', 'fluted'] as const)('notched %s is a closed, finite solid with outward face normals', style => {
+it.each(['frame', 'fluted', 'fluted-wide'] as const)('notched %s is a closed, finite solid with outward face normals', style => {
   for (const width of [.364, .964]) for (const height of [.196, .296]) {
     const g = createDrawerFacadeGeometry(width, height, .016, style, 'finger-notch')
     const p = g.getAttribute('position'), n = g.getAttribute('normal'), uv = g.getAttribute('uv'), idx = g.index!
@@ -86,11 +93,11 @@ it.each(['frame', 'fluted'] as const)('notched %s is a closed, finite solid with
   }
 })
 
-it('retains metric fluting phases and clear mounting lands across width changes', () => {
+it.each(['fluted', 'fluted-wide'] as const)('%s retains metric phase and every groove through the centre', style => {
   let previous: number[] = []
   for (const width of [.364, .414, .464, .514, .964]) {
-    const g = createDrawerFacadeGeometry(width, .196, .016, 'fluted', 'bar')
-    const centers = grooveLayout(width, DRAWER_FACADE_PROFILE.fluted).centers.filter(x => Math.abs(x) - .002 >= drawerHandleClearWidth('bar') / 2)
+    const g = createDrawerFacadeGeometry(width, .196, .016, style, 'bar')
+    const centers = grooveLayout(width, facadeFlutingProfile(DRAWER_FACADE_PROFILE, style)).centers
     for (const c of previous) expect(centers.some(x => Math.abs(x - c) < 1e-9)).toBe(true)
     previous = centers
     const mesh = new Mesh(g, new MeshStandardMaterial())
@@ -103,14 +110,17 @@ it('retains metric fluting phases and clear mounting lands across width changes'
   }
 })
 
-it('retains opening, shares current geometry, refreshes filtered finishes and frees shadow resources once', async () => {
-  const c = config('fluted', 'finger-notch')
+it.each(['fluted', 'fluted-wide'] as const)('%s retains opening, shared geometry, filtered finishes and frees shadow resources once', async style => {
+  const c = config(style, 'finger-notch')
   const a = createWardrobeAssembly(c, { createMaterial: async () => new MeshStandardMaterial() })
   await a.setFinishes(c)
   const front = a.group.getObjectByName(frontName) as Mesh
   expect(front.geometry.hasAttribute(RELIEF_ATTRIBUTE)).toBe(true)
   expect(hasReliefShader(front.material as MeshStandardMaterial)).toBe(true)
   const shaderData = front.geometry.getAttribute(RELIEF_ATTRIBUTE), positions = front.geometry.getAttribute('position')
+  const activeWidths = new Set(Array.from({ length: shaderData.count }, (_, i) => shaderData.getZ(i)).filter(width => width > 0))
+  expect(activeWidths.size).toBe(1)
+  expect([...activeWidths][0]).toBeCloseTo(style === 'fluted-wide' ? .014 : .004, 7)
   for (let i = 0; i < positions.count; i++) {
     expect(positions.getZ(i) + shaderData.getX(i)).toBeLessThanOrEqual(.00800001)
     if (positions.getY(i) > .196 / 2 - .031) expect(Math.abs(shaderData.getX(i))).toBeLessThan(1e-7)
@@ -128,4 +138,64 @@ it('retains opening, shares current geometry, refreshes filtered finishes and fr
   expect(a.motion.getStates()[0].open).toBe(true)
   a.dispose(); a.dispose()
   expect(depth).toHaveBeenCalledOnce(); expect(distance).toHaveBeenCalledOnce()
+})
+
+
+it('notched frame slopes have a constant plane normal along all four sides, without diagonal shading seams', () => {
+  for (const width of [.364, .964]) for (const height of [.196, .296]) {
+    const geometry = createDrawerFacadeGeometry(width, height, .016, 'frame', 'finger-notch')
+    const p = geometry.getAttribute('position'), n = geometry.getAttribute('normal'), idx = geometry.index!
+    let slopes = 0
+    for (let i = 0; i < idx.count; i += 3) {
+      const ids = [idx.getX(i), idx.getX(i + 1), idx.getX(i + 2)]
+      const [a, b, c] = ids.map(id => new Vector3().fromBufferAttribute(p, id))
+      const face = b.clone().sub(a).cross(c.clone().sub(a)).normalize()
+      if (face.z > .1 && face.z < .9) {
+        slopes++
+        for (const id of ids) expect(new Vector3().fromBufferAttribute(n, id).dot(face)).toBeCloseTo(1, 6)
+      }
+    }
+    expect(slopes).toBe(16)
+    geometry.dispose()
+  }
+})
+
+it.each(['fluted', 'fluted-wide'] as const)('%s has identical panel vertices/UVs for every face-mounted handle and none', style => {
+  const reference = createDrawerFacadeGeometry(.664, .246, .016, style, 'none')
+  for (const handle of ['bar', 'knob', 'classic', 'flat-bar', 'semicircle', 'edge-pull', 'profile'] as const) {
+    const g = createDrawerFacadeGeometry(.664, .246, .016, style, handle)
+    for (const attr of ['position', 'normal', 'uv']) expect(g.getAttribute(attr).array).toEqual(reference.getAttribute(attr).array)
+    expect(g.index!.array).toEqual(reference.index!.array)
+    g.dispose()
+  }
+  reference.dispose()
+})
+
+it('wide grooves measure 14 mm versus 4 mm with the same 20 mm pitch and 1.8 mm depth', () => {
+  for (const style of ['fluted', 'fluted-wide'] as const) {
+    const g = createDrawerFacadeGeometry(.664, .246, .016, style, 'none')
+    const p = g.getAttribute('position'), expected = style === 'fluted-wide' ? .014 : .004
+    const xs = [...new Set(Array.from({ length: p.count }, (_, i) => p.getX(i)))].sort((a, b) => a - b)
+    expect(xs.some(x => Math.abs(x - expected / 2) < 1e-7)).toBe(true)
+    const material = new MeshStandardMaterial(), mesh = new Mesh(g, material); mesh.updateMatrixWorld()
+    const z = (x: number) => new Raycaster(new Vector3(x, 0, .02), new Vector3(0, 0, -1)).intersectObject(mesh)[0].point.z
+    for (const centre of [-.02, 0, .02]) {
+      expect(z(centre)).toBeCloseTo(.008 - .0018, 6)
+      expect(z(centre + expected / 2)).toBeCloseTo(.008, 6)
+    }
+    g.dispose(); material.dispose()
+  }
+})
+
+
+it('changing face-mounted handles or removing them preserves the same live fluted facade', () => {
+  const c = config('fluted-wide', 'bar'), a = createWardrobeAssembly(c)
+  const front = a.group.getObjectByName(frontName) as Mesh, geometry = front.geometry
+  const disposed = vi.spyOn(geometry, 'dispose')
+  for (const handle of ['knob', 'semicircle', 'classic', 'edge-pull', 'flat-bar', 'profile', 'none', 'bar'] as const) {
+    c.sections[0].drawers!.handle = handle; a.update(c)
+    expect(front.geometry).toBe(geometry)
+    expect(disposed).not.toHaveBeenCalled()
+  }
+  a.dispose(); expect(disposed).toHaveBeenCalledOnce()
 })

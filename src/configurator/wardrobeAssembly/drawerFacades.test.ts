@@ -38,9 +38,9 @@ it('applies styles only to the chosen section, without moving shelves or trigger
     expect(wardrobe.sections[1]).toBe(other)
   }
   wardrobe = updateWardrobeAssembly(wardrobe, { type: 'move-section', id: before.id, direction: 1 })
-  expect(wardrobe.sections[1].drawers?.facadeStyle).toBe('fluted')
+  expect(wardrobe.sections[1].drawers?.facadeStyle).toBe('fluted-wide')
   wardrobe = updateWardrobeAssembly(wardrobe, { type: 'update-section', id: before.id, patch: { width: 1, depth: .8 } })
-  expect(wardrobe.sections[1].drawers?.facadeStyle).toBe('fluted')
+  expect(wardrobe.sections[1].drawers?.facadeStyle).toBe('fluted-wide')
   const session = { ...createDefaultSession(), mode: 'wardrobe' as const, wardrobe }
   expect(updateSession(session, { type: 'set-mode', mode: 'catalog' }).wardrobe).toEqual(wardrobe)
   expect(updateSession(session, { type: 'reset-model' }).wardrobe.sections.every(s => !s.drawers)).toBe(true)

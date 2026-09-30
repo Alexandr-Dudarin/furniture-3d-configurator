@@ -1,7 +1,7 @@
 import { BufferGeometry, Matrix4, Mesh, MeshStandardMaterial, Vector3, type Object3D } from 'three'
 import type { FurnitureDefinition } from '../furniture/types'
 import type { FacadeComposition, FacadeStyleId } from './types'
-import { createFacadeGeometry } from './facadeGeometry'
+import { createFacadeGeometry, facadeFlutingProfile } from './facadeGeometry'
 import { createSourceFacadeBatch } from './sourceFacadeBatch'
 import { createReliefFilter, prepareReliefGeometry, type ReliefProfile } from './reliefFilter'
 
@@ -113,11 +113,11 @@ export function createFacadeController(root: Object3D, definition: FurnitureDefi
       for (const geometry of retired) if (!retained.has(geometry)) geometry.dispose()
       geometries = next
       const profile = source ? spec.sourceRelief :
-        (style === 'fluted' || style === 'fluted-sides') ? spec.fluted :
+        (style === 'fluted' || style === 'fluted-wide' || style === 'fluted-sides') ? facadeFlutingProfile(spec, style) :
         style === 'diagonal' ? spec.diagonal : style === 'diamonds' ? spec.diamonds :
         (style === 'herringbone' || style === 'herringbone-wide') ? spec.herringbone : undefined
       filterState = profile ? measured.map(p => ({ source, width: p.width, height: p.height,
-        profile: { width: profile.width, depth: profile.depth, vertical: source || style === 'fluted' || style === 'fluted-sides' },
+        profile: { width: profile.width, depth: profile.depth, vertical: source || style === 'fluted' || style === 'fluted-wide' || style === 'fluted-sides' },
       })) : []
       refreshRelief()
     },

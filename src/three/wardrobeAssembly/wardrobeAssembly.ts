@@ -1,4 +1,5 @@
-import { createDrawerFacadeGeometry, DRAWER_FACADE_PROFILE } from './drawerFacadeGeometry'
+import { createDrawerFacadeGeometry, DRAWER_FACADE_PROFILE, drawerHandleMountDepth } from './drawerFacadeGeometry'
+import { facadeFlutingProfile } from '../facades/facadeGeometry'
 import { createReliefFilter, prepareReliefGeometry, RELIEF_ATTRIBUTE } from '../facades/reliefFilter'
 import type { WardrobeDrawerFacade } from '../../configurator/wardrobeAssembly/drawerFacades'
 import type { WardrobeDrawerHandle } from '../../configurator/wardrobeAssembly/drawerHandles'
@@ -14,7 +15,7 @@ import { createFinishMaterial } from '../materials/createMaterial'
 import { disposeMaterialResources } from '../materials/disposeMaterials'
 
 type Slot = 'body' | 'hardware'
-type Part = { sectionId: string; name: string; shape: 'panel' | 'rod' | 'notched-front' | 'handle' | 'facade'; facadeStyle?: Exclude<WardrobeDrawerFacade, 'smooth'>; facadeHandle?: WardrobeDrawerHandle; handle?: HardwareHandle; size: [number, number, number]; position: [number, number, number]; slot: Slot; drawerId?: string; travel?: number; axis?: 'x' | 'y' | 'z' }
+type Part = { sectionId: string; name: string; shape: 'panel' | 'rod' | 'notched-front' | 'handle' | 'facade'; facadeStyle?: Exclude<WardrobeDrawerFacade, 'smooth'>; facadeHandle?: WardrobeDrawerHandle; handle?: HardwareHandle; mountDepth?: number; size: [number, number, number]; position: [number, number, number]; slot: Slot; drawerId?: string; travel?: number; axis?: 'x' | 'y' | 'z' }
 
 // Separate, closed panels. All dimensions are physical metres, floor is y=0,
 // back faces share z=-maxDepth/2. Adjacent sections retain both side boards.
@@ -40,6 +41,7 @@ export function planWardrobeParts(config: WardrobeAssemblyConfiguration): Part[]
     if (section.drawers) {
       const { count, height: row } = section.drawers
       const handle = getWardrobeDrawerHandle(section.drawers.handle)
+      const mountDepth = drawerHandleMountDepth(section.drawers.facadeStyle, handle.value)
       const cut = handle.value === 'top-grip' ? TOP_GRIP_CUT : 0
       const wallHeight = row - .04 - drawerBoxHeightReduction(handle.value)
       const floor = plinth + panel
@@ -71,17 +73,17 @@ export function planWardrobeParts(config: WardrobeAssemblyConfiguration): Part[]
           const { radius, length, mountLength, mountSpacing } = DRAWER_BAR_HANDLE
           rod(`${name}/Handle`, radius, length, [0, y + row * .7, frontFace + mountLength + radius], 'x'); mark()
           for (const side of [-1, 1]) {
-            rod(`${name}/HandleMount_${side}`, radius, mountLength, [side * mountSpacing / 2, y + row * .7, frontFace + mountLength / 2], 'z'); mark()
+            rod(`${name}/HandleMount_${side}`, radius, mountLength + mountDepth, [side * mountSpacing / 2, y + row * .7, frontFace + (mountLength - mountDepth) / 2], 'z'); mark()
           }
         } else if (handle.value === 'knob') {
           const { radius, thickness, mountRadius, mountLength } = DRAWER_KNOB_HANDLE
           rod(`${name}/Handle`, radius, thickness, [0, y + row * .7, frontFace + mountLength + thickness / 2], 'z'); mark()
-          rod(`${name}/HandleMount`, mountRadius, mountLength, [0, y + row * .7, frontFace + mountLength / 2], 'z'); mark()
+          rod(`${name}/HandleMount`, mountRadius, mountLength + mountDepth, [0, y + row * .7, frontFace + (mountLength - mountDepth) / 2], 'z'); mark()
         } else if (handle.projection > 0) {
-          const edge = handle.value === 'profile' || handle.value === 'semicircle'
-          const handleY = handle.value === 'edge-pull' ? y + row - .002 - .035 : edge ? y + row - .002 : y + row * .7
+          const edge = handle.value === 'profile'
+          const handleY = handle.value === 'edge-pull' || handle.value === 'semicircle' ? y + row - .002 - (handle.value === 'semicircle' ? .030 : .035) : edge ? y + row - .002 : y + row * .7
           board('Handle', [0, 0, 0], [0, handleY, frontFace])
-          Object.assign(parts.at(-1)!, { shape: 'handle', handle: handle.value, slot: 'hardware' })
+          Object.assign(parts.at(-1)!, { shape: 'handle', handle: handle.value, mountDepth, slot: 'hardware' })
         }
       }
     }
@@ -154,18 +156,18 @@ export function createWardrobeAssembly(initial: WardrobeAssemblyConfiguration, o
     const moving = new Map<string, DrawerMotionEntry>()
     const volumes = new Map<string, { local: Box3; world: Box3; node: Group }>()
     for (const part of planWardrobeParts(configuration)) {
-      const key = `${part.shape}:${part.handle ?? ''}:${part.facadeStyle ?? ''}:${part.facadeHandle ?? ''}:${part.size.join(',')}`
+      const key = `${part.shape}:${part.handle ?? ''}:${part.mountDepth ?? 0}:${part.facadeStyle ?? ''}:${part.facadeHandle === 'finger-notch' ? 'notch' : ''}:${part.size.join(',')}`
       let geometry = nextGeometry.get(key) ?? geometries.get(key)
       if (!geometry) geometry = part.shape === 'facade' ? createDrawerFacadeGeometry(...part.size, part.facadeStyle!, part.facadeHandle)
         : part.shape === 'panel' ? panelGeometry(part.size)
         : part.shape === 'notched-front' ? metricPanelUV(createNotchedFront(...part.size), part.size)
-        : part.shape === 'handle' ? createHandleGeometry(part.handle!)
+        : part.shape === 'handle' ? createHandleGeometry(part.handle!, undefined, panel, 1, part.mountDepth)
         : new CylinderGeometry(part.size[0], part.size[0], part.size[1], 16)
-      if (part.facadeStyle === 'fluted' && !geometry.hasAttribute(RELIEF_ATTRIBUTE)) {
+      if ((part.facadeStyle === 'fluted' || part.facadeStyle === 'fluted-wide') && !geometry.hasAttribute(RELIEF_ATTRIBUTE)) {
         // Prepare once in PANEL coordinates, not at the section's world offset.
         prepareReliefGeometry(new Mesh(geometry, fallback.body), ...part.size,
           part.facadeHandle === 'finger-notch' ? 0 : DRAWER_FACADE_PROFILE.bevel,
-          { ...DRAWER_FACADE_PROFILE.fluted, vertical: true })
+          { ...facadeFlutingProfile(DRAWER_FACADE_PROFILE, part.facadeStyle), vertical: true })
       }
       if (!geometry.boundingBox) geometry.computeBoundingBox()
       nextGeometry.set(key, geometry)

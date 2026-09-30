@@ -1,27 +1,22 @@
 import { BufferGeometry, Float32BufferAttribute, ShapeUtils, Vector2 } from 'three'
 import type { WardrobeDrawerFacade } from '../../configurator/wardrobeAssembly/drawerFacades'
 import type { WardrobeDrawerHandle } from '../../configurator/wardrobeAssembly/drawerHandles'
-import { createFacadeGeometry, grooveLayout } from '../facades/facadeGeometry'
+import { createFacadeGeometry, facadeFlutingProfile, grooveLayout } from '../facades/facadeGeometry'
 import type { FacadeVariants } from '../facades/types'
 
 export const DRAWER_FACADE_PROFILE: FacadeVariants = {
-  defaultStyle: 'smooth', styles: ['smooth', 'frame', 'fluted'], targets: [], materialSlot: 'body',
+  defaultStyle: 'smooth', styles: ['smooth', 'frame', 'fluted', 'fluted-wide'], targets: [], materialSlot: 'body',
   bevel: .00075,
   frame: { width: .028, depth: .003, slope: .002, minField: .040 },
   fluted: { pitch: .020, width: .004, depth: .0018, margin: .020, endMargin: .018, fade: .006 },
 }
 
-// These flat vertical lands preserve the original handle mounting plane.
-// Edge-wrapping profiles and semicircles rest on the uncut upper border.
-export function drawerHandleClearWidth(handle?: WardrobeDrawerHandle) {
-  switch (handle ?? 'bar') {
-    case 'bar': return .144
-    case 'knob': return .016
-    case 'classic': return .150
-    case 'flat-bar': return .156
-    case 'edge-pull': return .120
-    default: return 0
-  }
+// Relief and phase belong to the facade, independently of face-mounted hardware.
+// Mount roots enter the relief by 2 mm; the rest of the handle keeps its size.
+export function drawerHandleMountDepth(style?: WardrobeDrawerFacade, handle?: WardrobeDrawerHandle) {
+  if (style === 'frame' && handle === 'semicircle') return DRAWER_FACADE_PROFILE.frame.depth + .0002
+  return (style === 'fluted' || style === 'fluted-wide') && handle !== 'profile'
+    ? DRAWER_FACADE_PROFILE.fluted.depth + .0002 : 0
 }
 
 type Point = [number, number, number]
@@ -29,7 +24,7 @@ type XY = [number, number]
 
 // The notch is a true open contour. Relief stops before its rim, so its cut
 // remains clear at every distance and never gets filled by a decorative mesh.
-function notchedFacade(width: number, height: number, thickness: number, style: 'frame' | 'fluted') {
+function notchedFacade(width: number, height: number, thickness: number, style: 'frame' | 'fluted' | 'fluted-wide') {
   const front = thickness / 2, back = -front, top = height / 2
   const arc: XY[] = Array.from({ length: 49 }, (_, i) => {
     const angle = Math.PI * i / 48
@@ -60,16 +55,20 @@ function notchedFacade(width: number, height: number, thickness: number, style: 
     const face = points.map(p => vertex([p[0], p[1], front]))
     for (const tri of ShapeUtils.triangulateShape(outline.map(p => new Vector2(...p)), [rings[0].map(p => new Vector2(...p))])) indices.push(...tri.map(i => face[i]))
     for (let r = 0; r < 2; r++) {
-      const outer = rings[r].map(p => vertex([p[0], p[1], r === 1 ? front - .003 : front]))
-      const inner = rings[r + 1].map(p => vertex([p[0], p[1], r === 0 ? front - .003 : front]))
-      for (let i = 0; i < 4; i++) { const j = (i + 1) % 4; quad(outer[i], outer[j], inner[j], inner[i]) }
+      // Each straight slope is a plane. Sharing its corner normals with the
+      // perpendicular slope made long sides look like two offset U shapes.
+      for (let i = 0; i < 4; i++) {
+        const j = (i + 1) % 4
+        const at = (ring: number, corner: number): Point => [...rings[ring][corner], ring === 1 ? front - .003 : front]
+        quad(vertex(at(r, i)), vertex(at(r, j)), vertex(at(r + 1, j)), vertex(at(r + 1, i)))
+      }
     }
     const field = rings[2].map(p => vertex([p[0], p[1], front])); quad(...field as [number, number, number, number])
     const rear = outline.map(p => vertex([p[0], p[1], back]))
     for (const tri of ShapeUtils.triangulateShape(outline.map(p => new Vector2(...p)), [])) indices.push(...tri.reverse().map(i => rear[i]))
     rim(outline)
   } else {
-    const profile = DRAWER_FACADE_PROFILE.fluted
+    const profile = facadeFlutingProfile(DRAWER_FACADE_PROFILE, style)
     const centers = grooveLayout(width, profile).centers
     count = centers.length
     const samples = [-width / 2, width / 2, ...arc.map(p => p[0])]
@@ -117,5 +116,5 @@ export function createDrawerFacadeGeometry(width: number, height: number, thickn
   style: Exclude<WardrobeDrawerFacade, 'smooth'>, handle?: WardrobeDrawerHandle) {
   if (handle === 'finger-notch') return notchedFacade(width, height, thickness, style)
   return createFacadeGeometry(width, height, thickness, style, DRAWER_FACADE_PROFILE,
-    { frameField: 'flush', flutedClearCenter: drawerHandleClearWidth(handle) })
+    { frameField: 'flush' })
 }

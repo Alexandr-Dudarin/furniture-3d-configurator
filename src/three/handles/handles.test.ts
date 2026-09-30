@@ -58,6 +58,9 @@ it.each(DRAWER_HANDLES)('assembly $value keeps contacts, free grip space, volume
       expect(handle.max.y).toBeLessThan(top)
       expect(handle.min.z).toBeCloseTo(front.min.z - .002, 6)
     }
+    if (spec.value === 'semicircle') {
+      expect(front.max.y - new Box3().setFromObject(mesh('Handle'), true).max.y).toBeCloseTo(.030, 6)
+    }
     if (spec.value === 'edge-pull') {
       const handle = new Box3().setFromObject(mesh('Handle'), true)
       expect(front.max.y - handle.max.y).toBeCloseTo(.035, 6)
@@ -122,7 +125,7 @@ it.each(getFurnitureDefinitions().filter(d => d.handles))('$id attaches handles 
         const allowance = wrap ? .001501 : 0
         expect(local.min.x).toBeGreaterThan(-w / 2 - allowance); expect(local.max.x).toBeLessThan(w / 2 + allowance)
         expect(local.min.y).toBeGreaterThan(-h / 2 - allowance); expect(local.max.y).toBeLessThan(h / 2 + allowance)
-        expect(local.min.z).toBeCloseTo((target.kind === 'door' && value === 'knob') || value === 'edge-pull' ? m.position.z : wrap ? -spec.thickness / 2 - .002 : spec.thickness / 2, 6)
+        expect(local.min.z).toBeCloseTo((target.kind === 'door' && value === 'knob') || (target.kind === 'drawer' && value === 'semicircle') || value === 'edge-pull' ? m.position.z : wrap ? -spec.thickness / 2 - .002 : spec.thickness / 2, 6)
         const size = m.geometry.boundingBox!.getSize(new Vector3())
         const door = target.kind === 'door'
         if (value === 'profile') expect(size.x).toBeCloseTo(door ? .330 : .220, 6)
@@ -143,6 +146,7 @@ it.each(getFurnitureDefinitions().filter(d => d.handles))('$id attaches handles 
           expect(hit, `${catalog.id}/${target.panel} mounting contact`).toBeDefined()
           expect(hit.distance).toBeCloseTo(.01, 5)
         }
+        if (value === 'semicircle' && !door) expect(h / 2 - local.max.y).toBeCloseTo(.030, 6)
         if (value === 'knob' || value === 'semicircle') {
           expect(size.x).toBeCloseTo((value === 'knob' ? .028 : .078) * (door ? 1.75 : 1), 6)
           if (door) expect(w / 2 - Math.abs(m.position.x)).toBeCloseTo(value === 'knob' ? .050 : .020, 6)

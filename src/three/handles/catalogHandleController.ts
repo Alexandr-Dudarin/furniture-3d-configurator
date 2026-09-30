@@ -43,7 +43,6 @@ export function createCatalogHandleController(root: Object3D, definition: Furnit
         let geometry = next.get(key) ?? geometries.get(key)
         if (!geometry) geometry = createHandleGeometry(style as Exclude<CatalogHandle, 'original' | 'none'>, length, spec.thickness, faceScale)
         next.set(key, geometry); mesh.geometry = geometry
-        const edge = style === 'profile' || style === 'semicircle'
         if (door) {
           const side = target.side!
           const center = new Vector3().setFromMatrixPosition(new Matrix4().multiplyMatrices(inverse, node.matrixWorld))
@@ -55,17 +54,17 @@ export function createCatalogHandleController(root: Object3D, definition: Furnit
           mesh.position.set(side * (width / 2 - inset), y, spec.thickness / 2)
           mesh.rotation.set(0, 0, -side * Math.PI / 2)
         } else {
-          mesh.position.set(0, height / 2 - (wrap ? 0 : style === 'edge-pull' ? .035 : edge ? .002 : .018), spec.thickness / 2)
+          mesh.position.set(0, height / 2 - (wrap ? 0 : style === 'edge-pull' ? .035 : style === 'semicircle' ? .030 : .018), spec.thickness / 2)
           mesh.rotation.set(0, 0, 0)
         }
-        if ((door && style === 'knob') || style === 'edge-pull') {
+        if ((door && style === 'knob') || (!door && style === 'semicircle') || style === 'edge-pull') {
           // Face-mounted hardware follows the real surface, including a
           // recessed frame field. Sample the centre of the mounting root.
           const surfaces: Object3D[] = []
           for (const child of node.children) if (child !== mesh) child.traverseVisible(part => {
             if (part instanceof Mesh) surfaces.push(part)
           })
-          const mount = new Vector3(0, style === 'edge-pull' ? -.006 : 0, 0).applyEuler(mesh.rotation).add(mesh.position)
+          const mount = new Vector3(0, style === 'edge-pull' ? -.006 : style === 'semicircle' ? -.0015 : 0, 0).applyEuler(mesh.rotation).add(mesh.position)
           const origin = node.localToWorld(new Vector3(mount.x, mount.y, spec.thickness / 2 + .01))
           const direction = new Vector3(0, 0, -1).transformDirection(node.matrixWorld)
           const hit = new Raycaster(origin, direction, 0, spec.thickness + .02).intersectObjects(surfaces, false)[0]

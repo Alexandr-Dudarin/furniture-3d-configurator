@@ -135,6 +135,7 @@ export function WardrobeAssemblyControls({ configuration, onAction, onFrame, mot
           ? `Фасады вровень с передними краями боковин. ${handle.projection === 0 ? 'Закрытые ящики не выступают за глубину корпуса.' : `Ручки выступают на ${cm(handle.projection)} см; глубина секции с ручками — ${cm(wardrobeSectionClosedDepth(selected))} см.`}`
           : `Фасады углублены на 2,9 см.${handle.projection === 0 ? '' : (handle.projection <= .029 ? ' Ручки остаются внутри глубины корпуса.' : ` Ручки выступают за корпус на ${cm(handle.projection - .029)} см.`)}`}</p>
         {handle.value === 'top-grip' && <p className="assembly-summary">Зазор над фасадом — 4 см. Короб ниже, чтобы освободить место для пальцев.</p>}
+        {handle.value === 'semicircle' && <p className="assembly-summary">Верх полукруглой ручки — на 3 см ниже верхнего края фасада.</p>}
         {handle.value === 'finger-notch' && <p className="assembly-summary">Выемка по центру верхнего края: ширина 10 см, глубина 3 см. Материал тот же, что у фасада.</p>}
         {handle.value === 'none' && <p className="assembly-summary">Без выступающих ручек. В 3D нажмите на фасад, чтобы открыть ящик.</p>}
         <p className="assembly-summary">Ящики расположены снизу. Верх блока: {Number((wardrobeFillingFloor(selected) * 100).toFixed(1))} см от пола. Полки и штанга располагаются выше него. Крышка блока не входит в число полок.</p>

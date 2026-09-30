@@ -8,6 +8,10 @@ import { createHerringboneGeometry } from './herringboneGeometry'
 
 type Point = [number, number, number]
 
+export function facadeFlutingProfile(spec: FacadeVariants, style: FacadeStyleId) {
+  return style === 'fluted-wide' ? { ...spec.fluted, width: spec.fluted.width * 3.5 } : spec.fluted
+}
+
 export function grooveLayout(width: number, profile: FacadeVariants['fluted']) {
   // Add/remove whole pairs at the edges; the centre groove never shifts by half
   // a pitch when the count changes during a one-millimetre resize.
@@ -102,7 +106,7 @@ export function createFacadeGeometry(width: number, height: number, thickness: n
     for (let i = 0; i < 8; i++) indices.push(center, field[i], field[(i + 1) % 8])
     closeSolid(rings[0])
   } else {
-    const profile = spec.fluted, layout = style === 'fluted-sides'
+    const profile = facadeFlutingProfile(spec, style), layout = style === 'fluted-sides'
       ? sideGrooveLayout(width, profile, target.flutedClearCenter)
       : grooveLayout(width, profile)
     const centers = layout.centers.filter(c => !target.flutedClearCenter || Math.abs(c) - profile.width / 2 >= target.flutedClearCenter / 2)

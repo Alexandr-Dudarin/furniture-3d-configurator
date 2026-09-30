@@ -1,4 +1,4 @@
-export type FacadeStyleId = 'original' | 'smooth' | 'frame' | 'fluted' | 'fluted-sides' | 'diagonal' | 'herringbone' | 'diamonds' | 'herringbone-wide'
+export type FacadeStyleId = 'original' | 'smooth' | 'frame' | 'fluted' | 'fluted-wide' | 'fluted-sides' | 'diagonal' | 'herringbone' | 'diamonds' | 'herringbone-wide'
 
 /** Panel centre relative to the centre of its closed composition envelope, in metres. */
 export type FacadeComposition = { width: number; height: number; x: number; y: number }
