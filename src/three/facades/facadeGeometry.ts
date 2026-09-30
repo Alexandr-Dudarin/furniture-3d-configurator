@@ -9,7 +9,10 @@ import { createHerringboneGeometry } from './herringboneGeometry'
 type Point = [number, number, number]
 
 export function facadeFlutingProfile(spec: FacadeVariants, style: FacadeStyleId) {
-  return style === 'fluted-wide' ? { ...spec.fluted, width: spec.fluted.width * 3.5 } : spec.fluted
+  if (style !== 'fluted-wide') return spec.fluted
+  const width = spec.fluted.width * 3.5
+  // Double the former land (20 - 14 = 6 mm), preserving the channel width.
+  return { ...spec.fluted, width, pitch: width + 2 * (spec.fluted.pitch - width) }
 }
 
 // Wide channels have a flat floor and two rounded 2 mm walls, rather than
@@ -27,7 +30,7 @@ export function flutingSamples(width: number, wide: boolean) {
     ...Array.from({ length: 5 }, (_, i) => half - wall + wall * i / 4)]
 }
 // Filter by the smallest repeated band. Wide grooves retain their broad floor,
-// while their remaining 6 mm lands still fade before they become subpixel.
+// while the lands still fade before they become subpixel.
 export function flutingFilterProfile(spec: FacadeVariants, style: FacadeStyleId) {
   const profile = facadeFlutingProfile(spec, style)
   return { ...profile, width: style === 'fluted-wide' ? Math.min(profile.width, profile.pitch - profile.width) : profile.width }

@@ -46,12 +46,16 @@ export const SECTION_PRESETS = [
   { id: 'empty', label: 'Пустая секция' },
 ] as const
 export type SectionPreset = typeof SECTION_PRESETS[number]['id']
-export type WardrobeFinishSlot = 'bodyFinish' | 'hardwareFinish'
+export type WardrobeFinishSlot = 'bodyFinish' | 'facadeFinish' | 'hardwareFinish'
 // Omitted finish = live inheritance, not a copy of the assembly's current value.
-export type WardrobeSection = { id: string; width: number; height: number; depth: number; shelves: number; rod: boolean; bodyFinish?: string; hardwareFinish?: string; layout?: WardrobeLayout; drawers?: WardrobeDrawers; doors?: WardrobeDoors }
-export type WardrobeAssemblyConfiguration = { sections: WardrobeSection[]; bodyFinish: string; hardwareFinish: string }
+export type WardrobeSection = { id: string; width: number; height: number; depth: number; shelves: number; rod: boolean; bodyFinish?: string; facadeFinish?: string; hardwareFinish?: string; layout?: WardrobeLayout; drawers?: WardrobeDrawers; doors?: WardrobeDoors }
+export type WardrobeAssemblyConfiguration = { sections: WardrobeSection[]; bodyFinish: string; facadeFinish?: string; hardwareFinish: string }
 export function wardrobeSectionFinish(config: WardrobeAssemblyConfiguration, section: WardrobeSection, slot: WardrobeFinishSlot) {
+  if (slot === 'facadeFinish') return section.facadeFinish ?? config.facadeFinish ?? section.bodyFinish ?? config.bodyFinish
   return section[slot] ?? config[slot]
+}
+export function wardrobeFacadeFinishSource(config: WardrobeAssemblyConfiguration, section: WardrobeSection) {
+  return section.facadeFinish ? 'свой материал фасадов секции' : config.facadeFinish ? 'общий материал фасадов' : 'как у корпуса секции'
 }
 export type WardrobeAssemblyAction =
   | { type: 'add-section'; preset: SectionPreset }
@@ -59,6 +63,7 @@ export type WardrobeAssemblyAction =
   | { type: 'move-section'; id: string; direction: -1 | 1 }
   | { type: 'update-section'; id: string; patch: Partial<Omit<WardrobeSection, 'id'>>; confirmHeightChange?: boolean; confirmFillingChange?: boolean }
   | { type: 'set-wardrobe-finish'; slot: 'bodyFinish' | 'hardwareFinish'; finishId: string }
+  | { type: 'set-wardrobe-finish'; slot: 'facadeFinish'; finishId: string | null }
   | { type: 'set-layout-mode'; id: string; manual: boolean }
   | { type: 'move-shelf'; id: string; index: number; height: number }
   | { type: 'move-rod'; id: string; height: number }
@@ -98,6 +103,7 @@ function section(input: unknown, id: string): WardrobeSection {
     ...(drawers ? { drawers } : {}),
     ...(doors ? { doors } : {}),
     ...(typeof raw.bodyFinish === 'string' && BODY_FINISHES.includes(raw.bodyFinish) ? { bodyFinish: raw.bodyFinish } : {}),
+    ...(typeof raw.facadeFinish === 'string' && BODY_FINISHES.includes(raw.facadeFinish) ? { facadeFinish: raw.facadeFinish } : {}),
     ...(typeof raw.hardwareFinish === 'string' && HARDWARE_FINISHES.includes(raw.hardwareFinish) ? { hardwareFinish: raw.hardwareFinish } : {}),
   }
   if (manual) {
@@ -151,7 +157,7 @@ export function wardrobeAdjustmentNotice(input: unknown, normalized: WardrobeAss
   if (raw.sections.slice(0, MAX_SECTIONS).some((item, i) => typeof record(item).shelves === 'number' && Number(record(item).shelves) > (normalized.sections[i]?.shelves ?? 0))) {
     return 'Количество полок скорректировано по высоте секций и допустимым зазорам. Проверьте наполнение восстановленной сборки.'
   }
-  if (raw.sections.slice(0, MAX_SECTIONS).some((item, i) => (['bodyFinish', 'hardwareFinish'] as const)
+  if (raw.sections.slice(0, MAX_SECTIONS).some((item, i) => (['bodyFinish', 'facadeFinish', 'hardwareFinish'] as const)
     .some(slot => record(item)[slot] != null && record(item)[slot] !== normalized.sections[i]?.[slot]))) {
     return 'Недоступные материалы отдельных секций заменены общими материалами сборки.'
   }
@@ -180,6 +186,7 @@ export function normalizeWardrobeAssembly(input: unknown): WardrobeAssemblyConfi
   }) : defaults.sections
   return { sections,
     bodyFinish: typeof raw.bodyFinish === 'string' && BODY_FINISHES.includes(raw.bodyFinish) ? raw.bodyFinish : defaults.bodyFinish,
+    ...(typeof raw.facadeFinish === 'string' && BODY_FINISHES.includes(raw.facadeFinish) ? { facadeFinish: raw.facadeFinish } : {}),
     hardwareFinish: typeof raw.hardwareFinish === 'string' && HARDWARE_FINISHES.includes(raw.hardwareFinish) ? raw.hardwareFinish : defaults.hardwareFinish,
   }
 }
@@ -237,10 +244,12 @@ export function updateWardrobeAssembly(current: WardrobeAssemblyConfiguration, a
       return isValidWardrobeLayout(item, layout) ? { ...item, layout } : item
     }) }
   } else if (action.type === 'set-wardrobe-finish') {
-    const allowed = action.slot === 'bodyFinish' ? BODY_FINISHES : HARDWARE_FINISHES
-    if (allowed.includes(action.finishId)) next = { ...current, [action.slot]: action.finishId }
+    const allowed = action.slot === 'hardwareFinish' ? HARDWARE_FINISHES : BODY_FINISHES
+    if (action.slot === 'facadeFinish' && action.finishId === null) {
+      next = { ...current }; delete next.facadeFinish
+    } else if (action.finishId !== null && allowed.includes(action.finishId)) next = { ...current, [action.slot]: action.finishId }
   } else if (action.type === 'set-section-finish') {
-    const allowed = action.slot === 'bodyFinish' ? BODY_FINISHES : HARDWARE_FINISHES
+    const allowed = action.slot === 'hardwareFinish' ? HARDWARE_FINISHES : BODY_FINISHES
     if (action.finishId === null || allowed.includes(action.finishId)) {
       next = { ...current, sections: current.sections.map(item => item.id === action.id
         ? section({ ...item, [action.slot]: action.finishId }, item.id) : item) }

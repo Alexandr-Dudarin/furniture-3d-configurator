@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react'
-import { BODY_FINISHES, type WardrobeAssemblyConfiguration, type WardrobeSection } from '../configurator/wardrobeAssembly/state'
+import { BODY_FINISHES, wardrobeFacadeFinishSource, wardrobeSectionFinish, type WardrobeAssemblyConfiguration, type WardrobeSection } from '../configurator/wardrobeAssembly/state'
+import { getMaterialFinish } from '../three/materials/materialRegistry'
 import { MAX_DOOR_WIDTH, WARDROBE_DOOR_HANDLES, wardrobeDoorsLabel, wardrobeDoorWidth, type WardrobeDoorHandle } from '../configurator/wardrobeAssembly/doors'
 import type { FurnitureMotionStore } from '../configurator/furnitureMotionStore'
 import { DRAWER_FACADE_STYLES, isWardrobeDrawerFacade, getWardrobeDrawerFacade } from '../configurator/wardrobeAssembly/drawerFacades'
@@ -40,11 +41,11 @@ export function WardrobeDoorControls({ section, configuration, store, onChange }
           onChange={value => onChange({ doors: { ...doors, handle: value as WardrobeDoorHandle } })} />
       </div>
       <label className="wardrobe-toggle"><input type="checkbox" checked={!!doors.finish}
-        onChange={event => onChange({ doors: { ...doors, finish: event.target.checked ? section.bodyFinish ?? configuration.bodyFinish : undefined } })} />Свой материал дверей</label>
+        onChange={event => onChange({ doors: { ...doors, finish: event.target.checked ? wardrobeSectionFinish(configuration, section, 'facadeFinish') : undefined } })} />Свой материал только дверей</label>
       {doors.finish ? <FinishPicker label="Двери" value={doors.finish} ids={BODY_FINISHES}
         onChange={finish => onChange({ doors: { ...doors, finish } })} />
-        : <p className="assembly-summary">Двери используют материал корпуса этой секции. Ручки и петли — её материал фурнитуры.</p>}
-      {section.drawers && <p className="assembly-summary">За дверями доступны утопленные ящики. При открывании ящика сначала откроются обе створки, при закрывании двери ящики сначала задвинутся.</p>}
+        : <p className="assembly-summary">Двери: {getMaterialFinish(wardrobeSectionFinish(configuration, section, 'facadeFinish')).label} — {wardrobeFacadeFinishSource(configuration, section)}. Материал фасадов выбирается в разделах «Общие материалы сборки» или «Материалы» этой секции. Ручки и петли — её материал фурнитуры.</p>}
+      {section.drawers && <p className="assembly-summary">За дверями доступны утопленные ящики. При открывании ящика сначала {doors.count === 2 ? 'откроются обе створки' : 'откроется дверца'}, при закрывании двери ящики сначала задвинутся.</p>}
       {states.find(p => p.reason)?.reason && <p className="assembly-summary" role="status">{states.find(p => p.reason)!.reason}</p>}
       <div className="motion-actions">
         <button type="button" disabled={!states.some(p => !p.open)} onClick={() => states.filter(p => !p.open).forEach(p => store.toggle('wardrobe-assembly', p.id))}>Открыть двери</button>

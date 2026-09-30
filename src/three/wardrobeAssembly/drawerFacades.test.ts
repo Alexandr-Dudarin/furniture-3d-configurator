@@ -120,7 +120,7 @@ it.each(['fluted', 'fluted-wide'] as const)('%s retains opening, shared geometry
   const shaderData = front.geometry.getAttribute(RELIEF_ATTRIBUTE), positions = front.geometry.getAttribute('position')
   const activeWidths = new Set(Array.from({ length: shaderData.count }, (_, i) => shaderData.getZ(i)).filter(width => width > 0))
   expect(activeWidths.size).toBe(1)
-  expect([...activeWidths][0]).toBeCloseTo(style === 'fluted-wide' ? .006 : .004, 7)
+  expect([...activeWidths][0]).toBeCloseTo(style === 'fluted-wide' ? .012 : .004, 7)
   for (let i = 0; i < positions.count; i++) {
     expect(positions.getZ(i) + shaderData.getX(i)).toBeLessThanOrEqual(.00800001)
     if (positions.getY(i) > .196 / 2 - .031) expect(Math.abs(shaderData.getX(i))).toBeLessThan(1e-7)
@@ -171,7 +171,7 @@ it.each(['fluted', 'fluted-wide'] as const)('%s has identical panel vertices/UVs
   reference.dispose()
 })
 
-it('wide grooves measure 14 mm versus 4 mm with the same 20 mm pitch and 1.8 mm depth', () => {
+it('wide grooves measure 14 mm versus 4 mm with 26/20 mm pitches and unchanged 1.8 mm depth', () => {
   for (const style of ['fluted', 'fluted-wide'] as const) {
     const g = createDrawerFacadeGeometry(.664, .246, .016, style, 'none')
     const p = g.getAttribute('position'), expected = style === 'fluted-wide' ? .014 : .004
@@ -179,7 +179,8 @@ it('wide grooves measure 14 mm versus 4 mm with the same 20 mm pitch and 1.8 mm 
     expect(xs.some(x => Math.abs(x - expected / 2) < 1e-7)).toBe(true)
     const material = new MeshStandardMaterial(), mesh = new Mesh(g, material); mesh.updateMatrixWorld()
     const z = (x: number) => new Raycaster(new Vector3(x, 0, .02), new Vector3(0, 0, -1)).intersectObject(mesh)[0].point.z
-    for (const centre of [-.02, 0, .02]) {
+    const pitch = style === 'fluted-wide' ? .026 : .020
+    for (const centre of [-pitch, 0, pitch]) {
       expect(z(centre)).toBeCloseTo(.008 - .0018, 6)
       expect(z(centre + expected / 2)).toBeCloseTo(.008, 6)
     }

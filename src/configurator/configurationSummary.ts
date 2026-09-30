@@ -7,7 +7,7 @@ import type { ConfiguratorSession } from './savedConfiguration'
 import { getTableBase, getTabletopEdgeProfile, TOP_SHAPES } from './tableAssembly/catalog'
 import { getMaterialFinish } from '../three/materials/materialRegistry'
 import { getWardrobeDrawerHandle } from './wardrobeAssembly/drawerHandles'
-import { wardrobeBounds, wardrobeClosedBounds, wardrobeDrawerPlacementLabel, wardrobeSectionClosedDepth, wardrobeFillingFloor, wardrobeFillingLabel, wardrobeSectionFinish, wardrobeShelfLabel } from './wardrobeAssembly/state'
+import { wardrobeBounds, wardrobeClosedBounds, wardrobeDrawerPlacementLabel, wardrobeSectionClosedDepth, wardrobeFillingFloor, wardrobeFillingLabel, wardrobeSectionFinish, wardrobeFacadeFinishSource, wardrobeShelfLabel } from './wardrobeAssembly/state'
 
 const number = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 3 })
 const size = (meters: number, unit: 'см' | 'мм') => `${number.format(meters * (unit === 'мм' ? 1000 : 100))} ${unit}`
@@ -24,13 +24,14 @@ export function getConfigurationSummary(session: ConfiguratorSession): Configura
       { label: 'Глубина сборки с дверями и ручками (всё закрыто)', value: size(bounds.depth, 'см') },
       ...config.sections.map((section, index) => ({ label: `Секция ${index + 1}`, value: `${wardrobeDoorsLabel(section.doors)} · ${Math.round(section.width * 100)} × ${Math.round(section.height * 100)} × ${Math.round(section.depth * 100)} см (корпус) · ${wardrobeFillingLabel(section)}${section.rod && section.depth < .5 ? ' · торцевая штанга' : ''}` })),
       { label: 'Общий материал корпуса', value: getMaterialFinish(config.bodyFinish).label },
+      { label: 'Общий материал фасадов', value: config.facadeFinish ? getMaterialFinish(config.facadeFinish).label : 'Как у корпуса каждой секции' },
       { label: 'Общий материал фурнитуры', value: getMaterialFinish(config.hardwareFinish).label },
       ...config.sections.flatMap((section, index) => [
-        { label: `Секция ${index + 1}: ${section.drawers ? 'корпус, полки и ящики' : 'корпус и полки'}`, value: `${getMaterialFinish(wardrobeSectionFinish(config, section, 'bodyFinish')).label} · ${section.bodyFinish ? 'свой' : 'общий'}` },
+        { label: `Секция ${index + 1}: ${section.drawers ? 'корпус, полки и короба ящиков' : 'корпус и полки'}`, value: `${getMaterialFinish(wardrobeSectionFinish(config, section, 'bodyFinish')).label} · ${section.bodyFinish ? 'свой' : 'общий'}` },
         ...(section.doors ? [
           { label: `Секция ${index + 1}: двери`, value: `${wardrobeDoorsLabel(section.doors)} · ширина створки ${size(wardrobeDoorWidth(section.width, section.doors.count), 'см')}` },
           { label: `Секция ${index + 1}: рисунок дверей`, value: getWardrobeDrawerFacade(section.doors.facadeStyle).label },
-          { label: `Секция ${index + 1}: материал дверей`, value: `${getMaterialFinish(section.doors.finish ?? wardrobeSectionFinish(config, section, 'bodyFinish')).label} · ${section.doors.finish ? 'свой' : 'как у корпуса секции'}` },
+          { label: `Секция ${index + 1}: материал дверей`, value: `${getMaterialFinish(section.doors.finish ?? wardrobeSectionFinish(config, section, 'facadeFinish')).label} · ${section.doors.finish ? 'свой материал только дверей' : wardrobeFacadeFinishSource(config, section)}` },
           { label: `Секция ${index + 1}: ручки дверей`, value: getCatalogHandle(section.doors.handle, 'doors').label },
         ] : []),
         ...(section.drawers ? [
@@ -38,6 +39,7 @@ export function getConfigurationSummary(session: ConfiguratorSession): Configura
           { label: `Секция ${index + 1}: положение фасадов ящиков`, value: wardrobeDrawerPlacementLabel(section.drawers) },
           { label: `Секция ${index + 1}: глубина с фасадами и ручками (всё закрыто)`, value: size(wardrobeSectionClosedDepth(section), 'см') },
           { label: `Секция ${index + 1}: рисунок фасадов ящиков`, value: getWardrobeDrawerFacade(section.drawers.facadeStyle).label },
+          { label: `Секция ${index + 1}: материал фасадов ящиков`, value: `${getMaterialFinish(wardrobeSectionFinish(config, section, 'facadeFinish')).label} · ${wardrobeFacadeFinishSource(config, section)}` },
           { label: `Секция ${index + 1}: ручки`, value: getWardrobeDrawerHandle(section.drawers.handle).projection === 0 ? getWardrobeDrawerHandle(section.drawers.handle).label : `${getWardrobeDrawerHandle(section.drawers.handle).label} · ${getMaterialFinish(wardrobeSectionFinish(config, section, 'hardwareFinish')).label} · ${section.hardwareFinish ? 'свой' : 'общий'}` },
           { label: `Секция ${index + 1}: направляющие`, value: `${getMaterialFinish(wardrobeSectionFinish(config, section, 'hardwareFinish')).label} · ${section.hardwareFinish ? 'свой' : 'общий'}` },
         ] : []),

@@ -12,7 +12,7 @@ export function WardrobeDrawerFacadeControls({ value, notch, onChange }: {
       onChange={id => { if (isWardrobeDrawerFacade(id)) onChange(id) }} />
     <p className="assembly-summary">Для всех ящиков выбранной секции. {value === 'frame'
       ? `Ширина рамки — ${notch ? '4' : '2,8'} см. Узкая канавка отделяет её от плоского поля для крепления ручки.`
-      : value === 'fluted' || value === 'fluted-wide' ? `Канавки шириной ${value === 'fluted-wide' ? '1,4 см' : '4 мм'}, шаг — 2 см. Рисунок не растягивается и не зависит от выбранной ручки.`
+      : value === 'fluted' || value === 'fluted-wide' ? `${value === 'fluted-wide' ? 'Канавки шириной 1,4 см, промежутки — 1,2 см.' : 'Канавки шириной 4 мм, шаг — 2 см.'} Рисунок не растягивается и не зависит от выбранной ручки.`
         : 'Гладкая поверхность фасада.'}</p>
     {notch && value && value !== 'smooth' && <p className="assembly-summary">Вокруг выемки остаётся гладкий участок для захвата.</p>}
   </div>

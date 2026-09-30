@@ -16,7 +16,7 @@ import { BACK_THICKNESS as back, PANEL_THICKNESS as panel, PLINTH_HEIGHT as plin
 import { createFinishMaterial } from '../materials/createMaterial'
 import { disposeMaterialResources } from '../materials/disposeMaterials'
 
-type Slot = 'body' | 'hardware' | 'door'
+type Slot = 'body' | 'facade' | 'hardware' | 'door'
 export type Part = { sectionId: string; name: string; shape: 'panel' | 'rod' | 'notched-front' | 'handle' | 'facade'; facadeStyle?: Exclude<WardrobeDrawerFacade, 'smooth'>; facadeHandle?: WardrobeDrawerHandle; doorId?: string; pivot?: { origin: [number, number, number]; angle: number }; rotationZ?: number; faceScale?: number; handleLength?: number; handle?: HardwareHandle | 'long-bar'; mountDepth?: number; size: [number, number, number]; position: [number, number, number]; slot: Slot; drawerId?: string; travel?: number; axis?: 'x' | 'y' | 'z' }
 
 // Separate, closed panels. All dimensions are physical metres, floor is y=0,
@@ -56,6 +56,7 @@ export function planWardrobeParts(config: WardrobeAssemblyConfiguration): Part[]
         const mark = () => { Object.assign(parts.at(-1)!, { drawerId, travel: length * .72 }) }
         const board = (suffix: string, size: Part['size'], position: Part['position']) => { add(`${name}/${suffix}`, size, position); mark() }
         board('Front', [inside - (section.doors ? .012 : .004), row - .004 - cut, panel], [0, y + (row - cut) / 2, frontBack + panel / 2])
+        parts.at(-1)!.slot = 'facade'
         if (handle.value === 'finger-notch') parts.at(-1)!.shape = 'notched-front'
         if (section.drawers.facadeStyle && section.drawers.facadeStyle !== 'smooth') Object.assign(parts.at(-1)!, {
           shape: 'facade', facadeStyle: section.drawers.facadeStyle, facadeHandle: handle.value,
@@ -141,7 +142,7 @@ export function createWardrobeAssembly(initial: WardrobeAssemblyConfiguration, o
   const drawerGroups = new Map<string, Group>()
   const relief = createReliefFilter()
   let disposed = false, request = 0
-  const fallback: Record<Slot, MeshStandardMaterial> = { body: new MeshStandardMaterial({ color: 0xcdbb9d, roughness: .65 }), hardware: new MeshStandardMaterial({ color: 0x16191c, roughness: .35 }), door: new MeshStandardMaterial({ color: 0x626563, roughness: .65 }) }
+  const fallback: Record<Slot, MeshStandardMaterial> = { body: new MeshStandardMaterial({ color: 0xcdbb9d, roughness: .65 }), facade: new MeshStandardMaterial({ color: 0x626563, roughness: .65 }), hardware: new MeshStandardMaterial({ color: 0x16191c, roughness: .35 }), door: new MeshStandardMaterial({ color: 0x626563, roughness: .65 }) }
   // One owned PBR material per finish actually used, shared across sections.
   const materials = new Map<string, MeshStandardMaterial>()
   let bindings = new Map<string, string>()
@@ -222,7 +223,8 @@ export function createWardrobeAssembly(initial: WardrobeAssemblyConfiguration, o
     const selected = new Map<string, string>()
     for (const section of configuration.sections) {
       selected.set(bindingKey(section.id, 'body'), wardrobeSectionFinish(configuration, section, 'bodyFinish'))
-      if (section.doors) selected.set(bindingKey(section.id, 'door'), section.doors.finish ?? wardrobeSectionFinish(configuration, section, 'bodyFinish'))
+      if (section.drawers) selected.set(bindingKey(section.id, 'facade'), wardrobeSectionFinish(configuration, section, 'facadeFinish'))
+      if (section.doors) selected.set(bindingKey(section.id, 'door'), section.doors.finish ?? wardrobeSectionFinish(configuration, section, 'facadeFinish'))
       if (section.rod || section.drawers || section.doors) selected.set(bindingKey(section.id, 'hardware'), wardrobeSectionFinish(configuration, section, 'hardwareFinish'))
     }
     if (selected.size === bindings.size && [...selected].every(([key, id]) => bindings.get(key) === id)) return
@@ -263,7 +265,7 @@ export function createWardrobeAssembly(initial: WardrobeAssemblyConfiguration, o
     motion.dispose(); drawerGroups.clear(); relief.dispose()
     geometries.forEach(geometry => geometry.dispose()); geometries.clear()
     materials.forEach(disposeMaterialResources); materials.clear()
-    disposeMaterialResources(fallback.body); disposeMaterialResources(fallback.hardware); disposeMaterialResources(fallback.door)
+    Object.values(fallback).forEach(disposeMaterialResources)
     meshes.clear(); group.clear()
     cameraVolumes = []; cameraBoxes = []
   } }
