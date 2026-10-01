@@ -51,6 +51,8 @@ import {
   getMaterialFinishes,
 } from './materialRegistry'
 
+import { localFirstTablePath } from '../models/first-table/localArchive'
+
 afterEach(
   () => {
     disposeMaterialFinishCache()
@@ -64,7 +66,7 @@ describe(
     const cases = [
       {
         path:
-          'public/models/first-table.glb',
+          localFirstTablePath,
         definition:
           FIRST_TABLE_CONFIG,
         topMaterial:
@@ -110,14 +112,14 @@ describe(
         expectedDefaultFrame,
         maxDimensions,
       }) => {
-        it(
+        it.skipIf(!path)(
           `applies and switches declared finishes in ${definition.id}`,
           async () => {
             stubImageElement()
 
             const model =
               await loadProductionModel(
-                path,
+                path!,
               )
 
             const furnitureController =

@@ -25,3 +25,11 @@ dist-ssr
 
 # Локальные отчёты и инструкции по этапам разработки
 /docs/updates/
+
+# Локальный архив первого ручного стола и настройки развёртывания
+/.local-archive/
+/public/models/first-table.glb
+/.vercel/
+.env
+.env.*
+!.env.example

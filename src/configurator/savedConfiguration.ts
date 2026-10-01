@@ -132,7 +132,10 @@ export function readSavedSession(raw: string | null): { session: ConfiguratorSes
       session.wardrobe = normalizeWardrobeAssembly(input.wardrobe)
       if (input.mode === 'wardrobe') session.mode = 'wardrobe'
     }
-    return { session, notice: input.version >= 4 ? wardrobeAdjustmentNotice(input.wardrobe, session.wardrobe) : null }
+    const missingSelectedModel = session.mode === 'catalog' && typeof input.selectedModelId === 'string' && !findFurnitureDefinition(input.selectedModelId)
+    return { session, notice: missingSelectedModel
+      ? 'Ранее выбранная модель больше не доступна в каталоге. Открыта начальная модель; настройки остальных моделей сохранены.'
+      : input.version >= 4 ? wardrobeAdjustmentNotice(input.wardrobe, session.wardrobe) : null }
   } catch {
     return { session, notice: 'Сохранённые настройки не удалось прочитать. Открыты начальные параметры.' }
   }

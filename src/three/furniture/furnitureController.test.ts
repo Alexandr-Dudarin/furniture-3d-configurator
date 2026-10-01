@@ -29,6 +29,8 @@ import type {
   FurnitureDefinition,
 } from './types'
 
+import { localFirstTablePath } from '../models/first-table/localArchive'
+
 const EPSILON_DIGITS = 12
 
 afterEach(
@@ -40,14 +42,14 @@ afterEach(
 describe(
   'createFurnitureController',
   () => {
-    it(
-      'applies the first-table config to the production GLB without regressions',
+    it.skipIf(!localFirstTablePath)(
+      'applies the archived first-table config to its GLB without regressions',
       async () => {
         stubImageElement()
 
         const file =
           await readFile(
-            'public/models/first-table.glb',
+            localFirstTablePath!,
           )
 
         const gltf =

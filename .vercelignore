@@ -1,0 +1,13 @@
+# Only build inputs. Source models, previews, local archives and node_modules stay local.
+/*
+!src
+!public
+!scripts
+!package.json
+!package-lock.json
+!tsconfig.json
+!tsconfig.app.json
+!tsconfig.node.json
+!vite.config.ts
+!index.html
+!vercel.json

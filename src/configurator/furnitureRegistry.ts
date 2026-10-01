@@ -3,10 +3,6 @@ import type {
 } from '../three/furniture/types'
 
 import {
-  FIRST_TABLE_CONFIG,
-} from '../three/models/first-table/config'
-
-import {
   U_FRAME_TABLE_CONFIG,
 } from '../three/models/u-frame-table/config'
 
@@ -54,10 +50,6 @@ const furnitureRegistry =
     FurnitureDefinition
   >([
     [
-      FIRST_TABLE_CONFIG.id,
-      FIRST_TABLE_CONFIG,
-    ],
-    [
       U_FRAME_TABLE_CONFIG.id,
       U_FRAME_TABLE_CONFIG,
     ],
@@ -93,7 +85,7 @@ const furnitureRegistry =
  */
 
 export const DEFAULT_FURNITURE_ID =
-  FIRST_TABLE_CONFIG.id
+  U_FRAME_TABLE_CONFIG.id
 
 /*
  * Получить конкретную модель

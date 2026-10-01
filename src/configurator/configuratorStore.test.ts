@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { DEFAULT_FURNITURE_ID } from './furnitureRegistry'
 import { createConfiguratorStore } from './configuratorStore'
 import { CONFIGURATION_STORAGE_KEY, PREVIOUS_CONFIGURATION_STORAGE_KEY, createConfigurationUrl, createDefaultSession, readSharedConfiguration, updateSession } from './savedConfiguration'
 
@@ -34,7 +35,7 @@ describe('browser configuration lifecycle', () => {
     const store = createConfiguratorStore(env)
     const disconnect = store.connect()
     const firstId = store.getSnapshot().session.selectedModelId
-    store.dispatch({ type: 'set-dimension', name: 'length', value: 1.8 })
+    store.dispatch({ type: 'set-dimension', name: 'length', value: 1.6 })
     store.dispatch({ type: 'set-material', slot: 'primaryTop', finishId: 'marble-white-gold' })
     store.dispatch({ type: 'select-model', modelId: roundId })
     store.dispatch({ type: 'set-dimension', name: 'diameter', value: 1.3 })
@@ -45,7 +46,7 @@ describe('browser configuration lifecycle', () => {
     const restored = createConfiguratorStore(env)
     expect(restored.getSnapshot().session).toEqual(store.getSnapshot().session)
     restored.dispatch({ type: 'select-model', modelId: firstId })
-    expect(restored.getSnapshot().session.models[firstId].dimensions.length).toBe(1.8)
+    expect(restored.getSnapshot().session.models[firstId].dimensions.length).toBe(1.6)
     expect(restored.getSnapshot().session.models[firstId].materials.primaryTop).toBe('marble-white-gold')
     disconnect()
   })
@@ -71,7 +72,7 @@ describe('browser configuration lifecycle', () => {
   })
 
   it('gives a shared configuration priority, keeping other saved models intact', () => {
-    let local = updateSession(createDefaultSession(), { type: 'set-dimension', name: 'length', value: 1.8 })
+    let local = updateSession(createDefaultSession(), { type: 'set-dimension', name: 'length', value: 1.6 })
     local = updateSession(local, { type: 'select-model', modelId: roundId })
     local = updateSession(local, { type: 'set-material', slot: 'frameMetal', finishId: 'metal-white-matte' })
     const url = new URL(origin)
@@ -81,7 +82,7 @@ describe('browser configuration lifecycle', () => {
     expect(store.getSnapshot().session.selectedModelId).toBe(roundId)
     expect(store.getSnapshot().session.models[roundId].dimensions.diameter).toBe(1.3)
     expect(store.getSnapshot().session.models[roundId].materials.frameMetal).toBe('metal-black-matte')
-    expect(store.getSnapshot().session.models['table-01'].dimensions.length).toBe(1.8)
+    expect(store.getSnapshot().session.models[DEFAULT_FURNITURE_ID].dimensions.length).toBe(1.6)
     expect(store.getSnapshot().notice).toContain('заменены')
   })
 
@@ -129,7 +130,7 @@ describe('browser configuration lifecycle', () => {
     expect(env.storage.setItem).toHaveBeenCalledTimes(writes)
     env.pageHide.forEach((callback) => callback())
     expect(env.storage.setItem).toHaveBeenCalledTimes(writes + 1)
-    expect(JSON.parse(env.values.get(CONFIGURATION_STORAGE_KEY)!).models['table-01'].dimensions.length).toBe(1.6)
+    expect(JSON.parse(env.values.get(CONFIGURATION_STORAGE_KEY)!).models[DEFAULT_FURNITURE_ID].dimensions.length).toBe(1.6)
     vi.advanceTimersByTime(500)
     expect(env.storage.setItem).toHaveBeenCalledTimes(writes + 1)
     disconnect()
@@ -142,10 +143,10 @@ describe('browser configuration lifecycle', () => {
     const store = createConfiguratorStore(env)
     const disconnect = store.connect()
     expect(store.getSnapshot().persistence).toBe('unavailable')
-    store.dispatch({ type: 'set-dimension', name: 'length', value: 1.8 })
+    store.dispatch({ type: 'set-dimension', name: 'length', value: 1.6 })
     vi.advanceTimersByTime(250)
     expect(store.getSnapshot().persistence).toBe('unavailable')
-    expect(readSharedConfiguration(store.getShareUrl()).configuration!.dimensions.length).toBe(1.8)
+    expect(readSharedConfiguration(store.getShareUrl()).configuration!.dimensions.length).toBe(1.6)
     disconnect()
   })
 
@@ -155,7 +156,7 @@ describe('browser configuration lifecycle', () => {
     const store = createConfiguratorStore(env)
     const disconnect = store.connect()
     expect(store.getSnapshot().persistence).toBe('unavailable')
-    store.dispatch({ type: 'set-dimension', name: 'length', value: 1.8 })
+    store.dispatch({ type: 'set-dimension', name: 'length', value: 1.6 })
     vi.advanceTimersByTime(250)
     expect(store.getSnapshot().persistence).toBe('saved')
     disconnect()
@@ -168,7 +169,7 @@ describe('browser configuration lifecycle', () => {
     const unsubscribe = store.subscribe(listener)
     store.connect()()
     const disconnect = store.connect()
-    store.dispatch({ type: 'set-dimension', name: 'length', value: 1.8 })
+    store.dispatch({ type: 'set-dimension', name: 'length', value: 1.6 })
     disconnect()
     vi.advanceTimersByTime(500)
     expect(env.pageHide.size).toBe(0)

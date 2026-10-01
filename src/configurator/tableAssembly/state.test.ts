@@ -63,7 +63,7 @@ it('restores and shares an assembly, resetting it independently from catalog mod
 })
 
 it('reads the legacy storage key, writes the current version separately and prioritizes a builder link', () => {
-  const old = JSON.stringify({ version: 1, selectedModelId: 'table-01', models: { 'table-01': { dimensions: { length: 1.8, width: 0.9 } } } })
+  const old = JSON.stringify({ version: 1, selectedModelId: 'table-02-u-frame', models: { 'table-02-u-frame': { dimensions: { length: 1.5, width: 0.75 } } } })
   const values = new Map([[LEGACY_CONFIGURATION_STORAGE_KEY, old]])
   const shared = updateSession(createDefaultSession(), { type: 'set-mode', mode: 'builder' })
   const env = {
@@ -73,7 +73,7 @@ it('reads the legacy storage key, writes the current version separately and prio
   }
   const store = createConfiguratorStore(env)
   expect(store.getSnapshot().session.mode).toBe('builder')
-  expect(store.getSnapshot().session.models['table-01'].dimensions).toEqual({ length: 1.8, width: 0.9 })
+  expect(store.getSnapshot().session.models['table-02-u-frame'].dimensions).toEqual({ length: 1.5, width: 0.75 })
   const disconnect = store.connect()
   expect(JSON.parse(values.get(CONFIGURATION_STORAGE_KEY)!).version).toBe(CONFIGURATION_VERSION)
   expect(values.get(LEGACY_CONFIGURATION_STORAGE_KEY)).toBe(old)
