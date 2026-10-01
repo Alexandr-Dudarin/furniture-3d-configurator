@@ -33,3 +33,49 @@ dist-ssr
 .env
 .env.*
 !.env.example
+
+# Generated caches and local test reports
+coverage/
+playwright-report/
+test-results/
+blob-report/
+.cache/
+.vite/
+.eslintcache
+*.tsbuildinfo
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+
+# Blender backups (the original .blend sources remain versioned)
+*.blend[0-9]*
+
+# Local credentials and private keys; .env.example must contain placeholders only
+.npmrc
+.netrc
+.git-credentials
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa
+id_ed25519
+
+# Raw command output; keep model specs, validation reports and requirements files
+/assets/source/**/build-output.txt
+/assets/source/**/test-output.txt
+/assets/source/**/integration-build-output.txt
+/assets/source/**/integration-test-output.txt
+/assets/source/**/build.txt
+/assets/source/**/lint.txt
+/assets/source/**/test.txt
+/assets/source/**/full-test.txt
+/assets/source/**/joint-test.txt
+/assets/source/**/negative-baseline-regression.txt
+/assets/source/wardrobe-15-katania-four-door/evidence/*.txt
+
+# Private task handoffs and conversation screenshots; keep actual model references
+/assets/source/**/references/handoff.png
+/assets/source/**/references/task-brief.md
+/assets/source/**/references/integration-requirements.png
