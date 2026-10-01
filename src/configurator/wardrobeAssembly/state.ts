@@ -1,4 +1,4 @@
-import { wardrobePlacement, placementPolygon, wardrobeSectionCount, wardrobeSectionLimit, MAX_CORNER_SECTIONS, type WardrobeArrangement, type WardrobeCorner } from './arrangement'
+import { wardrobePlacement, placementPolygon, wardrobeSectionCount, wardrobeSectionLimit, wardrobeCornerCount, wardrobeArmRanges, wardrobeArmAt, MAX_CORNER_SECTIONS, type WardrobeArm, type WardrobeArrangement, type WardrobeCorner } from './arrangement'
 import { DOOR_BODY_GAP, DOOR_THICKNESS, normalizeWardrobeDoors, wardrobeDoorHandleProjection, type WardrobeDoors } from './doors'
 import { isWardrobeDrawerFacade } from './drawerFacades'
 import type { FurnitureDimensionConfig } from '../../three/furniture/types'
@@ -59,10 +59,10 @@ export function wardrobeFacadeFinishSource(config: WardrobeAssemblyConfiguration
   return section.facadeFinish ? 'свой материал фасадов секции' : config.facadeFinish ? 'общий материал фасадов' : 'как у корпуса секции'
 }
 export type WardrobeAssemblyAction =
-  | { type: 'add-section'; preset: SectionPreset; arm?: 0 | 1 }
-  | { type: 'set-arrangement'; kind: 'straight' | 'l'; side?: 'left' | 'right' }
-  | { type: 'set-arm-count'; count: number }
-  | { type: 'update-corner'; patch: Partial<WardrobeCorner>; confirmFillingChange?: boolean }
+  | { type: 'add-section'; preset: SectionPreset; arm?: WardrobeArm }
+  | { type: 'set-arrangement'; kind: 'straight' | 'l' | 'u'; side?: 'left' | 'right' }
+  | { type: 'set-arm-count'; count: number; arm?: 0 | 1 }
+  | { type: 'update-corner'; cornerId?: 'corner-1' | 'corner-2'; patch: Partial<WardrobeCorner>; confirmFillingChange?: boolean }
   | { type: 'remove-section'; id: string }
   | { type: 'move-section'; id: string; direction: -1 | 1 }
   | { type: 'update-section'; id: string; patch: Partial<Omit<WardrobeSection, 'id'>>; confirmHeightChange?: boolean; confirmFillingChange?: boolean }
@@ -156,8 +156,8 @@ function sameInput(a: unknown, b: unknown): boolean {
 export function wardrobeAdjustmentNotice(input: unknown, normalized: WardrobeAssemblyConfiguration) {
   const raw = record(input)
   if (!Array.isArray(raw.sections)) return null
-  const limit = normalized.arrangement ? MAX_CORNER_SECTIONS - 1 : MAX_SECTIONS
-  if (normalized.arrangement && (raw.sections.length > limit || !sameInput(raw.arrangement, normalized.arrangement))) return 'Г-образная компоновка скорректирована: до 21 секции вместе с углом, минимум одна обычная секция на каждой стороне. Проверьте размеры и наполнение угла.'
+  const limit = wardrobeSectionLimit(normalized) - wardrobeCornerCount(normalized)
+  if (normalized.arrangement && (raw.sections.length > limit || !sameInput(raw.arrangement, normalized.arrangement))) return 'Угловая компоновка скорректирована: до 21 секции вместе с углами, минимум одна обычная секция на каждой стороне. Проверьте размеры и наполнение углов.'
   if (raw.sections.length > limit) return `В прямой сборке допускается до ${MAX_SECTIONS} секций. Из загруженного варианта оставлены первые ${MAX_SECTIONS}; проверьте состав сборки.`
   if (raw.sections.slice(0, limit).some((item, i) => {
     const value = record(item).doors
@@ -189,21 +189,27 @@ export function createWardrobeSection(id: string, preset: SectionPreset, dimensi
 export function createDefaultWardrobe(): WardrobeAssemblyConfiguration {
   return { sections: [createWardrobeSection('section-1', 'shelves'), createWardrobeSection('section-2', 'hanging', { width: .8 }), createWardrobeSection('section-3', 'shelves')], bodyFinish: 'board-grey-neutral', hardwareFinish: 'metal-black-matte' }
 }
-function normalizeArrangement(input: unknown, sections: WardrobeSection[]): WardrobeArrangement | undefined {
-  const raw = record(input)
-  if (raw.kind !== 'l' || sections.length < 2) return undefined
-  const corner = record(raw.corner)
+function normalizeCorner(input: unknown): WardrobeCorner {
+  const corner = record(input)
   const height = size(corner.height, SECTION_DIMENSIONS.height)
   const requested = typeof corner.shelves === 'number' && Number.isFinite(corner.shelves) ? Math.round(corner.shelves) : 4
-  return { kind: 'l', side: raw.side === 'right' ? 'right' : 'left',
-    split: Math.max(1, Math.min(sections.length - 1, typeof raw.split === 'number' && Number.isFinite(raw.split) ? Math.round(raw.split) : Math.ceil(sections.length / 2))),
-    corner: { height, shelves: Math.max(0, Math.min(wardrobeShelfLimit(height, false), requested)),
-      ...(typeof corner.bodyFinish === 'string' && BODY_FINISHES.includes(corner.bodyFinish) ? { bodyFinish: corner.bodyFinish } : {}) } }
+  return { height, shelves: Math.max(0, Math.min(wardrobeShelfLimit(height, false), requested)),
+    ...(typeof corner.bodyFinish === 'string' && BODY_FINISHES.includes(corner.bodyFinish) ? { bodyFinish: corner.bodyFinish } : {}) }
+}
+function normalizeArrangement(input: unknown, sections: WardrobeSection[]): WardrobeArrangement | undefined {
+  const raw = record(input), isU = raw.kind === 'u'
+  if ((!isU && raw.kind !== 'l') || sections.length < (isU ? 3 : 2)) return undefined
+  const count = (v: unknown, fallback: number, min: number, max: number) => Math.max(min, Math.min(max, typeof v === 'number' && Number.isFinite(v) ? Math.round(v) : fallback))
+  const split = count(raw.split, Math.ceil(sections.length / (isU ? 3 : 2)), 1, sections.length - (isU ? 2 : 1))
+  const corner = normalizeCorner(raw.corner)
+  if (isU) return { kind: 'u', split, secondSplit: count(raw.secondSplit, split + Math.ceil((sections.length - split) / 2), split + 1, sections.length - 1), corner, secondCorner: normalizeCorner(raw.secondCorner) }
+  return { kind: 'l', side: raw.side === 'right' ? 'right' : 'left', split, corner }
 }
 export function normalizeWardrobeAssembly(input: unknown): WardrobeAssemblyConfiguration {
   const raw = record(input), defaults = createDefaultWardrobe()
   const used = new Set<string>()
-  const limit = record(raw.arrangement).kind === 'l' ? MAX_CORNER_SECTIONS - 1 : MAX_SECTIONS
+  const kind = record(raw.arrangement).kind
+  const limit = kind === 'u' ? MAX_CORNER_SECTIONS - 2 : kind === 'l' ? MAX_CORNER_SECTIONS - 1 : MAX_SECTIONS
   const sections = Array.isArray(raw.sections) && raw.sections.length ? raw.sections.slice(0, limit).map((value, index) => {
     const candidate = record(value).id
     let id = typeof candidate === 'string' && /^section-\d{1,6}$/.test(candidate) && !used.has(candidate) ? candidate : `section-${index + 1}`
@@ -225,9 +231,17 @@ export function wardrobeBounds(config: WardrobeAssemblyConfiguration) {
 export function wardrobeClosedBounds(config: WardrobeAssemblyConfiguration) {
   if (!config.arrangement) return { ...wardrobeBounds(config), depth: Math.max(...config.sections.map(wardrobeSectionClosedDepth)) }
   const layout = wardrobePlacement(config)
-  const points = [...layout.corner!.polygon, ...layout.sections.flatMap((p, i) => placementPolygon(p, wardrobeSectionClosedDepth(config.sections[i])))]
+  const points = [...layout.corners.flatMap(p => p.polygon), ...layout.sections.flatMap((p, i) => placementPolygon(p, wardrobeSectionClosedDepth(config.sections[i])))]
   return { width: Number((Math.max(...points.map(p => p[0])) - Math.min(...points.map(p => p[0]))).toFixed(8)), height: layout.bounds.height,
     depth: Number((Math.max(...points.map(p => p[1])) - Math.min(...points.map(p => p[1]))).toFixed(8)) }
+}
+// Conservative clear width between CLOSED side runs, including projecting
+// handles. An open door or drawer occupies part of this space; no egress claim.
+export function wardrobeAisleWidth(config: WardrobeAssemblyConfiguration): number | null {
+  if (config.arrangement?.kind !== 'u') return null
+  const ranges = wardrobeArmRanges(config)
+  const depth = (arm: number) => Math.max(...config.sections.slice(ranges[arm].start, ranges[arm].end).map(wardrobeSectionClosedDepth))
+  return Number((wardrobeBounds(config).width - depth(1) - depth(2)).toFixed(8))
 }
 export function updateWardrobeAssembly(current: WardrobeAssemblyConfiguration, action: WardrobeAssemblyAction) {
   let next = current
@@ -235,29 +249,46 @@ export function updateWardrobeAssembly(current: WardrobeAssemblyConfiguration, a
     if (action.kind === 'straight') {
       if (current.sections.length > MAX_SECTIONS) return current
       next = { ...current }; delete next.arrangement
-    } else if (action.kind === 'l' && current.sections.length >= 2) {
-      next = { ...current, arrangement: normalizeArrangement({ ...current.arrangement, kind: 'l', side: action.side ?? current.arrangement?.side, corner: current.arrangement?.corner ?? { height: current.sections[0].height, shelves: 4 } }, current.sections) }
+    } else if (current.sections.length >= (action.kind === 'u' ? 3 : 2) && current.sections.length <= MAX_CORNER_SECTIONS - (action.kind === 'u' ? 2 : 1)) {
+      const previous = current.arrangement
+      next = { ...current, arrangement: normalizeArrangement({ ...previous, kind: action.kind,
+        side: action.side ?? previous?.side, corner: previous?.corner ?? { height: current.sections[0].height, shelves: 4 },
+        secondCorner: previous?.kind === 'u' ? previous.secondCorner : previous?.corner ?? { height: current.sections.at(-1)!.height, shelves: 4 },
+      }, current.sections) }
     }
   } else if (action.type === 'set-arm-count' && current.arrangement && Number.isFinite(action.count)) {
-    next = { ...current, arrangement: normalizeArrangement({ ...current.arrangement, split: action.count }, current.sections) }
+    const a = current.arrangement
+    if (a.kind === 'u') {
+      const oldB = a.secondSplit - a.split
+      const count = Math.max(1, Math.min(current.sections.length - (action.arm === 1 ? a.split : oldB) - 1, Math.round(action.count)))
+      next = { ...current, arrangement: { ...a, split: action.arm === 1 ? a.split : count, secondSplit: action.arm === 1 ? a.split + count : count + oldB } }
+    } else next = { ...current, arrangement: normalizeArrangement({ ...a, split: action.count }, current.sections) }
   } else if (action.type === 'update-corner' && current.arrangement) {
-    const arrangement = normalizeArrangement({ ...current.arrangement, corner: { ...current.arrangement.corner, ...action.patch } }, current.sections)!
-    if (arrangement.corner.height < current.arrangement.corner.height && arrangement.corner.shelves < current.arrangement.corner.shelves && !action.confirmFillingChange) return current
-    next = { ...current, arrangement }
+    const a = current.arrangement, second = action.cornerId === 'corner-2'
+    if (second && a.kind !== 'u') return current
+    const old = second && a.kind === 'u' ? a.secondCorner : a.corner
+    const corner = normalizeCorner({ ...old, ...action.patch })
+    if (corner.height < old.height && corner.shelves < old.shelves && !action.confirmFillingChange) return current
+    next = { ...current, arrangement: second && a.kind === 'u' ? { ...a, secondCorner: corner } : { ...a, corner } }
   } else if (action.type === 'add-section' && wardrobeSectionCount(current) < wardrobeSectionLimit(current) && SECTION_PRESETS.some(preset => preset.id === action.preset)) {
     let number = 1
     while (current.sections.some(item => item.id === `section-${number}`)) number++
-    const at = current.arrangement && action.arm === 0 ? current.arrangement.split : current.sections.length
-    const last = current.sections[at - 1]!
+    const ranges = wardrobeArmRanges(current), range = ranges.find(r => r.arm === action.arm) ?? ranges.at(-1)!
+    const at = range.end, last = current.sections[at - 1]!
     const height = action.preset === 'hanging' ? Math.max(last.height, MIN_ROD_SECTION_HEIGHT) : last.height
     const sections = [...current.sections]
     sections.splice(at, 0, createWardrobeSection(`section-${number}`, action.preset, { height, depth: last.depth }))
-    next = { ...current, sections, ...(current.arrangement ? { arrangement: { ...current.arrangement, split: current.arrangement.split + (action.arm === 0 ? 1 : 0) } } : {}) }
+    const a = current.arrangement
+    const arrangement = a && { ...a, split: a.split + (range.arm === 0 ? 1 : 0), ...(a.kind === 'u' ? { secondSplit: a.secondSplit + (range.arm < 2 ? 1 : 0) } : {}) }
+    next = { ...current, sections, ...(arrangement ? { arrangement } : {}) }
   } else if (action.type === 'remove-section' && current.sections.length > 1) {
     const index = current.sections.findIndex(item => item.id === action.id)
     if (index < 0) return current
-    if (current.arrangement && (index < current.arrangement.split ? current.arrangement.split : current.sections.length - current.arrangement.split) <= 1) return current
-    next = { ...current, sections: current.sections.filter(item => item.id !== action.id), ...(current.arrangement ? { arrangement: { ...current.arrangement, split: current.arrangement.split - (index < current.arrangement.split ? 1 : 0) } } : {}) }
+    const arm = wardrobeArmAt(current, index), range = wardrobeArmRanges(current)[arm]
+    if (range.end - range.start <= 1) return current
+    const a = current.arrangement
+    const arrangement = a && { ...a, split: a.split - (arm === 0 ? 1 : 0), ...(a.kind === 'u' ? { secondSplit: a.secondSplit - (arm < 2 ? 1 : 0) } : {}) }
+    next = { ...current, sections: current.sections.filter(item => item.id !== action.id), ...(arrangement ? { arrangement } : {}) }
   } else if (action.type === 'move-section') {
     const index = current.sections.findIndex(item => item.id === action.id), target = index + action.direction
     if (index >= 0 && target >= 0 && target < current.sections.length && Math.abs(action.direction) === 1) {

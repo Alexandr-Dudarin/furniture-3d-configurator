@@ -1,5 +1,5 @@
 import { planCornerModule, createCornerBoard } from './cornerModule'
-import { wardrobePlacement, straightWardrobeBounds, CORNER_ID, type PointXZ } from '../../configurator/wardrobeAssembly/arrangement'
+import { wardrobePlacement, straightWardrobeBounds, type PointXZ } from '../../configurator/wardrobeAssembly/arrangement'
 import { limitDoorSwing } from './doorClearance'
 import { planWardrobeDoors, DOOR_FACADE_PROFILE } from './wardrobeDoors'
 import { createDrawerFacadeGeometry, DRAWER_FACADE_PROFILE, drawerHandleMountDepth } from './drawerFacadeGeometry'
@@ -157,7 +157,8 @@ export function createWardrobeAssembly(initial: WardrobeAssemblyConfiguration, o
   let cameraBoxes: Box3[] = []
   let previousGeometryKey = ''
   const update = (configuration: WardrobeAssemblyConfiguration) => {
-    const geometryKey = JSON.stringify([configuration.arrangement && [configuration.arrangement.side, configuration.arrangement.split, configuration.arrangement.corner.height, configuration.arrangement.corner.shelves], configuration.sections.map(({ id, width, height, depth, shelves, rod, layout, drawers, doors }) => [id, width, height, depth, shelves, rod, layout, drawers, doors && [doors.count, doors.hinge, doors.facadeStyle, doors.handle]])])
+    const a = configuration.arrangement
+    const geometryKey = JSON.stringify([a && [a.kind, a.side, a.split, a.corner.height, a.corner.shelves, a.kind === 'u' && [a.secondSplit, a.secondCorner.height, a.secondCorner.shelves]], configuration.sections.map(({ id, width, height, depth, shelves, rod, layout, drawers, doors }) => [id, width, height, depth, shelves, rod, layout, drawers, doors && [doors.count, doors.hinge, doors.facadeStyle, doors.handle]])])
     if (disposed || geometryKey === previousGeometryKey) return
     // Keep existing part coordinates and IDs; only the owning section rotates.
     // Straight assemblies retain their original flat hierarchy.
@@ -235,15 +236,15 @@ export function createWardrobeAssembly(initial: WardrobeAssemblyConfiguration, o
     motion.sync(entries)
     for (const [key, geometry] of geometries) if (!nextGeometry.has(key)) geometry.dispose()
     geometries = nextGeometry
-    if (placements.corner) {
+    for (const corner of placements.corners) {
       // Filled corner volume follows the diagonal entrance, not its enclosing
       // rectangle. Conservative 5 cm strips leave the room accessible.
-      volumes.delete(CORNER_ID)
-      const { width, depth, depthB, sign, origin, height } = placements.corner
+      volumes.delete(corner.id)
+      const { width, depth, depthB, sign, origin, height } = corner
       const strips = Math.ceil((width - depthB) / .05)
       const addVolume = (id: number, x0: number, x1: number, z1: number) => {
         const xa = origin[0] + sign * x0, xb = origin[0] + sign * x1
-        volumes.set(`${CORNER_ID}/volume-${id}`, { node: group, local: new Box3(new Vector3(Math.min(xa, xb), 0, origin[1]), new Vector3(Math.max(xa, xb), height, origin[1] + z1)), world: new Box3() })
+        volumes.set(`${corner.id}/volume-${id}`, { node: group, local: new Box3(new Vector3(Math.min(xa, xb), 0, origin[1]), new Vector3(Math.max(xa, xb), height, origin[1] + z1)), world: new Box3() })
       }
       addVolume(0, 0, depthB, depth)
       for (let i = 0; i < strips; i++) {
@@ -266,7 +267,7 @@ export function createWardrobeAssembly(initial: WardrobeAssemblyConfiguration, o
       if (section.doors) selected.set(bindingKey(section.id, 'door'), section.doors.finish ?? wardrobeSectionFinish(configuration, section, 'facadeFinish'))
       if (section.rod || section.drawers || section.doors) selected.set(bindingKey(section.id, 'hardware'), wardrobeSectionFinish(configuration, section, 'hardwareFinish'))
     }
-    if (configuration.arrangement) selected.set(bindingKey(CORNER_ID, 'body'), configuration.arrangement.corner.bodyFinish ?? configuration.bodyFinish)
+    for (const corner of wardrobePlacement(configuration).corners) selected.set(bindingKey(corner.id, 'body'), corner.bodyFinish ?? configuration.bodyFinish)
     if (selected.size === bindings.size && [...selected].every(([key, id]) => bindings.get(key) === id)) return
     const needed = new Set(selected.values())
     const missing = [...needed].filter(id => !materials.has(id))

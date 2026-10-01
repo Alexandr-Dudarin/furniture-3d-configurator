@@ -1,4 +1,5 @@
-import { wardrobePlacement, wardrobeSectionCount } from './wardrobeAssembly/arrangement'
+import { wardrobeAisleWidth } from './wardrobeAssembly/state'
+import { wardrobePlacement, wardrobeSectionCount, wardrobeArmAt, ARM_LABELS } from './wardrobeAssembly/arrangement'
 import { wardrobeDoorsLabel, wardrobeDoorWidth } from './wardrobeAssembly/doors'
 import { getWardrobeDrawerFacade } from './wardrobeAssembly/drawerFacades'
 import { getCatalogHandle } from './handles'
@@ -18,13 +19,14 @@ export function getConfigurationSummary(session: ConfiguratorSession): Configura
   if (session.mode === 'wardrobe') {
     const config = session.wardrobe, bounds = wardrobeClosedBounds(config)
     return { title: 'Модульная гардеробная', fileStem: 'wardrobe-assembly', rows: [
-      { label: 'Компоновка', value: config.arrangement ? `Г-образная · ${wardrobeSectionCount(config)} секций вместе с углом · угол ${config.arrangement.side === 'left' ? 'слева' : 'справа'}` : `Прямая · ${config.sections.length} секций` },
+      { label: 'Компоновка', value: config.arrangement?.kind === 'u' ? `П-образная · ${wardrobeSectionCount(config)} секций вместе с двумя углами` : config.arrangement ? `Г-образная · ${wardrobeSectionCount(config)} секций вместе с углом · угол ${config.arrangement.side === 'left' ? 'слева' : 'справа'}` : `Прямая · ${config.sections.length} секций` },
       { label: 'Общая ширина', value: size(bounds.width, 'см') },
       { label: 'Максимальная высота', value: size(bounds.height, 'см') },
       { label: config.arrangement ? 'Размер по второй стене' : 'Максимальная глубина корпуса', value: size(wardrobeBounds(config).depth, 'см') },
       { label: 'Глубина сборки с дверями и ручками (всё закрыто)', value: size(bounds.depth, 'см') },
-      ...(config.arrangement ? [{ label: 'Угловой модуль', value: `${size(wardrobePlacement(config).corner!.width, 'см')} × ${size(config.arrangement.corner.height, 'см')} × ${size(wardrobePlacement(config).corner!.depth, 'см')} · открытый · полок: ${config.arrangement.corner.shelves} · ${getMaterialFinish(config.arrangement.corner.bodyFinish ?? config.bodyFinish).label}` }] : []),
-      ...config.sections.map((section, index) => ({ label: `Секция ${index + 1}`, value: `${config.arrangement ? `Сторона ${index < config.arrangement.split ? 'А' : 'Б'} · ` : ''}${wardrobeDoorsLabel(section.doors)} · ${Math.round(section.width * 100)} × ${Math.round(section.height * 100)} × ${Math.round(section.depth * 100)} см (корпус) · ${wardrobeFillingLabel(section)}${section.rod && section.depth < .5 ? ' · торцевая штанга' : ''}` })),
+      ...wardrobePlacement(config).corners.map((p, i) => ({ label: config.arrangement?.kind === 'u' ? `Угол ${i + 1}: ${i ? 'правый' : 'левый'}` : 'Угловой модуль', value: `${size(p.width, 'см')} × ${size(p.height, 'см')} × ${size(p.depth, 'см')} · открытый · полок: ${p.shelves} · ${getMaterialFinish(p.bodyFinish ?? config.bodyFinish).label}` })),
+      ...(config.arrangement?.kind === 'u' ? [{ label: 'Проход между боковыми секциями (всё закрыто)', value: `Не меньше ${size(wardrobeAisleWidth(config)!, 'см')} · с учётом фасадов и ручек` }] : []),
+      ...config.sections.map((section, index) => ({ label: `Секция ${index + 1}`, value: `${config.arrangement ? `Сторона ${ARM_LABELS[wardrobeArmAt(config, index)]} · ` : ''}${wardrobeDoorsLabel(section.doors)} · ${Math.round(section.width * 100)} × ${Math.round(section.height * 100)} × ${Math.round(section.depth * 100)} см (корпус) · ${wardrobeFillingLabel(section)}${section.rod && section.depth < .5 ? ' · торцевая штанга' : ''}` })),
       { label: 'Общий материал корпуса', value: getMaterialFinish(config.bodyFinish).label },
       { label: 'Общий материал фасадов', value: config.facadeFinish ? getMaterialFinish(config.facadeFinish).label : 'Как у корпуса каждой секции' },
       { label: 'Общий материал фурнитуры', value: getMaterialFinish(config.hardwareFinish).label },

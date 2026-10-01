@@ -1,5 +1,5 @@
 import { Box3, Matrix4, Vector3, type Mesh } from 'three'
-import { CORNER_ID, placementPolygon, wardrobePlacement, type PointXZ } from '../../configurator/wardrobeAssembly/arrangement'
+import { placementPolygon, wardrobePlacement, type PointXZ } from '../../configurator/wardrobeAssembly/arrangement'
 import type { WardrobeAssemblyConfiguration } from '../../configurator/wardrobeAssembly/state'
 import type { DrawerMotionEntry } from './wardrobeDrawerMotion'
 
@@ -28,7 +28,7 @@ const occupiedOverlap = (a: Box3, b: Box3) => Math.min(a.max.x, b.max.x) - Math.
 export function limitDoorSwing(entries: DrawerMotionEntry[], config: WardrobeAssemblyConfiguration) {
   const layout = wardrobePlacement(config)
   const bodies: Obstacle[] = layout.sections.map(p => ({ id: p.id, polygon: placementPolygon(p), height: p.height }))
-  if (layout.corner) bodies.push({ id: CORNER_ID, polygon: layout.corner.polygon, height: layout.corner.height })
+  for (const corner of layout.corners) bodies.push({ id: corner.id, polygon: corner.polygon, height: corner.height })
   const rotation = new Matrix4(), translation = new Matrix4(), matrix = new Matrix4(), box = new Box3()
   // Closed fronts/handles beyond the carcass also remain physical obstacles.
   if (config.arrangement) for (const entry of entries) {
@@ -92,7 +92,7 @@ export function limitDoorSwing(entries: DrawerMotionEntry[], config: WardrobeAss
       entry.conflicts = []
     }
   }
-  // Only perpendicular runs can cross. Envelopes deliberately err on the side
+  // Perpendicular AND opposing runs can cross. Envelopes deliberately err on the side
   // of closing the other section first, rather than colliding moving handles.
   if (config.arrangement) for (let i = 0; i < entries.length; i++) for (let j = i + 1; j < entries.length; j++) {
     const a = entries[i], b = entries[j]

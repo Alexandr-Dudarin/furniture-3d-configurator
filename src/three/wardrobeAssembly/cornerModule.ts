@@ -1,23 +1,24 @@
 import { ExtrudeGeometry, Shape } from 'three'
-import { CORNER_ID, wardrobePlacement, type PointXZ } from '../../configurator/wardrobeAssembly/arrangement'
+import { wardrobePlacement, type PointXZ, type CornerPlacement } from '../../configurator/wardrobeAssembly/arrangement'
 import { automaticLayout, PANEL_THICKNESS as panel, BACK_THICKNESS as back, PLINTH_HEIGHT as plinth } from '../../configurator/wardrobeAssembly/layout'
 import type { WardrobeAssemblyConfiguration } from '../../configurator/wardrobeAssembly/state'
 import type { Part } from './wardrobeAssembly'
 
 export function planCornerModule(config: WardrobeAssemblyConfiguration): Part[] {
-  const corner = wardrobePlacement(config).corner
-  if (!corner) return []
-  const { width: w, depth: d, depthA, depthB, sign, origin, height: h } = corner
+  return wardrobePlacement(config).corners.flatMap(planCorner)
+}
+function planCorner(corner: CornerPlacement): Part[] {
+  const { width: w, depth: d, depthA, depthB, sign, origin, height: h, id } = corner
   const parts: Part[] = []
   const world = (x: number, y: number, z: number): Part['position'] => [origin[0] + sign * x, y, origin[1] + z]
-  const add = (name: string, size: Part['size'], position: Part['position'], rotationY = 0) => parts.push({ sectionId: CORNER_ID, name: `${CORNER_ID}/${name}`, shape: 'panel', slot: 'body', size, position, rotationY })
+  const add = (name: string, size: Part['size'], position: Part['position'], rotationY = 0) => parts.push({ sectionId: id, name: `${id}/${name}`, shape: 'panel', slot: 'body', size, position, rotationY })
   add('Side_A', [panel, h, depthA], world(w - panel / 2, h / 2, depthA / 2))
   add('Side_B', [depthB - back, h, panel], world((depthB + back) / 2, h / 2, d - panel / 2))
   add('Back_A', [w - panel, h - plinth, back], world((w - panel) / 2, (h + plinth) / 2, back / 2))
   add('Back_B', [back, h - plinth, d - back], world(back / 2, (h + plinth) / 2, (d + back) / 2))
   const polygon: PointXZ[] = [[back, back], [w - panel, back], [w - panel, depthA - .002], [depthB - .002, d - panel], [back, d - panel]]
     .map(([x, z]) => [sign * (x - w / 2), z - d / 2])
-  const board = (name: string, y: number) => parts.push({ sectionId: CORNER_ID, name: `${CORNER_ID}/${name}`, shape: 'corner-board', slot: 'body', size: [w, panel, d], polygon, position: world(w / 2, y, d / 2) })
+  const board = (name: string, y: number) => parts.push({ sectionId: id, name: `${id}/${name}`, shape: 'corner-board', slot: 'body', size: [w, panel, d], polygon, position: world(w / 2, y, d / 2) })
   board('Top', h - panel / 2)
   board('Bottom', plinth + panel / 2)
   const ys = automaticLayout({ height: h, shelves: corner.shelves, rod: false }).shelves

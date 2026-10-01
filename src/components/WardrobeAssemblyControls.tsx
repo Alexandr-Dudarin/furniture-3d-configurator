@@ -1,5 +1,5 @@
 import { WardrobeArrangementControls } from './WardrobeArrangementControls'
-import { wardrobeSectionCount, wardrobeSectionLimit } from '../configurator/wardrobeAssembly/arrangement'
+import { wardrobeSectionCount, wardrobeSectionLimit, wardrobeArmAt, wardrobeArmRanges, ARM_LABELS } from '../configurator/wardrobeAssembly/arrangement'
 import { WardrobeDoorControls } from './WardrobeDoorControls'
 import { wardrobeSectionDrawerInset } from '../configurator/wardrobeAssembly/state'
 import { WardrobeDrawerFacadeControls } from './WardrobeDrawerFacadeControls'
@@ -28,8 +28,8 @@ export function WardrobeAssemblyControls({ configuration, onAction, onFrame, mot
   const index = configuration.sections.indexOf(selected)
   const arrangement = configuration.arrangement
   const limit = wardrobeSectionLimit(configuration), count = wardrobeSectionCount(configuration)
-  const arm = arrangement && index >= arrangement.split ? 1 : 0
-  const armCount = arrangement ? arm === 0 ? arrangement.split : configuration.sections.length - arrangement.split : configuration.sections.length
+  const arm = wardrobeArmAt(configuration, index), range = wardrobeArmRanges(configuration)[arm]
+  const armCount = range.end - range.start
   const bounds = wardrobeClosedBounds(configuration)
   const shelfLimit = wardrobeSectionShelfLimit(selected)
   const handle = getWardrobeDrawerHandle(selected.drawers?.handle)
@@ -51,7 +51,7 @@ export function WardrobeAssemblyControls({ configuration, onAction, onFrame, mot
           patch: pending.patch, confirmFillingChange: true })
       }} />}
     <h2 className="wardrobe-heading">Собрать гардеробную</h2>
-    <p className="assembly-summary">{arrangement ? 'Г-образная сборка с открытым угловым модулем. Выберите секцию на плане или в списке.' : 'Прямая сборка с открытыми секциями или дверями. Выберите секцию слева направо, чтобы изменить её размеры и наполнение.'}</p>
+    <p className="assembly-summary">{arrangement?.kind === 'u' ? 'П-образная сборка с двумя открытыми угловыми модулями. Выберите секцию на плане или в списке.' : arrangement ? 'Г-образная сборка с открытым угловым модулем. Выберите секцию на плане или в списке.' : 'Прямая сборка с открытыми секциями или дверями. Выберите секцию слева направо, чтобы изменить её размеры и наполнение.'}</p>
     <p className="assembly-total"><span>{arrangement ? 'Габариты сборки Ш × В × Г' : 'Общие Ш × В × Г'}</span><strong>{cm(bounds.width)} × {cm(bounds.height)} × {cm(bounds.depth)} см</strong></p>
     {configuration.sections.some(section => wardrobeSectionClosedDepth(section) > section.depth) && <p className="assembly-summary">Общая глубина учитывает двери и выступающие ручки при закрытом наполнении.</p>}
     <button type="button" className="wardrobe-frame-button" onClick={onFrame}
@@ -63,7 +63,7 @@ export function WardrobeAssemblyControls({ configuration, onAction, onFrame, mot
     </button>
     <p id="wardrobe-frame-hint" className="wardrobe-frame-hint">Возвращает ракурс и помещает всю сборку в кадр.</p>
     <WardrobeArrangementControls configuration={configuration} selectedId={selected.id} onSelect={setSelectedId} onAction={onAction} />
-    <ConfigurationSection title="Секции" summary={`${count} из ${limit}${arrangement ? ' · включая угол' : ''}`} initialOpen>
+    <ConfigurationSection title="Секции" summary={`${count} из ${limit}${arrangement?.kind === 'u' ? ' · включая два угла' : arrangement ? ' · включая угол' : ''}`} initialOpen>
       <div className="wardrobe-sections" role="group" aria-label="Выбор секции гардеробной">
         {configuration.sections.map((section, order) => <button key={section.id} type="button"
           aria-pressed={selected.id === section.id} onClick={() => setSelectedId(section.id)}>
@@ -75,7 +75,7 @@ export function WardrobeAssemblyControls({ configuration, onAction, onFrame, mot
               height={(section.drawers!.height - .035) / section.height * 59} fill="currentColor" opacity=".28" />)}
             {section.rod && <path d={`M12 ${64 - wardrobeRodY(section) / section.height * 59}h32`} stroke="currentColor" strokeWidth="3" />}
           </svg>
-          <strong>Секция {order + 1}</strong>{arrangement && <span>Сторона {order < arrangement.split ? 'А' : 'Б'}</span>}<span>{cm(section.width)} см</span>
+          <strong>Секция {order + 1}</strong>{arrangement && <span>Сторона {ARM_LABELS[wardrobeArmAt(configuration, order)]}</span>}<span>{cm(section.width)} см</span>
           {section.doors && <span>{section.doors.count === 1 ? 'Одна дверь' : 'Две двери'}</span>}
           {(section.bodyFinish || section.facadeFinish || section.hardwareFinish || section.doors?.finish) && <span className="wardrobe-own-finish">Свой материал</span>}
         </button>)}
@@ -88,7 +88,7 @@ export function WardrobeAssemblyControls({ configuration, onAction, onFrame, mot
           onAction({ type: 'remove-section', id: selected.id })
         }}>Удалить</button>
       </div>
-      <p className="assembly-summary">Добавить секцию{arrangement ? ` на сторону ${arm === 0 ? 'А' : 'Б'}` : ''}</p>
+      <p className="assembly-summary">Добавить секцию{arrangement ? ` на сторону ${ARM_LABELS[arm]}` : ''}</p>
       <div className="wardrobe-add" role="group" aria-label="Добавить секцию гардеробной">
         {SECTION_PRESETS.map(preset => <button type="button" key={preset.id} disabled={count >= limit} onClick={() => {
           let number = 1
@@ -97,8 +97,8 @@ export function WardrobeAssemblyControls({ configuration, onAction, onFrame, mot
         }}>+ {preset.label}</button>)}
       </div>
       {arrangement && <p className="assembly-summary">На каждой стороне нужна хотя бы одна секция. Кнопки перестановки на границе сторон меняют секции местами; распределение сторон задаётся выше.</p>}
-      {!wardrobeCanHaveRod(configuration.sections[arm === 0 && arrangement ? arrangement.split - 1 : configuration.sections.length - 1].height) && <p className="assembly-summary">Новая секция «Со штангой» будет высотой 150 см.</p>}
-      {count >= limit && <p className="assembly-summary" role="status">В этой сборке может быть до {limit} секций{arrangement ? ' вместе с углом' : ''}.</p>}
+      {!wardrobeCanHaveRod(configuration.sections[range.end - 1].height) && <p className="assembly-summary">Новая секция «Со штангой» будет высотой 150 см.</p>}
+      {count >= limit && <p className="assembly-summary" role="status">В этой сборке может быть до {limit} секций{arrangement?.kind === 'u' ? ' вместе с двумя углами' : arrangement ? ' вместе с углом' : ''}.</p>}
     </ConfigurationSection>
     <ConfigurationSection title={`Секция ${index + 1}: размеры`} summary={`${cm(selected.width)} × ${cm(selected.height)} × ${cm(selected.depth)} см`} initialOpen>
       {(['width', 'height', 'depth'] as const).map(dimension => <SizeControl key={`${selected.id}-${dimension}`} name={SECTION_DIMENSIONS[dimension].label}
