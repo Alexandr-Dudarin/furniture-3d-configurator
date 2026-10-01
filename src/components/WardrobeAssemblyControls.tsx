@@ -1,3 +1,5 @@
+import { WardrobeArrangementControls } from './WardrobeArrangementControls'
+import { wardrobeSectionCount, wardrobeSectionLimit } from '../configurator/wardrobeAssembly/arrangement'
 import { WardrobeDoorControls } from './WardrobeDoorControls'
 import { wardrobeSectionDrawerInset } from '../configurator/wardrobeAssembly/state'
 import { WardrobeDrawerFacadeControls } from './WardrobeDrawerFacadeControls'
@@ -6,7 +8,7 @@ import { drawerInnerHeight, DRAWER_HANDLES, getWardrobeDrawerHandle, isWardrobeD
 import type { FurnitureMotionStore } from '../configurator/furnitureMotionStore'
 import { DRAWER_HEIGHTS, DRAWER_PLACEMENTS, wardrobeDrawerPlacementLabel, wardrobeSectionClosedDepth, wardrobeDrawerLimit, wardrobeFillingFloor } from '../configurator/wardrobeAssembly/state'
 import { useState } from 'react'
-import { BODY_FINISHES, HARDWARE_FINISHES, MAX_SECTIONS, SECTION_DIMENSIONS, SECTION_PRESETS, previewWardrobeSectionUpdate, wardrobeCanHaveRod, wardrobeSectionNeedsConfirmation, wardrobeClosedBounds, wardrobeFillingLabel, wardrobeRodY, wardrobeSectionShelfLimit, wardrobeShelfYs, type WardrobeAssemblyAction, type WardrobeAssemblyConfiguration, type WardrobeSection } from '../configurator/wardrobeAssembly/state'
+import { BODY_FINISHES, HARDWARE_FINISHES, SECTION_DIMENSIONS, SECTION_PRESETS, previewWardrobeSectionUpdate, wardrobeCanHaveRod, wardrobeSectionNeedsConfirmation, wardrobeClosedBounds, wardrobeFillingLabel, wardrobeRodY, wardrobeSectionShelfLimit, wardrobeShelfYs, type WardrobeAssemblyAction, type WardrobeAssemblyConfiguration, type WardrobeSection } from '../configurator/wardrobeAssembly/state'
 import { ConfigurationSection } from './ConfigurationSection'
 import { SizeControl } from './assembly/SizeControl'
 import { FinishPicker } from './assembly/FinishPicker'
@@ -24,6 +26,10 @@ export function WardrobeAssemblyControls({ configuration, onAction, onFrame, mot
   const [pendingHeight, setPendingHeight] = useState<{ current: WardrobeSection; next: WardrobeSection; patch: Partial<Omit<WardrobeSection, 'id'>> } | null>(null)
   const selected = configuration.sections.find(section => section.id === selectedId) ?? configuration.sections[0]
   const index = configuration.sections.indexOf(selected)
+  const arrangement = configuration.arrangement
+  const limit = wardrobeSectionLimit(configuration), count = wardrobeSectionCount(configuration)
+  const arm = arrangement && index >= arrangement.split ? 1 : 0
+  const armCount = arrangement ? arm === 0 ? arrangement.split : configuration.sections.length - arrangement.split : configuration.sections.length
   const bounds = wardrobeClosedBounds(configuration)
   const shelfLimit = wardrobeSectionShelfLimit(selected)
   const handle = getWardrobeDrawerHandle(selected.drawers?.handle)
@@ -45,8 +51,8 @@ export function WardrobeAssemblyControls({ configuration, onAction, onFrame, mot
           patch: pending.patch, confirmFillingChange: true })
       }} />}
     <h2 className="wardrobe-heading">Собрать гардеробную</h2>
-    <p className="assembly-summary">Прямая сборка с открытыми секциями или дверями. Выберите секцию слева направо, чтобы изменить её размеры и наполнение.</p>
-    <p className="assembly-total"><span>Общие Ш × В × Г</span><strong>{cm(bounds.width)} × {cm(bounds.height)} × {cm(bounds.depth)} см</strong></p>
+    <p className="assembly-summary">{arrangement ? 'Г-образная сборка с открытым угловым модулем. Выберите секцию на плане или в списке.' : 'Прямая сборка с открытыми секциями или дверями. Выберите секцию слева направо, чтобы изменить её размеры и наполнение.'}</p>
+    <p className="assembly-total"><span>{arrangement ? 'Габариты сборки Ш × В × Г' : 'Общие Ш × В × Г'}</span><strong>{cm(bounds.width)} × {cm(bounds.height)} × {cm(bounds.depth)} см</strong></p>
     {configuration.sections.some(section => wardrobeSectionClosedDepth(section) > section.depth) && <p className="assembly-summary">Общая глубина учитывает двери и выступающие ручки при закрытом наполнении.</p>}
     <button type="button" className="wardrobe-frame-button" onClick={onFrame}
       title="Вернуть исходный ракурс и подобрать масштаб под текущие размеры сборки" aria-describedby="wardrobe-frame-hint">
@@ -56,7 +62,8 @@ export function WardrobeAssemblyControls({ configuration, onAction, onFrame, mot
       Вернуть общий вид
     </button>
     <p id="wardrobe-frame-hint" className="wardrobe-frame-hint">Возвращает ракурс и помещает всю сборку в кадр.</p>
-    <ConfigurationSection title="Секции" summary={`${configuration.sections.length} из ${MAX_SECTIONS}`} initialOpen>
+    <WardrobeArrangementControls configuration={configuration} selectedId={selected.id} onSelect={setSelectedId} onAction={onAction} />
+    <ConfigurationSection title="Секции" summary={`${count} из ${limit}${arrangement ? ' · включая угол' : ''}`} initialOpen>
       <div className="wardrobe-sections" role="group" aria-label="Выбор секции гардеробной">
         {configuration.sections.map((section, order) => <button key={section.id} type="button"
           aria-pressed={selected.id === section.id} onClick={() => setSelectedId(section.id)}>
@@ -68,34 +75,35 @@ export function WardrobeAssemblyControls({ configuration, onAction, onFrame, mot
               height={(section.drawers!.height - .035) / section.height * 59} fill="currentColor" opacity=".28" />)}
             {section.rod && <path d={`M12 ${64 - wardrobeRodY(section) / section.height * 59}h32`} stroke="currentColor" strokeWidth="3" />}
           </svg>
-          <strong>Секция {order + 1}</strong><span>{cm(section.width)} см</span>
+          <strong>Секция {order + 1}</strong>{arrangement && <span>Сторона {order < arrangement.split ? 'А' : 'Б'}</span>}<span>{cm(section.width)} см</span>
           {section.doors && <span>{section.doors.count === 1 ? 'Одна дверь' : 'Две двери'}</span>}
           {(section.bodyFinish || section.facadeFinish || section.hardwareFinish || section.doors?.finish) && <span className="wardrobe-own-finish">Свой материал</span>}
         </button>)}
       </div>
       <div className="wardrobe-section-actions">
-        <button type="button" disabled={index === 0} onClick={() => onAction({ type: 'move-section', id: selected.id, direction: -1 })} aria-label="Переставить выбранную секцию влево">← Влево</button>
-        <button type="button" disabled={index === configuration.sections.length - 1} onClick={() => onAction({ type: 'move-section', id: selected.id, direction: 1 })} aria-label="Переставить выбранную секцию вправо">Вправо →</button>
-        <button type="button" className="wardrobe-delete" disabled={configuration.sections.length === 1} aria-label={`Удалить секцию ${index + 1}`} onClick={() => {
+        <button type="button" disabled={index === 0} onClick={() => onAction({ type: 'move-section', id: selected.id, direction: -1 })} aria-label={arrangement ? "Переставить выбранную секцию раньше в списке" : "Переставить выбранную секцию влево"}>{arrangement ? '← Раньше' : '← Влево'}</button>
+        <button type="button" disabled={index === configuration.sections.length - 1} onClick={() => onAction({ type: 'move-section', id: selected.id, direction: 1 })} aria-label={arrangement ? "Переставить выбранную секцию дальше в списке" : "Переставить выбранную секцию вправо"}>{arrangement ? 'Дальше →' : 'Вправо →'}</button>
+        <button type="button" className="wardrobe-delete" disabled={armCount === 1} aria-label={`Удалить секцию ${index + 1}`} onClick={() => {
           setSelectedId(configuration.sections[Math.max(0, index - 1)].id)
           onAction({ type: 'remove-section', id: selected.id })
         }}>Удалить</button>
       </div>
-      <p className="assembly-summary">Добавить секцию</p>
+      <p className="assembly-summary">Добавить секцию{arrangement ? ` на сторону ${arm === 0 ? 'А' : 'Б'}` : ''}</p>
       <div className="wardrobe-add" role="group" aria-label="Добавить секцию гардеробной">
-        {SECTION_PRESETS.map(preset => <button type="button" key={preset.id} disabled={configuration.sections.length >= MAX_SECTIONS} onClick={() => {
+        {SECTION_PRESETS.map(preset => <button type="button" key={preset.id} disabled={count >= limit} onClick={() => {
           let number = 1
           while (configuration.sections.some(item => item.id === `section-${number}`)) number++
-          onAction({ type: 'add-section', preset: preset.id }); setSelectedId(`section-${number}`)
+          onAction({ type: 'add-section', preset: preset.id, arm }); setSelectedId(`section-${number}`)
         }}>+ {preset.label}</button>)}
       </div>
-      {!wardrobeCanHaveRod(configuration.sections.at(-1)!.height) && <p className="assembly-summary">Новая секция «Со штангой» будет высотой 150 см.</p>}
-      {configuration.sections.length >= MAX_SECTIONS && <p className="assembly-summary" role="status">В этой сборке может быть до {MAX_SECTIONS} секций.</p>}
+      {arrangement && <p className="assembly-summary">На каждой стороне нужна хотя бы одна секция. Кнопки перестановки на границе сторон меняют секции местами; распределение сторон задаётся выше.</p>}
+      {!wardrobeCanHaveRod(configuration.sections[arm === 0 && arrangement ? arrangement.split - 1 : configuration.sections.length - 1].height) && <p className="assembly-summary">Новая секция «Со штангой» будет высотой 150 см.</p>}
+      {count >= limit && <p className="assembly-summary" role="status">В этой сборке может быть до {limit} секций{arrangement ? ' вместе с углом' : ''}.</p>}
     </ConfigurationSection>
     <ConfigurationSection title={`Секция ${index + 1}: размеры`} summary={`${cm(selected.width)} × ${cm(selected.height)} × ${cm(selected.depth)} см`} initialOpen>
       {(['width', 'height', 'depth'] as const).map(dimension => <SizeControl key={`${selected.id}-${dimension}`} name={SECTION_DIMENSIONS[dimension].label}
         value={selected[dimension]} config={SECTION_DIMENSIONS[dimension]} onChange={value => update({ [dimension]: value })} />)}
-      <p className="assembly-summary">Здесь указаны размеры корпуса без накладных дверей и выступающих ручек. Задние стенки секций стоят на одной линии; при разной глубине передние края отличаются.</p>
+      <p className="assembly-summary">Здесь указаны размеры корпуса без накладных дверей и выступающих ручек. Задние стенки секций одной стороны стоят на одной линии; при разной глубине передние края отличаются.</p>
     </ConfigurationSection>
     <WardrobeDoorControls section={selected} configuration={configuration} store={motionStore} onChange={update} />
     <ConfigurationSection title="Наполнение секции" summary={wardrobeFillingLabel(selected)} initialOpen>

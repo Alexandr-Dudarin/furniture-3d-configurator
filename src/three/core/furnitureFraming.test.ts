@@ -181,3 +181,22 @@ it('fits low and tall assemblies on reset while keeping zoom stable during size 
     }
   }
 })
+
+
+it('frames either corner from its open side and retains close navigation for the two corner views', () => {
+  for (const facing of [-1, 1]) {
+    const camera = new PerspectiveCamera(40, .45, .1, 100)
+    const controls = { target: new Vector3(), minDistance: 1, maxDistance: 5, zoomToCursor: false, screenSpacePanning: false, update: () => false }
+    const framing = createFurnitureFraming(camera, controls)
+    const frame = { width: 11.3, height: 2.8, depth: 11.3 }
+    framing.select('wardrobe-assembly', frame, `wardrobe-assembly-${facing}`, 1.4, facing)
+    expect(Math.sign(camera.position.x)).toBe(facing)
+    expect(controls.minDistance).toBe(.65); expect(controls.zoomToCursor).toBe(true)
+    camera.updateMatrixWorld(true)
+    for (const x of [-5.65, 5.65]) for (const y of [0, 2.8]) for (const z of [-5.65, 5.65]) {
+      const point = new Vector3(x, y, z).project(camera)
+      expect(Math.abs(point.x)).toBeLessThan(1); expect(Math.abs(point.y)).toBeLessThan(1); expect(point.z).toBeLessThan(1)
+    }
+    framing.reset(); expect(Math.sign(camera.position.x)).toBe(facing)
+  }
+})

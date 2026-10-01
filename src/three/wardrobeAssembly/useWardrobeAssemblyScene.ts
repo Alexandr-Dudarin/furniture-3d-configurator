@@ -3,11 +3,12 @@ import type { FurnitureMotionStore } from '../../configurator/furnitureMotionSto
 import { bindFurnitureInteraction } from '../furniture/furnitureInteraction'
 import { configureWardrobeStudio } from './wardrobeStudio'
 import type { ConfiguratorStore } from '../../configurator/configuratorStore'
-import type { WardrobeAssemblyConfiguration } from '../../configurator/wardrobeAssembly/state'
+import { wardrobeClosedBounds, type WardrobeAssemblyConfiguration } from '../../configurator/wardrobeAssembly/state'
 import type { ThreeRuntime } from '../core/createThreeRuntime'
 import type { WardrobeAssembly } from './wardrobeAssembly'
 
 export function useWardrobeAssemblyScene(runtimeRef: RefObject<ThreeRuntime | null>, anisotropyRef: RefObject<number>, store: ConfiguratorStore, enabled: boolean, configuration: WardrobeAssemblyConfiguration, motionStore: FurnitureMotionStore) {
+  const studio = useRef<ReturnType<typeof configureWardrobeStudio> | null>(null)
   const active = useRef<WardrobeAssembly | null>(null)
   const [attempt, setAttempt] = useState(0)
   const token = useMemo(() => ({ enabled, attempt }), [enabled, attempt])
@@ -17,6 +18,7 @@ export function useWardrobeAssemblyScene(runtimeRef: RefObject<ThreeRuntime | nu
     if (!enabled || !runtime) return
     let cancelled = false, assembly: WardrobeAssembly | null = null
     const restoreStudio = configureWardrobeStudio(runtime.scene)
+    studio.current = restoreStudio
     let binding: ReturnType<FurnitureMotionStore['attach']> | undefined
     let stopFrames: (() => void) | undefined, stopInteraction: (() => void) | undefined, stopPreference: (() => void) | undefined
     let stopCamera: (() => void) | undefined
@@ -31,6 +33,7 @@ export function useWardrobeAssemblyScene(runtimeRef: RefObject<ThreeRuntime | nu
         let applied: WardrobeAssemblyConfiguration
         do {
           applied = store.getSnapshot().session.wardrobe
+          restoreStudio.update(wardrobeClosedBounds(applied), !!applied.arrangement)
           assembly.update(applied)
           await assembly.setFinishes(applied)
         } while (!cancelled && applied !== store.getSnapshot().session.wardrobe)
@@ -62,6 +65,7 @@ export function useWardrobeAssemblyScene(runtimeRef: RefObject<ThreeRuntime | nu
       detach()
       if (active.current === assembly) active.current = null
       if (assembly) { runtime.scene.remove(assembly.group); assembly.dispose() }
+      if (studio.current === restoreStudio) studio.current = null
       restoreStudio()
       runtime.invalidate()
     }
@@ -71,6 +75,7 @@ export function useWardrobeAssemblyScene(runtimeRef: RefObject<ThreeRuntime | nu
     const current = active.current
     if (!enabled || !current) return
     let cancelled = false
+    studio.current?.update(wardrobeClosedBounds(configuration), !!configuration.arrangement)
     current.update(configuration)
     void current.setFinishes(configuration).then(() => {
       if (!cancelled && active.current === current) setStatus({ token, configuration, error: null })

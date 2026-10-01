@@ -21,8 +21,8 @@ export function combineFurnitureFrames(frames: readonly (Frame | undefined)[]): 
 }
 
 // Fit the declared maximum envelope so dimensional edits never change the zoom.
-export function fitFurnitureFrame(camera: PerspectiveCamera, controls: FramingControls, frame: Frame, centerY = frame.height / 2) {
-  const direction = new Vector3(1.2, 0.6, 2.6).normalize()
+export function fitFurnitureFrame(camera: PerspectiveCamera, controls: FramingControls, frame: Frame, centerY = frame.height / 2, facingX = 1) {
+  const direction = new Vector3(1.2 * facingX, 0.6, 2.6).normalize()
   const right = new Vector3().crossVectors(new Vector3(0, 1, 0), direction).normalize()
   const up = new Vector3().crossVectors(direction, right)
   const target = new Vector3(0, centerY, 0)
@@ -51,7 +51,7 @@ export function fitFurnitureFrame(camera: PerspectiveCamera, controls: FramingCo
 export function createFurnitureFraming(camera: PerspectiveCamera, controls: FramingControls, onReframe: () => void = () => {}) {
   const navigation = { minDistance: controls.minDistance, zoomToCursor: controls.zoomToCursor, screenSpacePanning: controls.screenSpacePanning }
   type View = { position: Vector3; target: Vector3; maxDistance: number; centerY: number }
-  let key = 'tables', active: Frame | undefined, centerY = 0
+  let key = 'tables', active: Frame | undefined, centerY = 0, facingX = 1
   const views = new Map<string, View>()
   const capture = (): View => ({ position: camera.position.clone(), target: controls.target.clone(), maxDistance: controls.maxDistance, centerY })
   const moveCenter = (next: number) => {
@@ -61,14 +61,15 @@ export function createFurnitureFraming(camera: PerspectiveCamera, controls: Fram
   }
   return {
     reset() {
-      if (active) fitFurnitureFrame(camera, controls, active, centerY)
+      if (active) fitFurnitureFrame(camera, controls, active, centerY, facingX)
       onReframe()
     },
-    select(_id: string, frame?: Frame, viewKey = frame ? 'cabinets' : 'tables', targetY = frame?.height ? frame.height / 2 : 0) {
+    select(_id: string, frame?: Frame, viewKey = frame ? 'cabinets' : 'tables', targetY = frame?.height ? frame.height / 2 : 0, viewFacingX = 1) {
+      facingX = viewFacingX
       // Close inspection belongs to the assembly view; other categories keep
       // their original navigation. Cursor zoom and vertical pan reach handles
       // anywhere in a long row without changing its initial framing.
-      Object.assign(controls, viewKey === 'wardrobe-assembly'
+      Object.assign(controls, viewKey.startsWith('wardrobe-assembly')
         ? { minDistance: .65, zoomToCursor: true, screenSpacePanning: true } : navigation)
       if (viewKey === key) { active = frame; moveCenter(targetY); return }
       views.set(key, capture())
@@ -80,7 +81,7 @@ export function createFurnitureFraming(camera: PerspectiveCamera, controls: Fram
         moveCenter(targetY); camera.lookAt(controls.target); controls.update()
       } else if (frame) {
         centerY = targetY
-        fitFurnitureFrame(camera, controls, frame, centerY)
+        fitFurnitureFrame(camera, controls, frame, centerY, facingX)
       }
       onReframe()
     },
@@ -88,7 +89,7 @@ export function createFurnitureFraming(camera: PerspectiveCamera, controls: Fram
       // Cached projections belong to the old viewport. Refit other views when
       // revisited; keep the table view usable and fit the active category now.
       for (const cached of views.keys()) if (cached !== 'tables') views.delete(cached)
-      if (active) fitFurnitureFrame(camera, controls, active, centerY)
+      if (active) fitFurnitureFrame(camera, controls, active, centerY, facingX)
       onReframe()
     },
   }

@@ -1,3 +1,5 @@
+import { planCornerModule, createCornerBoard } from './cornerModule'
+import { wardrobePlacement, straightWardrobeBounds, CORNER_ID, type PointXZ } from '../../configurator/wardrobeAssembly/arrangement'
 import { limitDoorSwing } from './doorClearance'
 import { planWardrobeDoors, DOOR_FACADE_PROFILE } from './wardrobeDoors'
 import { createDrawerFacadeGeometry, DRAWER_FACADE_PROFILE, drawerHandleMountDepth } from './drawerFacadeGeometry'
@@ -7,22 +9,22 @@ import type { WardrobeDrawerFacade } from '../../configurator/wardrobeAssembly/d
 import type { WardrobeDrawerHandle } from '../../configurator/wardrobeAssembly/drawerHandles'
 import type { MotionPartState } from '../../configurator/furnitureMotionStore'
 import { createWardrobeDrawerMotion, type DrawerMotionEntry } from './wardrobeDrawerMotion'
-import { Box3, BufferGeometry, CylinderGeometry, Group, Mesh, MeshStandardMaterial } from 'three'
+import { Box3, Vector3, BufferGeometry, CylinderGeometry, Group, Mesh, MeshStandardMaterial } from 'three'
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
 import { createHandleGeometry, createNotchedFront } from '../handles/handleGeometry'
 import type { HardwareHandle } from '../../configurator/handles'
 import { DRAWER_BAR_HANDLE, DRAWER_KNOB_HANDLE, getWardrobeDrawerHandle, TOP_GRIP_CUT, drawerBoxHeightReduction } from '../../configurator/wardrobeAssembly/drawerHandles'
-import { BACK_THICKNESS as back, PANEL_THICKNESS as panel, PLINTH_HEIGHT as plinth, ROD_RADIUS, wardrobeBounds, wardrobeSectionDrawerInset, wardrobeRodY, wardrobeShelfYs, wardrobeSectionFinish, type WardrobeAssemblyConfiguration } from '../../configurator/wardrobeAssembly/state'
+import { BACK_THICKNESS as back, PANEL_THICKNESS as panel, PLINTH_HEIGHT as plinth, ROD_RADIUS, wardrobeSectionDrawerInset, wardrobeRodY, wardrobeShelfYs, wardrobeSectionFinish, type WardrobeAssemblyConfiguration } from '../../configurator/wardrobeAssembly/state'
 import { createFinishMaterial } from '../materials/createMaterial'
 import { disposeMaterialResources } from '../materials/disposeMaterials'
 
 type Slot = 'body' | 'facade' | 'hardware' | 'door'
-export type Part = { sectionId: string; name: string; shape: 'panel' | 'rod' | 'notched-front' | 'handle' | 'facade'; facadeStyle?: Exclude<WardrobeDrawerFacade, 'smooth'>; facadeHandle?: WardrobeDrawerHandle; doorId?: string; pivot?: { origin: [number, number, number]; angle: number }; rotationZ?: number; faceScale?: number; handleLength?: number; handle?: HardwareHandle | 'long-bar'; mountDepth?: number; size: [number, number, number]; position: [number, number, number]; slot: Slot; drawerId?: string; travel?: number; axis?: 'x' | 'y' | 'z' }
+export type Part = { sectionId: string; name: string; polygon?: PointXZ[]; rotationY?: number; shape: 'corner-board' | 'panel' | 'rod' | 'notched-front' | 'handle' | 'facade'; facadeStyle?: Exclude<WardrobeDrawerFacade, 'smooth'>; facadeHandle?: WardrobeDrawerHandle; doorId?: string; pivot?: { origin: [number, number, number]; angle: number }; rotationZ?: number; faceScale?: number; handleLength?: number; handle?: HardwareHandle | 'long-bar'; mountDepth?: number; size: [number, number, number]; position: [number, number, number]; slot: Slot; drawerId?: string; travel?: number; axis?: 'x' | 'y' | 'z' }
 
 // Separate, closed panels. All dimensions are physical metres, floor is y=0,
 // back faces share z=-maxDepth/2. Adjacent sections retain both side boards.
 export function planWardrobeParts(config: WardrobeAssemblyConfiguration): Part[] {
-  const parts: Part[] = [], bounds = wardrobeBounds(config)
+  const parts: Part[] = [], bounds = straightWardrobeBounds(config)
   let left = -bounds.width / 2
   for (const section of config.sections) {
     const { id, width: w, height: h, depth: d } = section
@@ -106,7 +108,7 @@ export function planWardrobeParts(config: WardrobeAssemblyConfiguration): Part[]
     parts.push(...planWardrobeDoors(section, x, z))
     left += w
   }
-  return parts
+  return [...parts, ...planCornerModule(config)]
 }
 
 function panelGeometry(size: Part['size']) {
@@ -140,6 +142,7 @@ export function createWardrobeAssembly(initial: WardrobeAssemblyConfiguration, o
   group.name = 'WardrobeAssembly_Root'
   const motion = createWardrobeDrawerMotion(group, parts => { options.onMotionChange?.(parts); options.onChange?.() })
   const drawerGroups = new Map<string, Group>()
+  const sectionGroups = new Map<string, Group>()
   const relief = createReliefFilter()
   let disposed = false, request = 0
   const fallback: Record<Slot, MeshStandardMaterial> = { body: new MeshStandardMaterial({ color: 0xcdbb9d, roughness: .65 }), facade: new MeshStandardMaterial({ color: 0x626563, roughness: .65 }), hardware: new MeshStandardMaterial({ color: 0x16191c, roughness: .35 }), door: new MeshStandardMaterial({ color: 0x626563, roughness: .65 }) }
@@ -154,15 +157,32 @@ export function createWardrobeAssembly(initial: WardrobeAssemblyConfiguration, o
   let cameraBoxes: Box3[] = []
   let previousGeometryKey = ''
   const update = (configuration: WardrobeAssemblyConfiguration) => {
-    const geometryKey = JSON.stringify(configuration.sections.map(({ id, width, height, depth, shelves, rod, layout, drawers, doors }) => [id, width, height, depth, shelves, rod, layout, drawers, doors && [doors.count, doors.hinge, doors.facadeStyle, doors.handle]]))
+    const geometryKey = JSON.stringify([configuration.arrangement && [configuration.arrangement.side, configuration.arrangement.split, configuration.arrangement.corner.height, configuration.arrangement.corner.shelves], configuration.sections.map(({ id, width, height, depth, shelves, rod, layout, drawers, doors }) => [id, width, height, depth, shelves, rod, layout, drawers, doors && [doors.count, doors.hinge, doors.facadeStyle, doors.handle]])])
     if (disposed || geometryKey === previousGeometryKey) return
+    // Keep existing part coordinates and IDs; only the owning section rotates.
+    // Straight assemblies retain their original flat hierarchy.
+    const placements = wardrobePlacement(configuration)
+    const row = straightWardrobeBounds(configuration)
+    let oldLeft = -row.width / 2
+    for (const placement of placements.sections) {
+      if (configuration.arrangement) {
+        let parent = sectionGroups.get(placement.id)
+        if (!parent) { parent = new Group(); parent.name = `Placement/${placement.id}`; sectionGroups.set(placement.id, parent); group.add(parent) }
+        const oldX = oldLeft + placement.width / 2, oldZ = (placement.depth - row.depth) / 2
+        const c = Math.cos(placement.yaw), s = Math.sin(placement.yaw)
+        parent.position.set(placement.x - oldX * c - oldZ * s, 0, placement.z + oldX * s - oldZ * c)
+        parent.rotation.y = placement.yaw
+        parent.updateMatrix()
+      }
+      oldLeft += placement.width
+    }
     const nextGeometry = new Map<string, BufferGeometry>(), keep = new Set<string>()
     const moving = new Map<string, DrawerMotionEntry>()
     const volumes = new Map<string, { local: Box3; world: Box3; node: Group }>()
     for (const part of planWardrobeParts(configuration)) {
-      const key = `${part.shape}:${part.handle ?? ''}:${part.handleLength ?? ''}:${part.faceScale ?? 1}:${part.doorId ? 'door' : ''}:${part.mountDepth ?? 0}:${part.facadeStyle ?? ''}:${part.facadeHandle === 'finger-notch' ? 'notch' : ''}:${part.size.join(',')}`
+      const key = `${part.shape}:${part.handle ?? ''}:${part.handleLength ?? ''}:${part.faceScale ?? 1}:${part.doorId ? 'door' : ''}:${part.mountDepth ?? 0}:${part.facadeStyle ?? ''}:${part.facadeHandle === 'finger-notch' ? 'notch' : ''}:${part.size.join(',')}:${JSON.stringify(part.polygon ?? '')}`
       let geometry = nextGeometry.get(key) ?? geometries.get(key)
-      if (!geometry) geometry = part.shape === 'facade' ? (part.doorId ? createFacadeGeometry(...part.size, part.facadeStyle!, DOOR_FACADE_PROFILE, { frameField: 'flush' }) : createDrawerFacadeGeometry(...part.size, part.facadeStyle!, part.facadeHandle))
+      if (!geometry) geometry = part.shape === 'corner-board' ? metricPanelUV(createCornerBoard(part.polygon!, part.size[1]), part.size) : part.shape === 'facade' ? (part.doorId ? createFacadeGeometry(...part.size, part.facadeStyle!, DOOR_FACADE_PROFILE, { frameField: 'flush' }) : createDrawerFacadeGeometry(...part.size, part.facadeStyle!, part.facadeHandle))
         : part.shape === 'panel' ? panelGeometry(part.size)
         : part.shape === 'notched-front' ? metricPanelUV(createNotchedFront(...part.size), part.size)
         : part.shape === 'handle' ? createHandleGeometry(part.handle!, part.handleLength, panel, part.faceScale ?? 1, part.mountDepth)
@@ -181,11 +201,12 @@ export function createWardrobeAssembly(initial: WardrobeAssemblyConfiguration, o
         mesh.castShadow = mesh.receiveShadow = true
         meshes.set(part.name, mesh)
       }
-      let parent = group
+      let parent = configuration.arrangement ? sectionGroups.get(part.sectionId) ?? group : group
       const motionId = part.doorId ?? part.drawerId
       if (motionId) {
         let drawer = drawerGroups.get(motionId)
-        if (!drawer) { drawer = new Group(); drawer.name = motionId; drawerGroups.set(motionId, drawer); group.add(drawer) }
+        if (!drawer) { drawer = new Group(); drawer.name = motionId; drawerGroups.set(motionId, drawer) }
+        if (drawer.parent !== parent) parent.add(drawer)
         parent = drawer
         moving.set(motionId, { id: motionId, node: drawer, travel: part.travel ?? 0, pivot: part.pivot })
       }
@@ -195,7 +216,7 @@ export function createWardrobeAssembly(initial: WardrobeAssemblyConfiguration, o
       mesh.geometry = geometry; mesh.material = appliedMaterial(part.sectionId, part.slot)
       if (geometry.hasAttribute(RELIEF_ATTRIBUTE)) relief.attach(mesh)
       mesh.position.set(...part.position)
-      mesh.rotation.set(part.axis === 'z' ? Math.PI / 2 : 0, 0, part.rotationZ ?? (part.axis === 'x' ? Math.PI / 2 : 0))
+      mesh.rotation.set(part.axis === 'z' ? Math.PI / 2 : 0, part.rotationY ?? 0, part.rotationZ ?? (part.axis === 'x' ? Math.PI / 2 : 0))
       mesh.updateMatrix()
       const volumeId = motionId ?? part.sectionId
       let volume = volumes.get(volumeId)
@@ -207,11 +228,29 @@ export function createWardrobeAssembly(initial: WardrobeAssemblyConfiguration, o
     }
     for (const [name, mesh] of meshes) if (!keep.has(name)) { mesh.removeFromParent(); meshes.delete(name) }
     for (const [id, drawer] of drawerGroups) if (!moving.has(id)) { drawer.removeFromParent(); drawerGroups.delete(id) }
+    for (const [id, parent] of sectionGroups) if (!configuration.arrangement || !configuration.sections.some(s => s.id === id)) { parent.removeFromParent(); sectionGroups.delete(id) }
+    group.updateMatrixWorld(true)
     const entries = [...moving.values()]
     limitDoorSwing(entries, configuration)
     motion.sync(entries)
     for (const [key, geometry] of geometries) if (!nextGeometry.has(key)) geometry.dispose()
     geometries = nextGeometry
+    if (placements.corner) {
+      // Filled corner volume follows the diagonal entrance, not its enclosing
+      // rectangle. Conservative 5 cm strips leave the room accessible.
+      volumes.delete(CORNER_ID)
+      const { width, depth, depthB, sign, origin, height } = placements.corner
+      const strips = Math.ceil((width - depthB) / .05)
+      const addVolume = (id: number, x0: number, x1: number, z1: number) => {
+        const xa = origin[0] + sign * x0, xb = origin[0] + sign * x1
+        volumes.set(`${CORNER_ID}/volume-${id}`, { node: group, local: new Box3(new Vector3(Math.min(xa, xb), 0, origin[1]), new Vector3(Math.max(xa, xb), height, origin[1] + z1)), world: new Box3() })
+      }
+      addVolume(0, 0, depthB, depth)
+      for (let i = 0; i < strips; i++) {
+        const x0 = depthB + (width - depthB) * i / strips, x1 = depthB + (width - depthB) * (i + 1) / strips
+        addVolume(i + 1, x0, x1, depth - (x0 - depthB))
+      }
+    }
     cameraVolumes = [...volumes.values()]; cameraBoxes = cameraVolumes.map(v => v.world)
     previousGeometryKey = geometryKey
     group.updateMatrixWorld(true)
@@ -227,6 +266,7 @@ export function createWardrobeAssembly(initial: WardrobeAssemblyConfiguration, o
       if (section.doors) selected.set(bindingKey(section.id, 'door'), section.doors.finish ?? wardrobeSectionFinish(configuration, section, 'facadeFinish'))
       if (section.rod || section.drawers || section.doors) selected.set(bindingKey(section.id, 'hardware'), wardrobeSectionFinish(configuration, section, 'hardwareFinish'))
     }
+    if (configuration.arrangement) selected.set(bindingKey(CORNER_ID, 'body'), configuration.arrangement.corner.bodyFinish ?? configuration.bodyFinish)
     if (selected.size === bindings.size && [...selected].every(([key, id]) => bindings.get(key) === id)) return
     const needed = new Set(selected.values())
     const missing = [...needed].filter(id => !materials.has(id))
@@ -262,7 +302,7 @@ export function createWardrobeAssembly(initial: WardrobeAssemblyConfiguration, o
     dispose() {
     if (disposed) return
     disposed = true; request++
-    motion.dispose(); drawerGroups.clear(); relief.dispose()
+    motion.dispose(); drawerGroups.clear(); sectionGroups.clear(); relief.dispose()
     geometries.forEach(geometry => geometry.dispose()); geometries.clear()
     materials.forEach(disposeMaterialResources); materials.clear()
     Object.values(fallback).forEach(disposeMaterialResources)

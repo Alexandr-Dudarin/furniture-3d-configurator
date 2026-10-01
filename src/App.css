@@ -383,3 +383,9 @@
 .wardrobe-position .dimension-control { margin-top: 0; }
 .wardrobe-position-gap { margin: 2px 0 0; font-size: 12px; line-height: 1.5; color: #526070; }
 .wardrobe-filling-positions input:disabled { cursor: not-allowed; }
+
+.wardrobe-plan { display: block; width: 100%; max-height: 320px; background: #fafbfd; border: 1px solid #dde5ef; border-radius: 12px; }
+.wardrobe-plan [role='button'] { cursor: pointer; }
+.wardrobe-plan [role='button']:focus { outline: none; }
+.wardrobe-plan [role='button']:focus-visible polygon { stroke: #1267d8; stroke-width: 4; }
+.wardrobe-section-actions button[aria-pressed='true'] { border-color: #176adc; color: #125fce; background: #edf4ff; }

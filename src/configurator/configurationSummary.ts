@@ -1,3 +1,4 @@
+import { wardrobePlacement, wardrobeSectionCount } from './wardrobeAssembly/arrangement'
 import { wardrobeDoorsLabel, wardrobeDoorWidth } from './wardrobeAssembly/doors'
 import { getWardrobeDrawerFacade } from './wardrobeAssembly/drawerFacades'
 import { getCatalogHandle } from './handles'
@@ -17,12 +18,13 @@ export function getConfigurationSummary(session: ConfiguratorSession): Configura
   if (session.mode === 'wardrobe') {
     const config = session.wardrobe, bounds = wardrobeClosedBounds(config)
     return { title: 'Модульная гардеробная', fileStem: 'wardrobe-assembly', rows: [
-      { label: 'Компоновка', value: `Прямая · ${config.sections.length} секций` },
+      { label: 'Компоновка', value: config.arrangement ? `Г-образная · ${wardrobeSectionCount(config)} секций вместе с углом · угол ${config.arrangement.side === 'left' ? 'слева' : 'справа'}` : `Прямая · ${config.sections.length} секций` },
       { label: 'Общая ширина', value: size(bounds.width, 'см') },
       { label: 'Максимальная высота', value: size(bounds.height, 'см') },
-      { label: 'Максимальная глубина корпуса', value: size(wardrobeBounds(config).depth, 'см') },
+      { label: config.arrangement ? 'Размер по второй стене' : 'Максимальная глубина корпуса', value: size(wardrobeBounds(config).depth, 'см') },
       { label: 'Глубина сборки с дверями и ручками (всё закрыто)', value: size(bounds.depth, 'см') },
-      ...config.sections.map((section, index) => ({ label: `Секция ${index + 1}`, value: `${wardrobeDoorsLabel(section.doors)} · ${Math.round(section.width * 100)} × ${Math.round(section.height * 100)} × ${Math.round(section.depth * 100)} см (корпус) · ${wardrobeFillingLabel(section)}${section.rod && section.depth < .5 ? ' · торцевая штанга' : ''}` })),
+      ...(config.arrangement ? [{ label: 'Угловой модуль', value: `${size(wardrobePlacement(config).corner!.width, 'см')} × ${size(config.arrangement.corner.height, 'см')} × ${size(wardrobePlacement(config).corner!.depth, 'см')} · открытый · полок: ${config.arrangement.corner.shelves} · ${getMaterialFinish(config.arrangement.corner.bodyFinish ?? config.bodyFinish).label}` }] : []),
+      ...config.sections.map((section, index) => ({ label: `Секция ${index + 1}`, value: `${config.arrangement ? `Сторона ${index < config.arrangement.split ? 'А' : 'Б'} · ` : ''}${wardrobeDoorsLabel(section.doors)} · ${Math.round(section.width * 100)} × ${Math.round(section.height * 100)} × ${Math.round(section.depth * 100)} см (корпус) · ${wardrobeFillingLabel(section)}${section.rod && section.depth < .5 ? ' · торцевая штанга' : ''}` })),
       { label: 'Общий материал корпуса', value: getMaterialFinish(config.bodyFinish).label },
       { label: 'Общий материал фасадов', value: config.facadeFinish ? getMaterialFinish(config.facadeFinish).label : 'Как у корпуса каждой секции' },
       { label: 'Общий материал фурнитуры', value: getMaterialFinish(config.hardwareFinish).label },
