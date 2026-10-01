@@ -226,7 +226,7 @@ export const V_PEDESTAL_TABLE_CONFIG = {
         'Stone_Edge_Corner',
       ],
       defaultFinish:
-        'marble-cream',
+        'marble-duo-gold',
       allowedFinishes: [
         'oak-natural',
         'walnut-natural',

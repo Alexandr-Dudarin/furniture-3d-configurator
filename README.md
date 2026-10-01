@@ -9,6 +9,7 @@
 Рабочий прототип поддерживает:
 
 - пять столов, четыре шкафа и пять комодов в каталоге «Столы / Шкафы / Комоды»;
+- начальный стол — Slat Pedestal; при открытии категории «Комоды» выбирается «Норд»;
 - загрузку и переключение моделей через Furniture Registry;
 - configurable dimensions с индивидуальными `base/min/max/step`;
 - declarative mapping физических размеров на local/model axes;
@@ -91,7 +92,7 @@ Neutral tone mapping сохраняет детали ярких участков
 Первый ручной стол исключён из публичного каталога. Его GLB (23,72 МиБ)
 переносится проверяемой командой в `.local-archive/first-table/`; конфигурация
 остаётся примером для универсального контроллера. Начальная модель сайта —
-`table-02-u-frame`. [Архивирование, восстановление и публикация](docs/publication-ready-v1.md).
+`table-03-slat-pedestal`. [Архивирование, восстановление и публикация](docs/publication-ready-v1.md).
 
 - base: `1.20 × 0.60 m`;
 - max: `2.00 × 1.00 m`;
@@ -100,6 +101,7 @@ Neutral tone mapping сохраняет детали ярких участков
 
 ### `table-02-u-frame` — U-Frame Table
 
+- начальный материал столешницы: «Ясень натуральный»;
 - base: `0.95 × 0.55 × 0.75 m`;
 - max: `1.65 × 0.80 × 0.75 m`;
 - behaviors: `Scale + Delta move / spread + Edge-anchor move + Stretch segment`;
@@ -114,6 +116,7 @@ Neutral tone mapping сохраняет детали ярких участков
 
 ### `table-04-v-pedestal` — V-Pedestal Table
 
+- начальный материал столешницы: «Контрастный мрамор с золотым рисунком»;
 - base: `1.20 × 0.80 × 0.76 m`;
 - max: `1.60 × 1.20 × 0.76 m`;
 - behaviors: `Stretch segment + Delta move / spread + Fixed`;

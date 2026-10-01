@@ -148,7 +148,7 @@ export const U_FRAME_TABLE_CONFIG = {
         'Top_Edge_Short',
       ],
       defaultFinish:
-        'concrete-light',
+        'ash-natural',
       allowedFinishes: [
         'oak-natural',
         'walnut-natural',

@@ -92,7 +92,7 @@ describe(
         frameMaterial:
           'Metal_Frame',
         expectedDefaultTop:
-          'concrete-light',
+          'ash-natural',
         expectedDefaultFrame:
           'metal-black-matte',
         maxDimensions: {

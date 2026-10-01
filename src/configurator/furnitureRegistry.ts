@@ -49,13 +49,14 @@ const furnitureRegistry =
     string,
     FurnitureDefinition
   >([
-    [
-      U_FRAME_TABLE_CONFIG.id,
-      U_FRAME_TABLE_CONFIG,
-    ],
+    // The first model of each category is selected when opening its tab.
     [
       SLAT_PEDESTAL_TABLE_CONFIG.id,
       SLAT_PEDESTAL_TABLE_CONFIG,
+    ],
+    [
+      U_FRAME_TABLE_CONFIG.id,
+      U_FRAME_TABLE_CONFIG,
     ],
     [
       V_PEDESTAL_TABLE_CONFIG.id,
@@ -73,8 +74,8 @@ const furnitureRegistry =
     [wardrobe08.id, wardrobe08],
     [wardrobe09.id, wardrobe09],
     [wardrobe15.id, wardrobe15],
-    [dresser10.id, dresser10],
     [dresser11.id, dresser11],
+    [dresser10.id, dresser10],
     [dresser12.id, dresser12],
     [dresser13.id, dresser13],
     [dresser14.id, dresser14],
@@ -85,7 +86,7 @@ const furnitureRegistry =
  */
 
 export const DEFAULT_FURNITURE_ID =
-  U_FRAME_TABLE_CONFIG.id
+  SLAT_PEDESTAL_TABLE_CONFIG.id
 
 /*
  * Получить конкретную модель

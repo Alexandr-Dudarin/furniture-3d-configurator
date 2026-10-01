@@ -325,7 +325,7 @@ describe(
                 model,
                 materialName,
               ).userData.finishId,
-            ).toBe('marble-cream')
+            ).toBe('marble-duo-gold')
           },
         )
 

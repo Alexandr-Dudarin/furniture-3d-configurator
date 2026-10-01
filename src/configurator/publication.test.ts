@@ -5,7 +5,7 @@ import { createDefaultSession, readSavedSession, readSharedConfiguration } from 
 import { createConfiguratorStore } from './configuratorStore'
 
 it('starts with an available lightweight model and all public catalogue URLs exist', () => {
-  expect(DEFAULT_FURNITURE_ID).toBe('table-02-u-frame')
+  expect(DEFAULT_FURNITURE_ID).toBe('table-03-slat-pedestal')
   expect(getFurnitureDefinitions().map(d => d.id)).not.toContain('table-01')
   for (const definition of getFurnitureDefinitions()) expect(existsSync(`public${definition.modelUrl}`), definition.id).toBe(true)
 })
