@@ -8,7 +8,7 @@ const TABLE_TOP_NAME =
 export const SLAT_PEDESTAL_TABLE_CONFIG = {
   id: 'table-03-slat-pedestal',
 
-  label: 'Slat Pedestal Table',
+  label: 'Стол с реечным основанием',
 
   modelUrl:
     '/models/table-03-slat-pedestal.glb',

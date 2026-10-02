@@ -103,7 +103,7 @@ export function WardrobeAssemblyControls({ configuration, onAction, onFrame, mot
     <ConfigurationSection title={`Секция ${index + 1}: размеры`} summary={`${cm(selected.width)} × ${cm(selected.height)} × ${cm(selected.depth)} см`} initialOpen>
       {(['width', 'height', 'depth'] as const).map(dimension => <SizeControl key={`${selected.id}-${dimension}`} name={SECTION_DIMENSIONS[dimension].label}
         value={selected[dimension]} config={SECTION_DIMENSIONS[dimension]} onChange={value => update({ [dimension]: value })} />)}
-      <p className="assembly-summary">Здесь указаны размеры корпуса без накладных дверей и выступающих ручек. Задние стенки секций одной стороны стоят на одной линии; при разной глубине передние края отличаются.</p>
+      <p className="assembly-summary">Размеры корпуса без накладных дверей и выступающих ручек. Секции одной стороны выровнены по задней стенке; при разной глубине передние края не совпадают.</p>
     </ConfigurationSection>
     <WardrobeDoorControls section={selected} configuration={configuration} store={motionStore} onChange={update} />
     <ConfigurationSection title="Наполнение секции" summary={wardrobeFillingLabel(selected)} initialOpen>
@@ -161,8 +161,8 @@ export function WardrobeAssemblyControls({ configuration, onAction, onFrame, mot
     <ConfigurationSection title={`Секция ${index + 1}: материалы`} summary={`${getMaterialFinish(wardrobeSectionFinish(configuration, selected, 'bodyFinish')).label} · ${selected.bodyFinish ? 'свой' : 'общий'}`}>
       <WardrobeSectionMaterials configuration={configuration} section={selected} onAction={onAction} />
     </ConfigurationSection>
-    <ConfigurationSection title="Общие материалы сборки" summary={`Корпус: ${getMaterialFinish(configuration.bodyFinish).label} · Фасады: ${configuration.facadeFinish ? getMaterialFinish(configuration.facadeFinish).label : 'как корпус секции'}`}>
-      <p className="assembly-summary">Применяются к секциям без своего материала. Отдельно выбранные покрытия сохраняются.</p>
+    <ConfigurationSection title="Материалы всей сборки" summary={`Корпус: ${getMaterialFinish(configuration.bodyFinish).label} · Фасады: ${configuration.facadeFinish ? getMaterialFinish(configuration.facadeFinish).label : 'как корпус секции'}`}>
+      <p className="assembly-summary">Применяются к секциям без индивидуального материала. Для другого цвета одной секции откройте «Секция {index + 1}: материалы» выше. Её индивидуальные покрытия сохранятся при смене общих.</p>
       <FinishPicker label="Корпус, полки и короба ящиков" value={configuration.bodyFinish} ids={BODY_FINISHES} onChange={finishId => onAction({ type: 'set-wardrobe-finish', slot: 'bodyFinish', finishId })} />
       <label className="wardrobe-toggle"><input type="checkbox" checked={!configuration.facadeFinish}
         onChange={event => onAction({ type: 'set-wardrobe-finish', slot: 'facadeFinish', finishId: event.target.checked ? null : configuration.bodyFinish })} />Фасады в цвет корпуса секции</label>

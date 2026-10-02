@@ -44,7 +44,7 @@ export function WardrobeDoorControls({ section, configuration, store, onChange }
         onChange={event => onChange({ doors: { ...doors, finish: event.target.checked ? wardrobeSectionFinish(configuration, section, 'facadeFinish') : undefined } })} />Свой материал только дверей</label>
       {doors.finish ? <FinishPicker label="Двери" value={doors.finish} ids={BODY_FINISHES}
         onChange={finish => onChange({ doors: { ...doors, finish } })} />
-        : <p className="assembly-summary">Двери: {getMaterialFinish(wardrobeSectionFinish(configuration, section, 'facadeFinish')).label} — {wardrobeFacadeFinishSource(configuration, section)}. Материал фасадов выбирается в разделах «Общие материалы сборки» или «Материалы» этой секции. Ручки и петли — её материал фурнитуры.</p>}
+        : <p className="assembly-summary">Двери: {getMaterialFinish(wardrobeSectionFinish(configuration, section, 'facadeFinish')).label} — {wardrobeFacadeFinishSource(configuration, section)}. Цвет дверей и ящиков меняется вместе в материалах этой секции или в разделе «Материалы всей сборки». Для отдельного цвета дверей включите настройку выше.</p>}
       {section.drawers && <p className="assembly-summary">За дверями доступны утопленные ящики. При открывании ящика сначала {doors.count === 2 ? 'откроются обе створки' : 'откроется дверца'}, при закрывании двери ящики сначала задвинутся.</p>}
       {states.find(p => p.reason)?.reason && <p className="assembly-summary" role="status">{states.find(p => p.reason)!.reason}</p>}
       <div className="motion-actions">

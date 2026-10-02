@@ -39,7 +39,7 @@ const BASE_RAIL_LENGTH =
 export const U_FRAME_TABLE_CONFIG = {
   id: 'table-02-u-frame',
 
-  label: 'U-Frame Table',
+  label: 'Стол с U-образными опорами',
 
   modelUrl:
     '/models/table-02-u-frame.glb',

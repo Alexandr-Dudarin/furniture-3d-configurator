@@ -51,7 +51,7 @@ export function WardrobeArrangementControls({ configuration: c, selectedId, onSe
       <div className="assembly-field"><span>Секций на стороне А</span><CustomSelect ariaLabel="Количество секций на стороне А" value={String(a.split)} options={Array.from({ length: isU ? c.sections.length - (ranges[1].end - ranges[1].start) - 1 : c.sections.length - 1 }, (_, i) => ({ value: String(i + 1), label: String(i + 1) }))} onChange={value => onAction({ type: 'set-arm-count', arm: 0, count: Number(value) })} /></div>
       {isU && <div className="assembly-field"><span>Секций на стороне Б</span><CustomSelect ariaLabel="Количество секций на стороне Б" value={String(a.secondSplit - a.split)} options={Array.from({ length: c.sections.length - a.split - 1 }, (_, i) => ({ value: String(i + 1), label: String(i + 1) }))} onChange={value => onAction({ type: 'set-arm-count', arm: 1, count: Number(value) })} /></div>}
       <p className="assembly-summary">{ranges.map(r => `${ARM_LABELS[r.arm]}: ${r.end - r.start}`).join(' · ')}. {isU ? 'На стороне А секции идут слева направо, на Б и В — от углов к входу.' : 'На каждой стороне секции идут от угла к краю.'}</p>
-      <p className="assembly-summary">Вид сверху. Нажмите номер, чтобы выбрать секцию для настройки.</p>
+      <p className="assembly-summary">Вид сверху. Буква обозначает сторону, цифра — номер секции. Нажмите на секцию, чтобы настроить её ниже. Настройки углов находятся под схемой.</p>
       <svg className="wardrobe-plan" viewBox="0 0 320 310" role="group" aria-label={`План ${isU ? 'П' : 'Г'}-образной гардеробной сверху`}>
         {layout.corners.map((p, i) => <g key={p.id}>
           <polygon points={p.polygon.map(point).join(' ')} fill="#e6ddd0" stroke="#8c775a" strokeWidth="1.5" />
@@ -65,7 +65,7 @@ export function WardrobeArrangementControls({ configuration: c, selectedId, onSe
       </svg>
       {selected && <p className="assembly-summary" role="status">Выбрана секция {selectedIndex + 1}, сторона {ARM_LABELS[selected.arm]}. Её размеры, наполнение и материалы настраиваются ниже.</p>}
       {isU && <p className="assembly-summary"><strong>Проход между боковыми секциями: не меньше {cm(wardrobeAisleWidth(c)!)} см.</strong> Размер учитывает закрытые фасады и выступающие ручки. Открытые двери и ящики занимают часть прохода.</p>}
-      <p className="assembly-summary">Если траектории пересекаются, сначала закроется мешающая соседняя секция. «Открыть всё» оставляет конфликтующие детали закрытыми.</p>
+      <p className="assembly-summary">Если открыванию мешает соседняя дверь или ящик, сначала они закроются. «Открыть всё» открывает только совместимые детали.</p>
       <p className="assembly-summary">Всего {wardrobeSectionCount(c)} из 21: обычных секций {c.sections.length} и {isU ? 'два угла' : 'один угол'}. Размеры по стенам: {cm(layout.bounds.width)} × {cm(layout.bounds.depth)} см.</p>
       {layout.corners.map((p, i) => <CornerControls key={p.id} c={c} corner={p} title={isU ? `Угол ${i + 1}: ${i ? 'правый' : 'левый'}` : 'Угловой модуль'} onAction={onAction} />)}
       <p className="assembly-summary">При смене формы сохраняются обычные секции. Удаляемые угловые модули вместе со своими настройками не сохраняются.</p>

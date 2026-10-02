@@ -56,9 +56,7 @@ export function ConfigurationSummary({ session, store, pngExport }: {
     <button type="button" className="configuration-reset" disabled={saving || source?.session !== session} onClick={() => void savePng()}>
       {saving ? 'Сохраняем PNG…' : 'Сохранить вид в PNG'}
     </button>
-    <p className="configuration-export-hint">{session.mode === 'wardrobe'
-      ? 'PNG сохранит текущий ракурс. Ссылка передаёт порядок секций, размеры, наполнение и материалы сборки.'
-      : 'PNG сохранит текущий ракурс и открытые двери и ящики. Ссылка передаёт размеры, материалы и выбранный рисунок фасадов.'}</p>
+    <p className="configuration-export-hint">PNG сохраняет текущий ракурс и положение дверей и ящиков. Ссылка передаёт настройки изделия; ракурс и открывание в неё не входят.</p>
     {pngStatus && <p className="configuration-copy-status" role="status">{pngStatus}</p>}
   </div>
 }

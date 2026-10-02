@@ -75,7 +75,7 @@ const WIDTH_MOVE_TARGETS = [
 export const V_PEDESTAL_TABLE_CONFIG = {
   id: 'table-04-v-pedestal',
 
-  label: 'V-Pedestal Table',
+  label: 'Стол с V-образным основанием',
 
   modelUrl:
     '/models/table-04-v-pedestal.glb',

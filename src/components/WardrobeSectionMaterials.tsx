@@ -8,7 +8,7 @@ export function WardrobeSectionMaterials({ configuration, section, onAction }: {
   onAction: (action: WardrobeAssemblyAction) => void
 }) {
   return <div className="wardrobe-section-materials">
-    <p className="assembly-summary">Свой материал меняет только выбранную секцию. Отключите его, чтобы снова использовать общий.</p>
+    <p className="assembly-summary">Эти настройки действуют только на выбранную секцию. Материал фасадов меняет её двери и ящики. Снимите отметку, чтобы вернуть общий материал.</p>
     {(['bodyFinish', 'facadeFinish', 'hardwareFinish'] as const).filter(slot => slot === 'bodyFinish' || (slot === 'facadeFinish' ? section.drawers || section.doors : section.rod || section.drawers || section.doors)).map(slot => {
       const own = section[slot] !== undefined
       const value = wardrobeSectionFinish(configuration, section, slot)
