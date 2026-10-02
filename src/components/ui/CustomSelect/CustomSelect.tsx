@@ -795,15 +795,11 @@ export function CustomSelect({
     isOpen,
   ])
 
-  useEffect(() => {
-    if (
-      disabled
-    ) {
-      closeDropdown()
-    }
-  }, [
-    disabled,
-  ])
+  // Reset before committing a disabled render, so re-enabling cannot reopen
+  // the old menu. Opening it again initializes the highlight and scroll flag.
+  if (disabled && isOpen) {
+    setIsOpen(false)
+  }
 
   /*
    * Таймеры тоже очищаем

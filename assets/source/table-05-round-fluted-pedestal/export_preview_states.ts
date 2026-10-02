@@ -9,9 +9,9 @@ import { ROUND_FLUTED_PEDESTAL_TABLE_CONFIG as config } from '../../../src/three
 
 // GLTFLoader загружает реальные buffers. Декодирование изображений выполняет renderer.
 class ImageStub {
-  listeners:Record<string,Set<any>>={};width=1;height=1;complete=true
-  addEventListener(t:string,l:any){(this.listeners[t]??=new Set()).add(l)}
-  removeEventListener(t:string,l:any){this.listeners[t]?.delete(l)}
+  listeners:Record<string,Set<(event: { type: string }) => void>>={};width=1;height=1;complete=true
+  addEventListener(t:string,l:(event: { type: string }) => void){(this.listeners[t]??=new Set()).add(l)}
+  removeEventListener(t:string,l:(event: { type: string }) => void){this.listeners[t]?.delete(l)}
   set src(v:string){void v;queueMicrotask(()=>this.listeners.load?.forEach(l=>l({type:'load'})))}
 }
 Object.assign(globalThis,{self:globalThis,document:{createElementNS:()=>new ImageStub()}})
@@ -30,7 +30,7 @@ Object.assign(globalThis,{self:globalThis,document:{createElementNS:()=>new Imag
   const white=getMaterialFinish('metal-white-matte'),black=getMaterialFinish('metal-black-matte')
   await fs.writeFile(path.join('assets/source',config.id,'preview-states.json'),JSON.stringify({modelId:config.id,generatedBy:'Unmodified FurnitureController and materialController; real production GLB',states,frameFinishes:{white,black}},null,2)+'\n')
   function capture(name:string,diameter:number){
-    const nodes:Record<string,any>={},mats:Record<string,any>={}
+    const nodes:Record<string,unknown>={},mats:Record<string,unknown>={}
     root.traverse(o=>{
       o.updateWorldMatrix(true,false)
       nodes[o.name]={position:o.position.toArray(),quaternion:o.quaternion.toArray(),scale:o.scale.toArray(),matrixWorld:o.matrixWorld.toArray()}
