@@ -1,5 +1,7 @@
 # Only build inputs. Source models, previews, local archives and node_modules stay local.
 /*
+# Required by the prebuild publication check.
+!.vercelignore
 !src
 !public
 !scripts
