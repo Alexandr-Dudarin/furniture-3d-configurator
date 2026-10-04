@@ -11,6 +11,7 @@ import {
   wardrobeSectionCount,
   wardrobeSectionLimit,
   ARM_LABELS,
+  wardrobePlacement,
 } from '../../configurator/wardrobeAssembly/arrangement'
 import {
   SECTION_PRESETS,
@@ -23,10 +24,18 @@ type Props = {
   configuration: WardrobeAssemblyConfiguration
   selected: WardrobeSection
   index: number
+  selectedCornerId?: string
   onSelect: (id: string) => void
   onAction: (action: WardrobeAssemblyAction) => void
 }
-export function WardrobeSectionList({ configuration, selected, index, onSelect, onAction }: Props) {
+export function WardrobeSectionList({
+  configuration,
+  selected,
+  index,
+  selectedCornerId,
+  onSelect,
+  onAction,
+}: Props) {
   const arrangement = configuration.arrangement
   const limit = wardrobeSectionLimit(configuration)
   const count = wardrobeSectionCount(configuration)
@@ -35,7 +44,7 @@ export function WardrobeSectionList({ configuration, selected, index, onSelect, 
   const armCount = range.end - range.start
   return (
     <ConfigurationSection
-      title="Секции"
+      title="Выбор модуля"
       summary={`${count} из ${limit}${arrangement?.kind === 'u' ? ' · включая два угла' : arrangement ? ' · включая угол' : ''}`}
       initialOpen
     >
@@ -44,7 +53,7 @@ export function WardrobeSectionList({ configuration, selected, index, onSelect, 
           <button
             key={section.id}
             type="button"
-            aria-pressed={selected.id === section.id}
+            aria-pressed={!selectedCornerId && selected.id === section.id}
             onClick={() => onSelect(section.id)}
           >
             <svg viewBox="0 0 56 72" aria-hidden="true">
@@ -82,85 +91,118 @@ export function WardrobeSectionList({ configuration, selected, index, onSelect, 
               section.doors?.finish) && <span className="wardrobe-own-finish">Свой материал</span>}
           </button>
         ))}
-      </div>
-      <div className="wardrobe-section-actions">
-        <button
-          type="button"
-          disabled={index === 0}
-          onClick={() => onAction({ type: 'move-section', id: selected.id, direction: -1 })}
-          aria-label={
-            arrangement
-              ? 'Переставить выбранную секцию раньше в списке'
-              : 'Переставить выбранную секцию влево'
-          }
-        >
-          {arrangement ? '← Раньше' : '← Влево'}
-        </button>
-        <button
-          type="button"
-          disabled={index === configuration.sections.length - 1}
-          onClick={() => onAction({ type: 'move-section', id: selected.id, direction: 1 })}
-          aria-label={
-            arrangement
-              ? 'Переставить выбранную секцию дальше в списке'
-              : 'Переставить выбранную секцию вправо'
-          }
-        >
-          {arrangement ? 'Дальше →' : 'Вправо →'}
-        </button>
-        <button
-          type="button"
-          className="wardrobe-delete"
-          disabled={armCount === 1}
-          aria-label={`Удалить секцию ${index + 1}`}
-          onClick={() => {
-            onSelect(configuration.sections[Math.max(0, index - 1)].id)
-            onAction({ type: 'remove-section', id: selected.id })
-          }}
-        >
-          Удалить
-        </button>
-      </div>
-      <p className="assembly-summary">
-        Добавить секцию{arrangement ? ` на сторону ${ARM_LABELS[arm]}` : ''}
-      </p>
-      <div className="wardrobe-add" role="group" aria-label="Добавить секцию гардеробной">
-        {SECTION_PRESETS.map((preset) => (
+        {wardrobePlacement(configuration).corners.map((corner, order) => (
           <button
+            key={corner.id}
             type="button"
-            key={preset.id}
-            disabled={count >= limit}
-            onClick={() => {
-              let number = 1
-              while (configuration.sections.some((item) => item.id === `section-${number}`))
-                number++
-              onAction({ type: 'add-section', preset: preset.id, arm })
-              onSelect(`section-${number}`)
-            }}
+            aria-pressed={selectedCornerId === corner.id}
+            onClick={() => onSelect(corner.id)}
           >
-            + {preset.label}
+            <svg viewBox="0 0 56 72" aria-hidden="true">
+              <path d="M8 60V12h40v26L26 60Z" fill="none" stroke="currentColor" strokeWidth="2" />
+              <path d="M8 40h26l14-14M8 28h32l8-8" fill="none" stroke="currentColor" />
+            </svg>
+            <strong>Угол {order + 1}</strong>
+            <span>
+              {arrangement?.kind === 'u'
+                ? order
+                  ? 'Правый'
+                  : 'Левый'
+                : corner.shelves
+                  ? `Полок: ${corner.shelves}`
+                  : 'Без полок'}
+            </span>
+            {corner.bodyFinish && <span className="wardrobe-own-finish">Свой материал</span>}
           </button>
         ))}
       </div>
-      {arrangement && (
+      {selectedCornerId ? (
         <p className="assembly-summary">
-          На каждой стороне нужна хотя бы одна секция. Кнопки перестановки на границе сторон меняют
-          секции местами; распределение сторон задаётся выше.
+          Углы добавляются автоматически при выборе формы сборки. Чтобы добавить или переставить
+          обычную секцию, сначала выберите её в списке.
         </p>
-      )}
-      {!wardrobeCanHaveRod(configuration.sections[range.end - 1].height) && (
-        <p className="assembly-summary">Новая секция «Со штангой» будет высотой 150 см.</p>
-      )}
-      {count >= limit && (
-        <p className="assembly-summary" role="status">
-          В этой сборке может быть до {limit} секций
-          {arrangement?.kind === 'u'
-            ? ' вместе с двумя углами'
-            : arrangement
-              ? ' вместе с углом'
-              : ''}
-          .
-        </p>
+      ) : (
+        <>
+          <div className="wardrobe-section-actions">
+            <button
+              type="button"
+              disabled={index === 0}
+              onClick={() => onAction({ type: 'move-section', id: selected.id, direction: -1 })}
+              aria-label={
+                arrangement
+                  ? 'Переставить выбранную секцию раньше в списке'
+                  : 'Переставить выбранную секцию влево'
+              }
+            >
+              {arrangement ? '← Раньше' : '← Влево'}
+            </button>
+            <button
+              type="button"
+              disabled={index === configuration.sections.length - 1}
+              onClick={() => onAction({ type: 'move-section', id: selected.id, direction: 1 })}
+              aria-label={
+                arrangement
+                  ? 'Переставить выбранную секцию дальше в списке'
+                  : 'Переставить выбранную секцию вправо'
+              }
+            >
+              {arrangement ? 'Дальше →' : 'Вправо →'}
+            </button>
+            <button
+              type="button"
+              className="wardrobe-delete"
+              disabled={armCount === 1}
+              aria-label={`Удалить секцию ${index + 1}`}
+              onClick={() => {
+                onSelect(configuration.sections[Math.max(0, index - 1)].id)
+                onAction({ type: 'remove-section', id: selected.id })
+              }}
+            >
+              Удалить
+            </button>
+          </div>
+          <p className="assembly-summary">
+            Добавить секцию{arrangement ? ` на сторону ${ARM_LABELS[arm]}` : ''}
+          </p>
+          <div className="wardrobe-add" role="group" aria-label="Добавить секцию гардеробной">
+            {SECTION_PRESETS.map((preset) => (
+              <button
+                type="button"
+                key={preset.id}
+                disabled={count >= limit}
+                onClick={() => {
+                  let number = 1
+                  while (configuration.sections.some((item) => item.id === `section-${number}`))
+                    number++
+                  onAction({ type: 'add-section', preset: preset.id, arm })
+                  onSelect(`section-${number}`)
+                }}
+              >
+                + {preset.label}
+              </button>
+            ))}
+          </div>
+          {arrangement && (
+            <p className="assembly-summary">
+              На каждой стороне нужна хотя бы одна секция. Кнопки перестановки на границе сторон
+              меняют секции местами; распределение сторон задаётся в разделе «Вся сборка».
+            </p>
+          )}
+          {!wardrobeCanHaveRod(configuration.sections[range.end - 1].height) && (
+            <p className="assembly-summary">Новая секция «Со штангой» будет высотой 150 см.</p>
+          )}
+          {count >= limit && (
+            <p className="assembly-summary" role="status">
+              В этой сборке может быть до {limit} секций
+              {arrangement?.kind === 'u'
+                ? ' вместе с двумя углами'
+                : arrangement
+                  ? ' вместе с углом'
+                  : ''}
+              .
+            </p>
+          )}
+        </>
       )}
     </ConfigurationSection>
   )

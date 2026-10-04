@@ -26,8 +26,9 @@ type Props = {
   selected: WardrobeSection
   update: UpdateWardrobeSection
   motionStore: FurnitureMotionStore
+  onMaterials: () => void
 }
-export function WardrobeDrawerSettings({ selected, update, motionStore }: Props) {
+export function WardrobeDrawerSettings({ selected, update, motionStore, onMaterials }: Props) {
   const handle = getWardrobeDrawerHandle(selected.drawers?.handle)
   return (
     <ConfigurationSection
@@ -157,10 +158,13 @@ export function WardrobeDrawerSettings({ selected, update, motionStore }: Props)
                 1,
               ),
             )}{' '}
-            см. Материал фасадов выбирается отдельно в разделе материалов; короба используют
-            материал корпуса, {handle.projection === 0 ? 'направляющие' : 'ручки и направляющие'} —
-            материал фурнитуры секции.
+            см. Материал фасадов выбирается в группе «Материалы»; короба используют материал
+            корпуса, {handle.projection === 0 ? 'направляющие' : 'ручки и направляющие'} — материал
+            фурнитуры секции.
           </p>
+          <button type="button" className="wardrobe-text-button" onClick={onMaterials}>
+            Настроить цвет ящиков →
+          </button>
           <WardrobeDrawerControls section={selected} store={motionStore} />
         </>
       )}
