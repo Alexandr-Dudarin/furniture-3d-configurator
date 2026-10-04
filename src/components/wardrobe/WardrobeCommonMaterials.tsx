@@ -10,63 +10,78 @@ import { getMaterialFinish } from '../../three/materials/materialRegistry'
 
 type Props = {
   configuration: WardrobeAssemblyConfiguration
-  index: number
   onAction: (action: WardrobeAssemblyAction) => void
 }
-export function WardrobeCommonMaterials({ configuration, index, onAction }: Props) {
+export function WardrobeCommonMaterials({ configuration, onAction }: Props) {
   return (
-    <ConfigurationSection
-      title="Материалы всей сборки"
-      summary={`Корпус: ${getMaterialFinish(configuration.bodyFinish).label} · Фасады: ${configuration.facadeFinish ? getMaterialFinish(configuration.facadeFinish).label : 'как корпус секции'}`}
-    >
+    <div className="wardrobe-common-materials">
+      <h3 className="wardrobe-group-heading">Материалы всей сборки</h3>
       <p className="assembly-summary">
-        Применяются к секциям без индивидуального материала. Для другого цвета одной секции откройте
-        «Секция {index + 1}: материалы» выше. Её индивидуальные покрытия сохранятся при смене общих.
+        Общие цвета для всех модулей. Индивидуальные материалы секций и углов сохраняются. Их можно
+        изменить в разделе «Секции и углы».
       </p>
-      <FinishPicker
-        label="Корпус, полки и короба ящиков"
-        value={configuration.bodyFinish}
-        ids={BODY_FINISHES}
-        onChange={(finishId) =>
-          onAction({ type: 'set-wardrobe-finish', slot: 'bodyFinish', finishId })
-        }
-      />
-      <label className="wardrobe-toggle">
-        <input
-          type="checkbox"
-          checked={!configuration.facadeFinish}
-          onChange={(event) =>
-            onAction({
-              type: 'set-wardrobe-finish',
-              slot: 'facadeFinish',
-              finishId: event.target.checked ? null : configuration.bodyFinish,
-            })
+      <ConfigurationSection
+        title="Корпус, полки и короба ящиков"
+        summary={getMaterialFinish(configuration.bodyFinish).label}
+      >
+        <FinishPicker
+          label="Корпус, полки и короба ящиков"
+          value={configuration.bodyFinish}
+          ids={BODY_FINISHES}
+          onChange={(finishId) =>
+            onAction({ type: 'set-wardrobe-finish', slot: 'bodyFinish', finishId })
           }
         />
-        Фасады в цвет корпуса секции
-      </label>
-      {!configuration.facadeFinish && (
+      </ConfigurationSection>
+      <ConfigurationSection
+        title="Фасады: двери и ящики"
+        summary={
+          configuration.facadeFinish
+            ? getMaterialFinish(configuration.facadeFinish).label
+            : 'В цвет корпуса каждой секции'
+        }
+      >
+        <label className="wardrobe-toggle">
+          <input
+            type="checkbox"
+            checked={!configuration.facadeFinish}
+            onChange={(event) =>
+              onAction({
+                type: 'set-wardrobe-finish',
+                slot: 'facadeFinish',
+                finishId: event.target.checked ? null : configuration.bodyFinish,
+              })
+            }
+          />
+          Фасады в цвет корпуса секции
+        </label>
         <p className="assembly-summary">
-          Сейчас фасады повторяют корпус своей секции. Выберите цвет ниже, чтобы задать общий
-          материал фасадов отдельно от корпуса.
+          Выбор образца задаёт общий цвет фасадов отдельно от корпуса. Индивидуальные цвета секций и
+          дверей сохранятся.
         </p>
-      )}
-      <FinishPicker
-        label="Фасады: двери и ящики"
-        value={configuration.facadeFinish ?? configuration.bodyFinish}
-        ids={BODY_FINISHES}
-        onChange={(finishId) =>
-          onAction({ type: 'set-wardrobe-finish', slot: 'facadeFinish', finishId })
-        }
-      />
-      <FinishPicker
-        label="Фурнитура и ручки"
-        value={configuration.hardwareFinish}
-        ids={HARDWARE_FINISHES}
-        onChange={(finishId) =>
-          onAction({ type: 'set-wardrobe-finish', slot: 'hardwareFinish', finishId })
-        }
-      />
-    </ConfigurationSection>
+        <FinishPicker
+          label="Фасады: двери и ящики"
+          allowReselect={!configuration.facadeFinish}
+          value={configuration.facadeFinish ?? configuration.bodyFinish}
+          ids={BODY_FINISHES}
+          onChange={(finishId) =>
+            onAction({ type: 'set-wardrobe-finish', slot: 'facadeFinish', finishId })
+          }
+        />
+      </ConfigurationSection>
+      <ConfigurationSection
+        title="Фурнитура и ручки"
+        summary={getMaterialFinish(configuration.hardwareFinish).label}
+      >
+        <FinishPicker
+          label="Фурнитура и ручки"
+          value={configuration.hardwareFinish}
+          ids={HARDWARE_FINISHES}
+          onChange={(finishId) =>
+            onAction({ type: 'set-wardrobe-finish', slot: 'hardwareFinish', finishId })
+          }
+        />
+      </ConfigurationSection>
+    </div>
   )
 }

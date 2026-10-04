@@ -6,6 +6,7 @@ import { createFurnitureMotionStore } from '../configurator/furnitureMotionStore
 import {
   createDefaultWardrobe,
   updateWardrobeAssembly,
+  wardrobeSectionFinish,
 } from '../configurator/wardrobeAssembly/state'
 import { WardrobeAssemblyControls } from './WardrobeAssemblyControls'
 
@@ -68,13 +69,27 @@ function mountPanel(initial = createDefaultWardrobe()) {
   return { configuration: () => current, onFrame }
 }
 
+function scope(name: 'Вся сборка' | 'Секции и углы') {
+  fireEvent.click(screen.getByRole('button', { name }))
+}
+function settings(name: 'Размеры' | 'Наполнение' | 'Двери' | 'Материалы') {
+  fireEvent.click(
+    within(screen.getByRole('group', { name: 'Настройки выбранной секции' })).getByRole('button', {
+      name,
+    }),
+  )
+}
 function chooseSection(number: number) {
+  scope('Секции и углы')
   const cards = screen.getByRole('group', { name: 'Выбор секции гардеробной' })
   fireEvent.click(within(cards).getByText(`Секция ${number}`, { selector: 'strong' }))
 }
 
 function section(title: string, open = true) {
-  const details = screen.getByText(title, { selector: 'strong' }).closest('details')!
+  const details = screen
+    .getAllByText(title, { selector: 'strong' })
+    .find((item) => !item.closest('[hidden]'))!
+    .closest('details')!
   details.open = open
   fireEvent(details, new Event('toggle'))
   return details
@@ -137,6 +152,7 @@ describe('wardrobe panel interactions', () => {
     changeHeight()
     fireEvent.click(screen.getByRole('button', { name: 'Изменить высоту' }))
     expect(panel.configuration().sections[1]).toMatchObject({ height: 1.4, rod: false })
+    settings('Наполнение')
     expect(screen.queryByRole('checkbox', { name: 'Штанга для одежды' })).toBeNull()
   })
 
@@ -166,6 +182,7 @@ describe('wardrobe panel interactions', () => {
 
   it('keeps sections collapsed when selecting a different module', () => {
     mountPanel()
+    chooseSection(1)
     const dimensions = section('Секция 1: размеры', false)
     chooseSection(2)
     expect(dimensions.isConnected).toBe(true)
@@ -176,6 +193,7 @@ describe('wardrobe panel interactions', () => {
   it('changes drawer handles, placement and pattern only in the selected section', () => {
     const panel = mountPanel()
     chooseSection(3)
+    settings('Наполнение')
     chooseOption('Количество ящиков в выбранной секции', '2')
     // Automatic shelf relocation may require confirmation when adding a block.
     if (screen.queryByRole('dialog'))
@@ -194,6 +212,10 @@ describe('wardrobe panel interactions', () => {
       facadeStyle: 'frame',
     })
     expect(panel.configuration().sections[0].drawers).toBeUndefined()
+    fireEvent.click(screen.getByRole('button', { name: 'Настроить цвет ящиков →' }))
+    expect(document.activeElement).toBe(
+      screen.getByRole('button', { name: 'Материалы', pressed: true }),
+    )
   })
 
   it('preserves section facade overrides when the common finish changes', () => {
@@ -204,10 +226,12 @@ describe('wardrobe panel interactions', () => {
       patch: { doors: { count: 1, hinge: 'left', facadeStyle: 'smooth', handle: 'bar' } },
     })
     const panel = mountPanel(initial)
-    const own = section('Секция 1: материалы')
-    fireEvent.click(within(own).getByRole('checkbox', { name: 'Свой материал фасадов секции' }))
+    chooseSection(1)
+    settings('Материалы')
+    const own = section('Фасады: двери и ящики')
     fireEvent.click(within(own).getByRole('radio', { name: 'Белый матовый' }))
-    const common = section('Материалы всей сборки')
+    scope('Вся сборка')
+    const common = section('Фасады: двери и ящики')
     const facades = within(common).getByRole('group', { name: 'Фасады: двери и ящики' })
     fireEvent.click(within(facades).getByRole('radio', { name: 'Графит матовый' }))
     expect(panel.configuration().facadeFinish).toBe('board-graphite-matte')
@@ -226,5 +250,193 @@ describe('wardrobe panel interactions', () => {
     expect(panel.configuration().sections[3].id).toBe('section-4')
     expect(panel.configuration().arrangement?.split).toBe(initial.arrangement?.split)
     expect(screen.getByText('Секция 4: размеры')).toBeTruthy()
+  })
+  it('separates assembly and section scopes without resetting selection or group', () => {
+    mountPanel()
+    expect(screen.getByRole('region', { name: 'Настройки всей сборки' })).toBeTruthy()
+    expect(screen.queryByRole('slider', { name: 'Ширина секции' })).toBeNull()
+    chooseSection(2)
+    settings('Наполнение')
+    expect(screen.getByRole('checkbox', { name: 'Штанга для одежды' })).toBeTruthy()
+    expect(screen.queryByRole('slider', { name: 'Ширина секции' })).toBeNull()
+    scope('Вся сборка')
+    expect(screen.queryByRole('checkbox', { name: 'Штанга для одежды' })).toBeNull()
+    scope('Секции и углы')
+    expect(screen.getByRole('heading', { name: 'Секция 2' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Наполнение', pressed: true })).toBeTruthy()
+    expect(screen.getByRole('checkbox', { name: 'Штанга для одежды' })).toBeTruthy()
+  })
+
+  it('edits both facade types locally, supports door exceptions and restores inheritance', () => {
+    let initial = updateWardrobeAssembly(createDefaultWardrobe(), {
+      type: 'update-section',
+      id: 'section-1',
+      confirmFillingChange: true,
+      patch: {
+        doors: { count: 1, hinge: 'left', facadeStyle: 'smooth', handle: 'bar' },
+        drawers: {
+          count: 1,
+          height: 0.2,
+          placement: 'recessed',
+          facadeStyle: 'smooth',
+          handle: 'bar',
+        },
+      },
+    })
+    initial = updateWardrobeAssembly(initial, {
+      type: 'set-wardrobe-finish',
+      slot: 'facadeFinish',
+      finishId: 'board-graphite-matte',
+    })
+    const panel = mountPanel(initial)
+    chooseSection(1)
+    settings('Двери')
+    fireEvent.click(screen.getByRole('button', { name: 'Настроить цвет фасадов →' }))
+    const facades = section('Фасады: двери и ящики')
+    fireEvent.click(within(facades).getByRole('radio', { name: 'Белый матовый' }))
+    expect(panel.configuration().sections[0].facadeFinish).toBe('board-white-matte')
+    expect(panel.configuration().sections[0].doors?.finish).toBeUndefined()
+    expect(panel.configuration().sections[0].drawers).toBeTruthy()
+    expect(
+      wardrobeSectionFinish(
+        panel.configuration(),
+        panel.configuration().sections[1],
+        'facadeFinish',
+      ),
+    ).toBe('board-graphite-matte')
+    const doors = section('Отдельный цвет дверей')
+    fireEvent.click(within(doors).getByRole('radio', { name: 'Дуб натуральный' }))
+    expect(panel.configuration().sections[0].doors?.finish).toBe('oak-natural')
+    expect(panel.configuration().sections[0].facadeFinish).toBe('board-white-matte')
+    fireEvent.click(within(doors).getByRole('checkbox', { name: 'Свой материал только дверей' }))
+    fireEvent.click(within(facades).getByRole('checkbox', { name: 'Свой материал фасадов секции' }))
+    expect(panel.configuration().sections[0].doors?.finish).toBeUndefined()
+    expect(panel.configuration().sections[0].facadeFinish).toBeUndefined()
+    expect(
+      wardrobeSectionFinish(
+        panel.configuration(),
+        panel.configuration().sections[0],
+        'facadeFinish',
+      ),
+    ).toBe('board-graphite-matte')
+  })
+
+  it.each([1, 2])(
+    'selects U corner %s from the plan with the keyboard and edits only it',
+    (number) => {
+      const initial = updateWardrobeAssembly(createDefaultWardrobe(), {
+        type: 'set-arrangement',
+        kind: 'u',
+      })
+      const panel = mountPanel(initial)
+      fireEvent.keyDown(screen.getByRole('button', { name: `Выбрать угол ${number}` }), {
+        key: number === 1 ? 'Enter' : ' ',
+      })
+      expect(screen.getByRole('region', { name: 'Настройки секций и углов' })).toBeTruthy()
+      expect(screen.queryByRole('button', { name: /Удалить секцию/ })).toBeNull()
+      const title = `угол ${number}: ${number === 1 ? 'левый' : 'правый'}`
+      fireEvent.change(screen.getByRole('slider', { name: `Высота: ${title}` }), {
+        target: { value: '2.4' },
+      })
+      const a = panel.configuration().arrangement!
+      if (a.kind !== 'u') throw new Error('Expected U assembly')
+      expect(number === 1 ? a.corner.height : a.secondCorner.height).toBe(2.4)
+      expect(number === 1 ? a.secondCorner.height : a.corner.height).toBe(2.2)
+      expect(panel.configuration().sections).toEqual(initial.sections)
+      const cards = screen.getByRole('group', { name: 'Выбор секции гардеробной' })
+      expect(within(cards).getByRole('button', { pressed: true }).textContent).toContain(
+        `Угол ${number}`,
+      )
+    },
+  )
+
+  it('selects an L corner from its card and sets its finish without affecting other modules', () => {
+    const initial = updateWardrobeAssembly(createDefaultWardrobe(), {
+      type: 'set-arrangement',
+      kind: 'l',
+    })
+    const panel = mountPanel(initial)
+    scope('Секции и углы')
+    fireEvent.click(
+      within(screen.getByRole('group', { name: 'Выбор секции гардеробной' })).getByText('Угол 1'),
+    )
+    fireEvent.click(
+      within(screen.getByRole('group', { name: 'Корпус и полки угла' })).getByRole('radio', {
+        name: 'Белый матовый',
+      }),
+    )
+    expect(panel.configuration().arrangement?.corner.bodyFinish).toBe('board-white-matte')
+    expect(panel.configuration().bodyFinish).toBe(initial.bodyFinish)
+    expect(panel.configuration().sections).toEqual(initial.sections)
+  })
+
+  it('falls back to the selected section when a corner disappears and does not reselect it later', () => {
+    const initial = updateWardrobeAssembly(createDefaultWardrobe(), {
+      type: 'set-arrangement',
+      kind: 'u',
+    })
+    mountPanel(initial)
+    fireEvent.click(screen.getByRole('button', { name: 'Выбрать угол 2' }))
+    scope('Вся сборка')
+    fireEvent.click(screen.getByRole('button', { name: 'Прямая' }))
+    scope('Секции и углы')
+    expect(screen.getByRole('heading', { name: 'Секция 1' })).toBeTruthy()
+    scope('Вся сборка')
+    fireEvent.click(screen.getByRole('button', { name: 'П-образная' }))
+    scope('Секции и углы')
+    expect(screen.getByRole('heading', { name: 'Секция 1 · сторона А' })).toBeTruthy()
+  })
+  it('confirms removal of corner shelves and allows cancellation', () => {
+    let initial = updateWardrobeAssembly(createDefaultWardrobe(), {
+      type: 'set-arrangement',
+      kind: 'u',
+    })
+    initial = updateWardrobeAssembly(initial, {
+      type: 'update-corner',
+      cornerId: 'corner-2',
+      patch: { shelves: 6 },
+    })
+    const panel = mountPanel(initial)
+    fireEvent.click(screen.getByRole('button', { name: 'Выбрать угол 2' }))
+    const height = screen.getByRole('slider', { name: 'Высота: угол 2: правый' })
+    fireEvent.change(height, { target: { value: '.8' } })
+    expect(screen.getByRole('alert').textContent).toContain('Уменьшить высоту угла?')
+    expect(panel.configuration()).toEqual(initial)
+    fireEvent.click(screen.getByRole('button', { name: 'Отмена' }))
+    expect(screen.queryByRole('alert')).toBeNull()
+    fireEvent.change(height, { target: { value: '.8' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Уменьшить' }))
+    const a = panel.configuration().arrangement!
+    if (a.kind !== 'u') throw new Error('Expected U assembly')
+    expect(a.secondCorner.height).toBe(0.8)
+    expect(a.secondCorner.shelves).toBeLessThan(6)
+    expect(a.corner).toEqual(initial.arrangement!.corner)
+    expect(panel.configuration().sections).toEqual(initial.sections)
+  })
+  it('can pin an inherited color by selecting the already checked swatch', () => {
+    const panel = mountPanel()
+    chooseSection(1)
+    settings('Материалы')
+    const body = section('Корпус, полки и короба ящиков')
+    const same = within(body).getByRole('radio', { name: 'Серый нейтральный' })
+    expect((same as HTMLInputElement).checked).toBe(true)
+    fireEvent.click(same)
+    expect(panel.configuration().sections[0].bodyFinish).toBe('board-grey-neutral')
+    fireEvent.click(within(body).getByRole('checkbox', { name: 'Свой материал корпуса' }))
+    expect(panel.configuration().sections[0].bodyFinish).toBeUndefined()
+    fireEvent.keyDown(same, { key: ' ' })
+    expect(panel.configuration().sections[0].bodyFinish).toBe('board-grey-neutral')
+    scope('Вся сборка')
+    const common = section('Корпус, полки и короба ящиков')
+    fireEvent.click(within(common).getByRole('radio', { name: 'Белый матовый' }))
+    expect(
+      wardrobeSectionFinish(panel.configuration(), panel.configuration().sections[0], 'bodyFinish'),
+    ).toBe('board-grey-neutral')
+    expect(
+      wardrobeSectionFinish(panel.configuration(), panel.configuration().sections[1], 'bodyFinish'),
+    ).toBe('board-white-matte')
+    const facades = section('Фасады: двери и ящики')
+    fireEvent.click(within(facades).getByRole('radio', { name: 'Белый матовый' }))
+    expect(panel.configuration().facadeFinish).toBe('board-white-matte')
   })
 })

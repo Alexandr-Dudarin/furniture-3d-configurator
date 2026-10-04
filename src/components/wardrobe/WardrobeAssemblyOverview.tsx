@@ -11,14 +11,7 @@ export function WardrobeAssemblyOverview({ configuration, onFrame }: Props) {
   const bounds = wardrobeClosedBounds(configuration)
   return (
     <>
-      <h2 className="wardrobe-heading">Собрать гардеробную</h2>
-      <p className="assembly-summary">
-        {arrangement?.kind === 'u'
-          ? 'П-образная сборка с двумя открытыми угловыми модулями. Выберите секцию на плане или в списке.'
-          : arrangement
-            ? 'Г-образная сборка с открытым угловым модулем. Выберите секцию на плане или в списке.'
-            : 'Прямая сборка с открытыми секциями или дверями. Выберите секцию слева направо, чтобы изменить её размеры и наполнение.'}
-      </p>
+      <h2 className="wardrobe-heading">Гардеробная</h2>
       <p className="assembly-total">
         <span>{arrangement ? 'Габариты сборки Ш × В × Г' : 'Общие Ш × В × Г'}</span>
         <strong>

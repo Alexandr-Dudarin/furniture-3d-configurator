@@ -1,0 +1,141 @@
+.wardrobe-assembly-controls [hidden] {
+  display: none !important;
+}
+.wardrobe-assembly-controls :is(button, input, summary, [tabindex]) {
+  scroll-margin-top: 70px;
+  scroll-margin-bottom: 8px;
+}
+.wardrobe-assembly-controls .assembly-total {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  margin: 8px 0;
+}
+.wardrobe-assembly-controls .assembly-total strong {
+  font-size: 16px;
+}
+.wardrobe-scope-navigation {
+  position: sticky;
+  top: -16px;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin: 16px -2px 0;
+  padding: 6px;
+  border: 1px solid #dce4ef;
+  border-radius: 10px;
+  background: #f1f5fa;
+}
+.wardrobe-scope-navigation button,
+.wardrobe-editor-navigation button {
+  min-height: 44px;
+  padding: 8px 6px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  color: #4a5c73;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.wardrobe-scope-navigation button[aria-pressed='true'] {
+  border-color: #d3e0f1;
+  background: white;
+  color: #155fb9;
+  box-shadow: 0 1px 4px #142d5112;
+  font-weight: 600;
+}
+.wardrobe-scope-hint {
+  margin: 12px 0 0;
+  color: #586b82;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.wardrobe-group-heading {
+  margin: 22px 0 6px;
+  font-size: 15px;
+}
+.wardrobe-assembly-controls .wardrobe-sections {
+  max-height: 250px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 3px;
+  scrollbar-width: thin;
+}
+.wardrobe-assembly-controls .wardrobe-sections svg {
+  width: 32px;
+  height: 40px;
+}
+.wardrobe-assembly-controls .wardrobe-sections button {
+  gap: 3px;
+  font-size: 11px;
+}
+.wardrobe-assembly-controls .wardrobe-sections strong {
+  font-size: 12px;
+}
+.wardrobe-selected-context {
+  padding: 13px 14px;
+  margin: 16px 0 8px;
+  border-left: 3px solid #1767ca;
+  border-radius: 0 9px 9px 0;
+  background: #f1f6fd;
+}
+.wardrobe-selected-context > span {
+  color: #586b82;
+  font-size: 11px;
+}
+.wardrobe-selected-context h3 {
+  margin: 4px 0;
+  font-size: 16px;
+}
+.wardrobe-selected-context h3:focus-visible {
+  outline: 2px solid #1767ca;
+  outline-offset: 3px;
+}
+.wardrobe-selected-context p {
+  margin: 0;
+  color: #4a5c73;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.wardrobe-editor-navigation {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
+}
+.wardrobe-editor-navigation button {
+  border-color: #dce4ef;
+}
+.wardrobe-editor-navigation button:hover,
+.wardrobe-scope-navigation button:hover {
+  background: #e8f0fb;
+}
+.wardrobe-editor-navigation button[aria-pressed='true'] {
+  color: #155fb9;
+  background: #eaf2fe;
+  border-color: #1767ca;
+  font-weight: 600;
+}
+.wardrobe-text-button {
+  min-height: 44px;
+  padding: 8px 0;
+  border: 0;
+  background: transparent;
+  color: #155fb9;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+.wardrobe-text-button:hover {
+  text-decoration: underline;
+}
+@media (max-width: 700px) {
+  .wardrobe-scope-navigation {
+    top: -12px;
+  }
+  .wardrobe-assembly-controls .wardrobe-sections {
+    max-height: 180px;
+  }
+}
