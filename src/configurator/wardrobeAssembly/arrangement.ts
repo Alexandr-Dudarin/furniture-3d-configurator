@@ -1,4 +1,5 @@
-import type { WardrobeAssemblyConfiguration } from './state'
+import type { WardrobeAssemblyConfiguration } from './types'
+import { MAX_SECTIONS } from './constants'
 
 export const MAX_CORNER_SECTIONS = 21
 export const CORNER_ID = 'corner-1'
@@ -17,7 +18,7 @@ export type CornerPlacement = WardrobeCorner & { id: string; polygon: PointXZ[];
 export type WardrobePlacement = { bounds: { width: number; height: number; depth: number }; corner: CornerPlacement | null; corners: CornerPlacement[]; sections: SectionPlacement[] }
 export const wardrobeCornerCount = (c: WardrobeAssemblyConfiguration) => !c.arrangement ? 0 : c.arrangement.kind === 'u' ? 2 : 1
 export const wardrobeSectionCount = (c: WardrobeAssemblyConfiguration) => c.sections.length + wardrobeCornerCount(c)
-export const wardrobeSectionLimit = (c: WardrobeAssemblyConfiguration) => c.arrangement ? MAX_CORNER_SECTIONS : 7
+export const wardrobeSectionLimit = (c: WardrobeAssemblyConfiguration) => c.arrangement ? MAX_CORNER_SECTIONS : MAX_SECTIONS
 export function wardrobeArmRanges(c: WardrobeAssemblyConfiguration) {
   const a = c.arrangement
   const ends = !a ? [c.sections.length] : a.kind === 'l' ? [a.split, c.sections.length] : [a.split, a.secondSplit, c.sections.length]
