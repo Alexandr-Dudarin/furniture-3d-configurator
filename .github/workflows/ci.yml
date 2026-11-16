@@ -34,6 +34,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Set up Python for model data checks
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+
+      - name: Check generated model data
+        run: |
+          python -m unittest discover -s assets/source -p test_generated_files.py
+          python assets/source/wardrobes-integration/generate_runtime.py --check
+          python assets/source/dressers-integration/generate_runtime.py --check
+
       - name: Lint
         run: npm run lint
 

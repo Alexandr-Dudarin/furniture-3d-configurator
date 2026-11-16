@@ -8,6 +8,9 @@ ROOT = Path(__file__).resolve().parents[3]
 import sys
 sys.path.insert(0, str(ROOT / 'assets/source'))
 from furniture_motion import articulations
+from generated_files import GeneratedFiles
+
+outputs = GeneratedFiles(ROOT, __doc__)
 
 MODELS = [
  ('07', 'wardrobe-center-drawers', 'wardrobe-07-center-drawers', 'board-grey-neutral'),
@@ -17,7 +20,7 @@ MODELS = [
 FINISHES = ['board-grey-neutral', 'board-grey-cool', 'board-grey-chelsea', 'board-white-matte',
  'board-graphite-matte', 'oak-natural', 'oak-grey', 'oak-silver', 'oak-black', 'board-muted-green', 'board-powder-beige']
 def write(path, content):
- path.write_text(content, encoding='utf-8')
+ outputs.add(path, content)
 
 for number, folder, model_id, finish in MODELS:
  target = ROOT / 'src/three/models' / folder
@@ -57,4 +60,4 @@ export const definition: FurnitureDefinition = {{
   }},
 }}
 """)
-print('Generated catalogue and runtime definitions for 3 wardrobes.')
+outputs.finish()
