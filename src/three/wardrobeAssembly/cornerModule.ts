@@ -2,7 +2,7 @@ import { ExtrudeGeometry, Shape } from 'three'
 import { wardrobePlacement, type PointXZ, type CornerPlacement } from '../../configurator/wardrobeAssembly/arrangement'
 import { automaticLayout, PANEL_THICKNESS as panel, BACK_THICKNESS as back, PLINTH_HEIGHT as plinth } from '../../configurator/wardrobeAssembly/layout'
 import type { WardrobeAssemblyConfiguration } from '../../configurator/wardrobeAssembly/state'
-import type { Part } from './wardrobeAssembly'
+import type { Part } from './parts'
 
 export function planCornerModule(config: WardrobeAssemblyConfiguration): Part[] {
   return wardrobePlacement(config).corners.flatMap(planCorner)

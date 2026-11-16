@@ -1,6 +1,6 @@
 import { DOOR_BODY_GAP, DOOR_OPEN_ANGLE, DOOR_REVEAL, DOOR_THICKNESS, wardrobeDoorWidth } from '../../configurator/wardrobeAssembly/doors'
 import { PLINTH_HEIGHT, type WardrobeSection } from '../../configurator/wardrobeAssembly/state'
-import type { Part } from './wardrobeAssembly'
+import type { Part } from './parts'
 import { DRAWER_FACADE_PROFILE } from './drawerFacadeGeometry'
 import type { FacadeVariants } from '../facades/types'
 
