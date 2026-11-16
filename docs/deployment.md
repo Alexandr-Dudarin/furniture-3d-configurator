@@ -1,6 +1,6 @@
 # Развёртывание и автоматические проверки
 
-Актуально для публичного проекта на 2 октября 2026 года.
+Актуально для публичного проекта на 16 ноября 2026 года.
 
 - Репозиторий: [Alexandr-Dudarin/furniture-3d-configurator](https://github.com/Alexandr-Dudarin/furniture-3d-configurator).
 - Демо: [furniture-3d-configurator-kappa.vercel.app](https://furniture-3d-configurator-kappa.vercel.app/).
@@ -31,9 +31,14 @@ npm run check:publication
 
 Workflow [ci.yml](../.github/workflows/ci.yml) запускается при push в `main`,
 для pull request в `main` и вручную из вкладки Actions. Выполняются
-установка, ESLint, тесты, сборка и проверка публикационных ресурсов.
+установка, проверка генерируемых данных, ESLint, тесты, сборка и проверка
+публикационных ресурсов.
 
 - Runner: Ubuntu, Node.js 24, кэш npm по `package-lock.json`.
+- Python 3.12 проверяет генераторы шкафов и комодов с `--check` без перезаписи
+  и их CLI во временных папках. Дополнительных Python-пакетов нет.
+  Для обычного `npm run build` Python не нужен. Команды для работы с данными:
+  [генерация моделей](model-generation.md).
 - Старый запуск для того же PR или ветки отменяется при новом коммите.
 - Права — только чтение репозитория. Ключи API и Vercel не нужны.
   GitHub Actions здесь ничего не развёртывает и не коммитит.
