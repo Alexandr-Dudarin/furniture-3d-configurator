@@ -1,4 +1,4 @@
-.app.configurator-workspace {
+.configurator-workspace {
   --panel-width: 360px;
   --panel-height: max(46dvh, 310px);
   position: relative;
@@ -7,6 +7,7 @@
   overflow: hidden;
   background: #eef0f3;
 }
+.app.configurator-workspace { width: 100vw; height: 100dvh; }
 .configurator-workspace .viewer {
   position: absolute;
   inset: 0 0 0 calc(var(--panel-width) + 32px);
