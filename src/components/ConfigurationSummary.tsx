@@ -42,21 +42,21 @@ export function ConfigurationSummary({ session, store, pngExport }: {
     } finally { setSaving(false) }
   }
   return <div className="configuration-result">
-    <ConfigurationSection title="Ваш вариант" summary={summary.title} initialOpen>
-      <dl className="configuration-summary">
-        {summary.rows.map(row => <div key={row.label}><dt>{row.label}</dt><dd>{row.value}</dd></div>)}
-      </dl>
-      <button type="button" className="configuration-reset" onClick={() => void copySummary()}>Копировать описание</button>
-      {copy?.text === text && (copy.manual
-        ? <label className="configuration-manual-link">Выделите и скопируйте описание:
-          <textarea aria-label="Описание конфигурации" readOnly rows={7} value={text} onFocus={e => e.currentTarget.select()} />
-        </label>
-        : <p className="configuration-copy-status" role="status">Описание со ссылкой скопировано</p>)}
-    </ConfigurationSection>
     <button type="button" className="configuration-reset" disabled={saving || source?.session !== session} onClick={() => void savePng()}>
       {saving ? 'Сохраняем PNG…' : 'Сохранить вид в PNG'}
     </button>
+    <button type="button" className="configuration-reset" onClick={() => void copySummary()}>Копировать описание</button>
+    {copy?.text === text && (copy.manual
+      ? <label className="configuration-manual-link">Выделите и скопируйте описание:
+        <textarea aria-label="Описание конфигурации" readOnly rows={7} value={text} onFocus={e => e.currentTarget.select()} />
+      </label>
+      : <p className="configuration-copy-status" role="status">Описание со ссылкой скопировано</p>)}
     <p className="configuration-export-hint">PNG сохраняет текущий ракурс и положение дверей и ящиков. Ссылка передаёт настройки изделия; ракурс и открывание в неё не входят.</p>
     {pngStatus && <p className="configuration-copy-status" role="status">{pngStatus}</p>}
+    <ConfigurationSection title="Параметры изделия" summary={summary.title}>
+      <dl className="configuration-summary">
+        {summary.rows.map(row => <div key={row.label}><dt>{row.label}</dt><dd>{row.value}</dd></div>)}
+      </dl>
+    </ConfigurationSection>
   </div>
 }

@@ -16,7 +16,7 @@
 }
 .wardrobe-scope-navigation {
   position: sticky;
-  top: -16px;
+  top: 0;
   z-index: 2;
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -133,7 +133,7 @@
 }
 @media (max-width: 700px) {
   .wardrobe-scope-navigation {
-    top: -12px;
+    top: 0;
   }
   .wardrobe-assembly-controls .wardrobe-sections {
     max-height: 180px;
