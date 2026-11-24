@@ -10,7 +10,9 @@
     "test": "vitest run",
     "preview": "vite preview",
     "prebuild": "node scripts/check-publication.mjs",
-    "check:publication": "node scripts/check-publication.mjs --dist"
+    "check:publication": "node scripts/check-publication.mjs --dist",
+    "generate:handle-previews": "node scripts/generate-handle-previews.mjs",
+    "check:handle-previews": "node scripts/generate-handle-previews.mjs --check"
   },
   "dependencies": {
     "@types/three": "^0.185.4",

@@ -15,12 +15,12 @@ import {
   drawerInnerHeight,
   DRAWER_HANDLES,
   getWardrobeDrawerHandle,
-  isWardrobeDrawerHandle,
 } from '../../configurator/wardrobeAssembly/drawerHandles'
 import { WardrobeDrawerFacadeControls } from '../WardrobeDrawerFacadeControls'
 import { WardrobeDrawerControls } from '../WardrobeDrawerControls'
 import { CustomSelect } from '../ui/CustomSelect/CustomSelect'
 import type { UpdateWardrobeSection } from './types'
+import { HandlePicker } from '../handles/HandlePicker'
 
 type Props = {
   selected: WardrobeSection
@@ -110,14 +110,12 @@ export function WardrobeDrawerSettings({ selected, update, motionStore, onMateri
           />
           <div className="assembly-field">
             <span>Ручки ящиков</span>
-            <CustomSelect
+            <HandlePicker
               value={handle.value}
-              ariaLabel="Ручки ящиков выбранной секции"
-              options={DRAWER_HANDLES.map(({ value, label }) => ({ value, label }))}
-              onChange={(value) => {
-                if (isWardrobeDrawerHandle(value))
-                  update({ drawers: { ...selected.drawers!, handle: value } })
-              }}
+              label="Ручки ящиков выбранной секции"
+              kind="drawers"
+              options={DRAWER_HANDLES}
+              onChange={value => update({ drawers: { ...selected.drawers!, handle: value } })}
             />
           </div>
           <p className="assembly-summary">

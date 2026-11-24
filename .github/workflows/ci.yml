@@ -48,6 +48,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Check handle previews
+        run: npm run check:handle-previews
+
       - name: Test
         run: npm test -- --testTimeout=60000 --maxWorkers=2
 

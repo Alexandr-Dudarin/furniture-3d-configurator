@@ -1,6 +1,6 @@
 # Развёртывание и автоматические проверки
 
-Актуально для публичного проекта на 16 ноября 2026 года.
+Актуально для публичного проекта на 24 ноября 2026 года.
 
 - Репозиторий: [Alexandr-Dudarin/furniture-3d-configurator](https://github.com/Alexandr-Dudarin/furniture-3d-configurator).
 - Демо: [furniture-3d-configurator-kappa.vercel.app](https://furniture-3d-configurator-kappa.vercel.app/).
@@ -13,6 +13,7 @@
 ```bash
 npm ci
 npm run lint
+npm run check:handle-previews
 npm test -- --testTimeout=60000 --maxWorkers=2
 npm run build
 npm run check:publication
@@ -33,6 +34,11 @@ Workflow [ci.yml](../.github/workflows/ci.yml) запускается при pus
 для pull request в `main` и вручную из вкладки Actions. Выполняются
 установка, проверка генерируемых данных, ESLint, тесты, сборка и проверка
 публикационных ресурсов.
+
+Миниатюры ручек проверяются командой `npm run check:handle-previews`:
+изображения должны соответствовать текущей геометрии. После изменения
+ручек запустите `npm run generate:handle-previews` и сохраните обновлённые SVG
+вместе с кодом. Для обычной сборки сайта генерация не требуется.
 
 - Runner: Ubuntu, Node.js 24, кэш npm по `package-lock.json`.
 - Python 3.12 проверяет генераторы шкафов и комодов с `--check` без перезаписи

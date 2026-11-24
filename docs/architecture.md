@@ -93,6 +93,17 @@ UV-привязки, материалы и подвижные части.
 `aria-activedescendant`: Tab покидает список, Escape закрывает его без выбора.
 Публичные props и экспорт `CustomSelectOption` сохранены.
 
+`src/components/handles/HandlePicker` показывает выбранную ручку и раскрываемую
+сетку `ChoiceGrid` с нативными radio-кнопками. Компонент отправляет прежние
+идентификаторы вариантов; выбор дверей и ящиков остаётся независимым.
+SVG в `public/previews/handles/` создаются офлайн из `createHandleGeometry`
+и `createNotchedFront` командой `npm run generate:handle-previews` (Node.js 24).
+`npm run check:handle-previews` проверяет их в CI без перезаписи. Схематичный
+образец показывает форму и крепление, цвет выбирается в материалах.
+Вариант «Исходные ручки модели» отмечен символом восстановления, поскольку
+его реальная форма зависит от модели. Генератор не входит в браузерный код;
+миниатюры не создают renderer или контекст WebGL.
+
 ## Сцена и ресурсы
 
 `src/three/wardrobeAssembly/wardrobeAssembly.ts` связывает план деталей,

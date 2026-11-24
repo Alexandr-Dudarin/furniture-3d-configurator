@@ -5,7 +5,6 @@ import {
   WARDROBE_DOOR_HANDLES,
   wardrobeDoorsLabel,
   wardrobeDoorWidth,
-  type WardrobeDoorHandle,
 } from '../configurator/wardrobeAssembly/doors'
 import type { FurnitureMotionStore } from '../configurator/furnitureMotionStore'
 import {
@@ -17,6 +16,7 @@ import { ConfigurationSection } from './ConfigurationSection'
 import { CustomSelect } from './ui/CustomSelect/CustomSelect'
 import { ChoiceGrid } from './assembly/ChoiceGrid'
 import { FacadePreview } from './FacadeControls'
+import { HandlePicker } from './handles/HandlePicker'
 
 export function WardrobeDoorControls({
   section,
@@ -112,12 +112,13 @@ export function WardrobeDoorControls({
           </div>
           <div className="assembly-field">
             <span>Ручки дверей</span>
-            <CustomSelect
+            <HandlePicker
               value={doors.handle}
-              ariaLabel="Ручки дверей секции"
+              label="Ручки дверей секции"
+              kind="doors"
               options={WARDROBE_DOOR_HANDLES}
               onChange={(value) =>
-                onChange({ doors: { ...doors, handle: value as WardrobeDoorHandle } })
+                onChange({ doors: { ...doors, handle: value } })
               }
             />
           </div>

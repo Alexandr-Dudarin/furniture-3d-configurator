@@ -199,7 +199,9 @@ describe('wardrobe panel interactions', () => {
     if (screen.queryByRole('dialog'))
       fireEvent.click(screen.getByRole('button', { name: 'Изменить наполнение' }))
     chooseOption('Положение фасадов ящиков', 'Вровень с корпусом')
-    chooseOption('Ручки ящиков выбранной секции', 'Полуовальная выемка')
+    fireEvent.click(screen.getByRole('button', { name: 'Показать варианты: Ручки ящиков выбранной секции' }))
+    fireEvent.click(within(screen.getByRole('group', { name: 'Ручки ящиков выбранной секции' }))
+      .getByRole('radio', { name: 'Полуовальная выемка' }))
     fireEvent.click(
       within(
         screen.getByRole('group', { name: 'Рисунок фасадов ящиков выбранной секции' }),
@@ -212,6 +214,17 @@ describe('wardrobe panel interactions', () => {
       facadeStyle: 'frame',
     })
     expect(panel.configuration().sections[0].drawers).toBeUndefined()
+    settings('Двери')
+    chooseOption('Количество дверей секции', 'Одна дверца')
+    expect(screen.getByRole('dialog').textContent).toContain('ящики будут утоплены')
+    fireEvent.click(screen.getByRole('button', { name: 'Изменить наполнение' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Показать варианты: Ручки дверей секции' }))
+    fireEvent.click(within(screen.getByRole('group', { name: 'Ручки дверей секции' }))
+      .getByRole('radio', { name: 'Круглая кнопка' }))
+    expect(panel.configuration().sections[2].doors?.handle).toBe('knob')
+    expect(panel.configuration().sections[2].drawers?.handle).toBe('finger-notch')
+    expect(panel.configuration().sections[0].doors).toBeUndefined()
+    settings('Наполнение')
     fireEvent.click(screen.getByRole('button', { name: 'Настроить цвет ящиков →' }))
     expect(document.activeElement).toBe(
       screen.getByRole('button', { name: 'Материалы', pressed: true }),

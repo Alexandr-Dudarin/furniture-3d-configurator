@@ -1,0 +1,22 @@
+.handle-picker { min-width: 0; }
+.handle-picker-toggle {
+  display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px;
+  text-align: left; color: #26374b; font: inherit; cursor: pointer;
+  border: 1px solid #dce3ec; border-radius: 10px; background: #fff;
+}
+.handle-picker-toggle:hover { border-color: #8cabc9; background: #f7fafe; }
+.handle-picker-toggle:focus-visible { outline: 2px solid #1767ca; outline-offset: 3px; }
+.handle-picker-toggle > img { width: 72px; height: 60px; object-fit: contain; border-radius: 6px; background: #f3f5f7; flex-shrink: 0; }
+.handle-picker-current { display: flex; flex: 1; min-width: 0; flex-direction: column; gap: 4px; overflow-wrap: anywhere; }
+.handle-picker-current strong { font-size: 12px; font-weight: 600; line-height: 1.4; }
+.handle-picker-current > span { font-size: 11px; color: #667386; line-height: 1.4; }
+.handle-picker-action { display: flex; align-items: center; flex-direction: column; gap: 3px; font-size: 10px; color: #1767ca; }
+.handle-picker-action svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 1.7; fill: none; }
+.handle-picker-toggle[aria-expanded="true"] .handle-picker-action svg { transform: rotate(180deg); }
+.handle-picker-note { margin: 10px 0; font-size: 11px; line-height: 1.5; color: #58677b; }
+.handle-choices .choice-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.handle-choices .choice-body { padding: 8px; }
+.handle-choices .choice-preview { height: 88px; background: #f3f5f7; }
+.handle-choices .choice-preview img { object-fit: contain; }
+.handle-choices .choice-label { font-size: 12px; line-height: 1.4; }
+.handle-choices .choice-description { font-size: 11px; }
