@@ -20,12 +20,6 @@
   height: 100%;
 }
 
-.configuration-panel {
-  max-height: calc(100dvh - 32px);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-}
-
 .configuration-actions {
   margin-top: 18px;
   padding-top: 12px;
@@ -203,20 +197,8 @@
 }
 
 /* Выбор сборки: компактные раскрываемые разделы и настоящие образцы. */
-.configuration-panel {
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  width: 350px;
-  padding: 16px;
-  background: #fff;
-  border: 1px solid #e3e8ee;
-  border-radius: 14px;
-  box-shadow: 0 6px 24px #20334b1c;
-  color: #1e293b;
-  scrollbar-width: thin;
-  scrollbar-gutter: stable;
-}
+.catalog-model-picker { margin-bottom: 16px; }
+.catalog-model-picker > span { display: block; margin-bottom: 6px; font-size: 14px; font-weight: 600; }
 .configuration-mode { margin-bottom: 6px; }
 .configuration-mode button { min-height: 42px; font-size: 13px; }
 .assembly-section { border-bottom: 1px solid #e8edf2; }
@@ -295,16 +277,6 @@
 .dimension-feedback { margin-top: 4px; color: #79531d; font-size: 11px; line-height: 1.4; }
 .dimension-feedback:empty { display: none; }
 .assembly-total { display: flex; justify-content: space-between; margin: 16px 0 0; padding: 10px; border-radius: 6px; background: #f2f6fa; font-size: 12px; }
-@media (max-width: 700px) {
-  .configuration-panel { top: auto; bottom: 8px; left: 8px; width: calc(100% - 16px); max-height: calc(46dvh - 16px); padding: 12px; }
-  .viewer { height: 54% !important; }
-}
-.app { position: relative; width: 100vw; height: 100dvh; overflow: hidden; background: #eef0f3; }
-.viewer { position: absolute; top: 0; bottom: 0; left: 376px; right: 0; width: auto; height: auto; }
-@media (max-width: 700px) {
-  .viewer { left: 0; bottom: 46%; height: auto !important; }
-}
-
 .scene-canvas { position: absolute; inset: 0; }
 .viewer-status { position: absolute; inset: 0; display: grid; place-items: center; padding: 20px; pointer-events: none; }
 .viewer-status-card { max-width: 340px; padding: 20px 24px; border: 1px solid #dce3ec; border-radius: 14px; background: #ffffffed; box-shadow: 0 6px 24px #20334b12; text-align: center; color: #344253; pointer-events: auto; }

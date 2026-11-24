@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CustomSelect, type CustomSelectOption } from './components/ui/CustomSelect/CustomSelect'
+import { CustomSelect } from './components/ui/CustomSelect/CustomSelect'
 import { useConfigurator } from './configurator/useConfigurator'
 import { ConfigurationActions } from './components/ConfigurationActions'
 import { getFurnitureDefinition, getFurnitureDefinitions } from './configurator/furnitureRegistry'
@@ -14,6 +14,7 @@ import { createFurnitureMotionStore } from './configurator/furnitureMotionStore'
 import { CabinetControls } from './components/CabinetControls'
 import { createPngExportStore } from './configurator/pngExportStore'
 import { ConfigurationSummary } from './components/ConfigurationSummary'
+import { ConfiguratorWorkspace } from './components/workspace/ConfiguratorWorkspace'
 import './App.css'
 
 const categories = [{ id: 'tables', label: 'Столы' }, { id: 'wardrobes', label: 'Шкафы' }, { id: 'dressers', label: 'Комоды' }] as const
@@ -27,40 +28,25 @@ function App() {
   const selectedModelId = session.selectedModelId
   const furnitureDefinition = getFurnitureDefinition(selectedModelId)
   const category = furnitureDefinition.category ?? 'tables'
-  const furnitureOptions: CustomSelectOption[] = getFurnitureDefinitions()
+  const furnitureOptions = getFurnitureDefinitions()
     .filter(definition => (definition.category ?? 'tables') === category)
     .map(({ id, label }) => ({ value: id, label }))
   const { dimensions, materials: materialSelections } = session.models[selectedModelId]
-
-  /*
-   * =================================
-   * CHANGE MODEL
-   * =================================
-   */
 
   const handleModelChange = (modelId: string) => {
     store.dispatch({ type: 'select-model', modelId })
   }
 
-  /*
-   * =================================
-   * UI
-   * =================================
-   */
+  const title = session.mode === 'wardrobe' ? 'Модульная гардеробная'
+    : session.mode === 'builder' ? 'Сборный стол' : furnitureDefinition.label
+  const resetLabel = session.mode === 'catalog' ? 'Сбросить эту модель' : 'Сбросить сборку'
 
-  return (
-    <div className="app">
-      <FurnitureViewer pngExport={pngExport} store={store} furnitureView={furnitureView} motionStore={motionStore} wardrobeViewRevision={wardrobeViewRevision} />
-
-      <div
-        className="configuration-panel"
-      >
-        <div className="configuration-mode" role="group" aria-label="Способ выбора мебели">
-          <button type="button" aria-pressed={session.mode === 'catalog'} onClick={() => store.dispatch({ type: 'set-mode', mode: 'catalog' })}>Готовые модели</button>
-          <button type="button" aria-pressed={session.mode === 'builder'} onClick={() => store.dispatch({ type: 'set-mode', mode: 'builder' })}>Собрать стол</button>
-          <button type="button" aria-pressed={session.mode === 'wardrobe'} onClick={() => store.dispatch({ type: 'set-mode', mode: 'wardrobe' })}>Гардеробная</button>
-        </div>
-        {session.mode === 'wardrobe' ? <WardrobeAssemblyControls configuration={session.wardrobe} motionStore={motionStore}
+  return <ConfiguratorWorkspace mode={session.mode} title={title} persistence={persistence} notice={notice}
+    onModeChange={mode => store.dispatch({ type: 'set-mode', mode })}
+    viewer={<FurnitureViewer pngExport={pngExport} store={store} furnitureView={furnitureView}
+      motionStore={motionStore} wardrobeViewRevision={wardrobeViewRevision} />}
+    settings={
+        session.mode === 'wardrobe' ? <WardrobeAssemblyControls configuration={session.wardrobe} motionStore={motionStore}
           onFrame={() => setWardrobeViewRevision(value => value + 1)}
           onAction={action => store.dispatch({ type: 'wardrobe-action', action })} /> : session.mode === 'builder' ? (
           <>
@@ -73,48 +59,10 @@ function App() {
               if (category !== item.id) handleModelChange(getFurnitureDefinitions().find(model => (model.category ?? 'tables') === item.id)!.id)
             }}>{item.label}</button>)}
         </div>
-        {/*
-         * -----------------------------
-         * MODEL SELECT
-         * -----------------------------
-         */}
-
-        <div
-          style={{
-            marginBottom:
-              16,
-          }}
-        >
-          <div
-            style={{
-              marginBottom:
-                6,
-
-              fontSize:
-                14,
-
-              fontWeight:
-                600,
-            }}
-          >
-            Модель
-          </div>
-
-          <CustomSelect
-            value={
-              selectedModelId
-            }
-
-            options={
-              furnitureOptions
-            }
-
-            onChange={
-              handleModelChange
-            }
-
-            ariaLabel="Выбор модели мебели"
-          />
+        <div className="catalog-model-picker">
+          <span>Модель</span>
+          <CustomSelect value={selectedModelId} options={furnitureOptions}
+            onChange={handleModelChange} ariaLabel="Выбор модели мебели" />
         </div>
 
         {category === 'tables' && furnitureDefinition.description && <p className="catalog-description">{furnitureDefinition.description}</p>}
@@ -134,18 +82,19 @@ function App() {
         ))}
         </>}
         </>}
-        <ConfigurationSummary session={session} store={store} pngExport={pngExport} />
-        <ConfigurationActions
-          resetLabel={session.mode !== 'catalog' ? 'Сбросить сборку' : 'Сбросить эту модель'}
-          key={JSON.stringify(session)}
-          persistence={persistence}
-          notice={notice}
-          getShareUrl={store.getShareUrl}
-          onReset={() => { motionStore.setAll(selectedModelId, false, true); store.dispatch({ type: 'reset-model' }) }}
-        />
+    save={<div className="workspace-save">
+      <h2>Сохранить вариант</h2>
+      <p className="workspace-save-title">{title}</p>
+      <ConfigurationActions key={JSON.stringify(session)} getShareUrl={store.getShareUrl} />
+      <ConfigurationSummary session={session} store={store} pngExport={pngExport} />
+      <div className="workspace-reset">
+        <button type="button" onClick={() => {
+          motionStore.setAll(selectedModelId, false, true)
+          store.dispatch({ type: 'reset-model' })
+        }}>{resetLabel}</button>
+        <p>Вернёт начальные размеры, материалы и наполнение текущего варианта.</p>
       </div>
-    </div>
-  )
+    </div>} />
 }
 
 export default App

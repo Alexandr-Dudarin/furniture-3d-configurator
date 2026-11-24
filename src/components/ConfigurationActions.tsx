@@ -1,15 +1,10 @@
 import { useState } from 'react'
-import type { ConfiguratorSnapshot } from '../configurator/configuratorStore'
 
 type ConfigurationActionsProps = {
-  persistence: ConfiguratorSnapshot['persistence']
-  notice: string | null
   getShareUrl: () => string
-  onReset: () => void
-  resetLabel?: string
 }
 
-export function ConfigurationActions({ persistence, notice, getShareUrl, onReset, resetLabel = 'Сбросить эту модель' }: ConfigurationActionsProps) {
+export function ConfigurationActions({ getShareUrl }: ConfigurationActionsProps) {
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copying' | 'copied' | 'manual'>('idle')
   const [manualUrl, setManualUrl] = useState('')
 
@@ -28,12 +23,6 @@ export function ConfigurationActions({ persistence, notice, getShareUrl, onReset
 
   return (
     <div className="configuration-actions">
-      <p className="configuration-save-status" role="status">
-        {persistence === 'saved' ? 'Сохранено в этом браузере'
-          : persistence === 'pending' ? 'Сохранение…'
-            : 'Автосохранение недоступно. Сохраните ссылку на этот вариант.'}
-      </p>
-      {notice && <p className="configuration-notice" role="status">{notice}</p>}
       <button type="button" className="configuration-share" onClick={() => void copyLink()} disabled={copyStatus === 'copying'}>
         {copyStatus === 'copying' ? 'Копирование…' : 'Копировать ссылку'}
       </button>
@@ -45,7 +34,6 @@ export function ConfigurationActions({ persistence, notice, getShareUrl, onReset
             onFocus={(event) => event.currentTarget.select()} />
         </label>
       )}
-      <button type="button" className="configuration-reset" onClick={onReset}>{resetLabel}</button>
     </div>
   )
 }
